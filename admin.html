@@ -531,6 +531,23 @@
         <input type="text" id="photoEditSeries" placeholder="Series name" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
       </div>
 
+      <hr style="border:none; border-top:1px solid #333; margin:20px 0;">
+      <h4 style="margin-bottom:15px; color:#999;">Source Tag</h4>
+
+      <div class="form-group" style="margin-bottom:15px;">
+        <label>Source Type</label>
+        <select id="photoEditSourceType" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+          <option value="">None</option>
+          <option value="events">Events</option>
+          <option value="studio">Studio</option>
+          <option value="collaborators">Collaborators</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Source ID</label>
+        <input type="text" id="photoEditSourceId" placeholder="Document ID (auto-filled)" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+      </div>
+
       <div style="display:flex; gap:10px;">
         <button onclick="savePhotoEditModal()" style="flex:1; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Save</button>
         <button onclick="closePhotoModal()" style="flex:1; padding:10px; background:#666; color:#fff; border:none; border-radius:3px; cursor:pointer;">Cancel</button>
@@ -892,6 +909,8 @@
     document.getElementById('photoEditHandle').parentElement.style.display = 'block';
     document.getElementById('photoEditCharacter').value = photo.character || '';
     document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditSourceType').value = photo.source?.type || '';
+    document.getElementById('photoEditSourceId').value = photo.source?.id || '';
     document.getElementById('photoEditModal').style.display = 'flex';
   };
 
@@ -911,6 +930,8 @@
     document.getElementById('photoEditHandle').parentElement.style.display = 'block';
     document.getElementById('photoEditCharacter').value = photo.character || '';
     document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditSourceType').value = photo.source?.type || '';
+    document.getElementById('photoEditSourceId').value = photo.source?.id || '';
     document.getElementById('photoEditModal').style.display = 'flex';
   };
 
@@ -929,6 +950,8 @@
     document.getElementById('photoEditHandle').parentElement.style.display = 'none';
     document.getElementById('photoEditCharacter').value = photo.character || '';
     document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditSourceType').value = photo.source?.type || '';
+    document.getElementById('photoEditSourceId').value = photo.source?.id || '';
     document.getElementById('photoEditModal').style.display = 'flex';
   };
 
@@ -937,11 +960,16 @@
     const handle = document.getElementById('photoEditHandle').value;
     const character = document.getElementById('photoEditCharacter').value;
     const series = document.getElementById('photoEditSeries').value;
+    const sourceType = document.getElementById('photoEditSourceType').value;
+    const sourceId = document.getElementById('photoEditSourceId').value;
 
     if (!character || !series || (type !== 'collab' && !handle)) {
       alert('Please fill in all fields');
       return;
     }
+
+    // Build source object
+    const source = sourceType && sourceId ? { type: sourceType, id: sourceId } : null;
 
     try {
       if (type === 'event') {
@@ -950,7 +978,7 @@
         const docSnap = await getDoc(doc(db, 'events', eventId));
         const event = docSnap.data();
         const photos = [...event.photos];
-        photos[photoIndex] = { ...photos[photoIndex], coser: handle, character, series };
+        photos[photoIndex] = { ...photos[photoIndex], coser: handle, character, series, source };
         await updateDoc(doc(db, 'events', eventId), { photos });
         await displayEventPhotos(eventId);
       } else if (type === 'studio') {
@@ -960,7 +988,7 @@
         const docSnap = await getDoc(doc(db, 'studio', sessionId));
         const session = docSnap.data();
         const cosplayers = JSON.parse(JSON.stringify(session.cosplayers));
-        cosplayers[cosplayerIdx].photos[photoIdx] = { ...cosplayers[cosplayerIdx].photos[photoIdx], coser: handle, character, series };
+        cosplayers[cosplayerIdx].photos[photoIdx] = { ...cosplayers[cosplayerIdx].photos[photoIdx], coser: handle, character, series, source };
         await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
         await displayStudioPhotos(sessionId);
       } else if (type === 'collab') {
@@ -969,7 +997,7 @@
         const docSnap = await getDoc(doc(db, 'collaborators', collabId));
         const collab = docSnap.data();
         const photos = [...collab.photos];
-        photos[photoIndex] = { ...photos[photoIndex], character, series };
+        photos[photoIndex] = { ...photos[photoIndex], character, series, source };
         await updateDoc(doc(db, 'collaborators', collabId), { photos });
         await displayCollabPhotos(collabId);
       }
@@ -984,6 +1012,8 @@
     document.getElementById('photoEditHandle').value = '';
     document.getElementById('photoEditCharacter').value = '';
     document.getElementById('photoEditSeries').value = '';
+    document.getElementById('photoEditSourceType').value = '';
+    document.getElementById('photoEditSourceId').value = '';
   };
 
   window.deletePhoto = async (eventId, photoIndex) => {
