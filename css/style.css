@@ -289,6 +289,12 @@ ul { list-style: none; }
   color: var(--white);
   letter-spacing: 0.02em;
   line-height: 1.2;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.pick-item__coser:hover {
+  color: var(--accent-light);
+  text-decoration: underline;
 }
 .pick-item__character {
   font-size: 0.68rem;
@@ -296,6 +302,12 @@ ul { list-style: none; }
   color: var(--accent-light);
   letter-spacing: 0.04em;
   margin-top: 3px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.pick-item__character:hover {
+  color: var(--white);
+  text-decoration: underline;
 }
 .pick-item__series {
   font-size: 0.62rem;
@@ -309,6 +321,114 @@ ul { list-style: none; }
   font-size: 0.62rem;
   color: var(--text-dim);
   margin-top: 4px;
+}
+
+/* ── Featured Picks: Mobile Carousel ───────────────────────── */
+.picks-carousel {
+  display: none;
+  position: relative;
+  width: 100%;
+  padding-bottom: 40px;
+}
+.picks-carousel.active {
+  display: block;
+}
+.carousel-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 3/4;
+}
+.carousel-slides {
+  display: flex;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  width: 100%;
+  height: 100%;
+}
+.carousel-slide {
+  flex: 0 0 100%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+}
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.carousel-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 16px;
+  gap: 12px;
+}
+.carousel-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.carousel-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.carousel-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.carousel-counter {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.carousel-info {
+  padding: 20px 16px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  min-height: 120px;
+}
+.carousel-info h3 {
+  font-size: 1.1rem;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.carousel-info-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.carousel-info-item {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.carousel-info-value {
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  word-break: break-word;
+}
+.carousel-info-value:hover {
+  color: var(--accent-light);
+  text-decoration: underline;
 }
 
 /* ── Page Hero (inner pages) ───────────────────────────────── */
@@ -1486,7 +1606,8 @@ footer {
   }
   .hero__content { left: 24px; bottom: 36px; }
   .section-header { padding: 40px 20px 24px; flex-wrap: wrap; }
-  .picks-grid { grid-template-columns: 1fr; }
+  .picks-grid { display: none; }
+  .picks-carousel.active { display: block; }
   /* Mobile always gets exactly 3 columns */
   .photo-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; }
   .photo-grid__item:hover { transform: scale(1.06); }

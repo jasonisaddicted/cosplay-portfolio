@@ -43,7 +43,25 @@
     <span class="section-header__count"></span>
   </div>
 
+  <!-- Desktop Grid -->
   <div class="picks-grid" id="picks-grid"></div>
+
+  <!-- Mobile Carousel -->
+  <div class="picks-carousel" id="picks-carousel">
+    <div class="carousel-viewport">
+      <div class="carousel-slides" id="carousel-slides"></div>
+    </div>
+    <div class="carousel-controls">
+      <button class="carousel-btn" id="carousel-prev" aria-label="Previous photo">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <span class="carousel-counter"><span id="carousel-current">1</span> / <span id="carousel-total">0</span></span>
+      <button class="carousel-btn" id="carousel-next" aria-label="Next photo">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="carousel-info" id="carousel-info"></div>
+  </div>
 
   <!-- Footer -->
   <footer>

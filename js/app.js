@@ -612,9 +612,21 @@ const Lightbox = (() => {
 
   return {
     init(photoArray) { photos = photoArray; },
-    open(index)      { show(index); }
+    open(index)      { show(index); },
+    openCharacter(character) { buildCharacterPanel(character); lb.style.display = 'flex'; },
+    openCoser(handle) { buildCoserPanel(handle); lb.style.display = 'flex'; }
   };
 })();
+
+// ── Cross-Album Discovery Helpers ────────────────────────────
+// Called when clicking on cosplayer/character names in featured photos
+window.openCosplayerModal = (handle) => {
+  Lightbox.openCoser(handle);
+};
+
+window.openCharacterModal = (character) => {
+  Lightbox.openCharacter(character);
+};
 
 // ── Page: Home ───────────────────────────────────────────────
 function initHome() {
@@ -659,7 +671,113 @@ function initHome() {
     `;
     el.addEventListener('click', () => Lightbox.open(i));
     grid.appendChild(el);
+
+    // Make cosplayer and character names clickable on desktop
+    const coserEl = el.querySelector('.pick-item__coser');
+    if (coserEl && p.credit) {
+      coserEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openCosplayerModal(p.credit);
+      });
+    }
+    const charEl = el.querySelector('.pick-item__character');
+    if (charEl && p.character) {
+      charEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openCharacterModal(p.character);
+      });
+    }
   });
+
+  // Mobile carousel
+  const isMobile = window.innerWidth <= 768;
+  const carousel = document.getElementById('picks-carousel');
+  if (isMobile && allFeatured.length > 1) {
+    carousel.classList.add('active');
+    const slidesContainer = document.getElementById('carousel-slides');
+    let currentSlide = 0;
+
+    // Render carousel slides (skip hero, max 9 picks)
+    allFeatured.forEach((p, i) => {
+      if (i === 0) return;
+      if (i > maxPicks) return;
+
+      const slide = document.createElement('div');
+      slide.className = 'carousel-slide';
+      slide.innerHTML = `<img src="${p.src}" alt="${p.character || ''}" loading="lazy">`;
+      slidesContainer.appendChild(slide);
+    });
+
+    const totalSlides = Math.min(allFeatured.length - 1, maxPicks);
+    document.getElementById('carousel-total').textContent = totalSlides;
+
+    function updateCarousel() {
+      const offset = -currentSlide * 100;
+      slidesContainer.style.transform = `translateX(${offset}%)`;
+      document.getElementById('carousel-current').textContent = currentSlide + 1;
+      updateCarouselInfo();
+    }
+
+    function updateCarouselInfo() {
+      const photo = allFeatured[currentSlide + 1];
+      const infoEl = document.getElementById('carousel-info');
+      if (photo) {
+        infoEl.innerHTML = `
+          <h3>${photo.character || 'Untitled'}</h3>
+          <div class="carousel-info-meta">
+            ${photo.credit ? `
+              <div>
+                <div class="carousel-info-item">Cosplayer</div>
+                <div class="carousel-info-value carousel-info-coser">${photo.credit}</div>
+              </div>
+            ` : ''}
+            ${photo.series ? `
+              <div>
+                <div class="carousel-info-item">Series</div>
+                <div class="carousel-info-value">${photo.series}</div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        // Make cosplayer clickable
+        const coserLink = infoEl.querySelector('.carousel-info-coser');
+        if (coserLink && photo.credit) {
+          coserLink.addEventListener('click', () => openCosplayerModal(photo.credit));
+        }
+      }
+    }
+
+    document.getElementById('carousel-next').addEventListener('click', () => {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateCarousel();
+      }
+    });
+
+    document.getElementById('carousel-prev').addEventListener('click', () => {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateCarousel();
+      }
+    });
+
+    // Swipe support
+    let touchStartX = 0;
+    const viewport = document.querySelector('.carousel-viewport');
+    viewport.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    viewport.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      if (touchStartX - touchEndX > 50 && currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateCarousel();
+      } else if (touchEndX - touchStartX > 50 && currentSlide > 0) {
+        currentSlide--;
+        updateCarousel();
+      }
+    });
+
+    updateCarousel();
+  }
 
   const pickCount = Math.min(picks.length, maxPicks);
   document.querySelector('.section-header__count').textContent =
