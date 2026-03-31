@@ -873,25 +873,10 @@ function initHome() {
     heroSection.addEventListener('click', () => Lightbox.open(0));
   }
 
-  // Featured section — show up to 9 picks (featured[1..9])
+  // Featured section — show up to 9 picks (featured[0..8])
   const allFeatured = cfg.featured;
   const maxPicks = 9;
-  const featuredPhotos = allFeatured.filter((p, i) => i > 0 && i <= maxPicks);
-
-  // Featured Banner (use first featured photo)
-  if (featuredPhotos.length > 0) {
-    const bannerImg = document.getElementById('featured-banner-img');
-    const bannerTitle = document.querySelector('.featured-banner-title');
-    const bannerSeries = document.querySelector('.featured-banner-series');
-    const bannerCredit = document.querySelector('.featured-banner-credit');
-
-    const bannerPhoto = featuredPhotos[0];
-    bannerImg.src = bannerPhoto.src;
-    bannerImg.alt = bannerPhoto.character || '';
-    bannerTitle.textContent = bannerPhoto.character || '';
-    bannerSeries.textContent = bannerPhoto.series || '';
-    bannerCredit.textContent = bannerPhoto.credit || '';
-  }
+  const featuredPhotos = allFeatured.slice(0, maxPicks);
 
   // Featured Grid
   const gridContainer = document.getElementById('featured-grid');
