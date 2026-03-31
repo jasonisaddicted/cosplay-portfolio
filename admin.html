@@ -312,7 +312,7 @@
         <label>Description</label>
         <textarea id="eventDesc" placeholder="Event description..."></textarea>
       </div>
-      <button onclick="saveEvent()" style="max-width:400px; width:100%;">Create Event</button>
+      <button id="saveEventBtn" onclick="saveEvent()" style="max-width:400px; width:100%;">Create Event</button>
       <div id="eventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       <div class="items-list" id="eventsList"></div>
     </div>
@@ -370,7 +370,7 @@
         <label>Description</label>
         <textarea id="studioDesc" placeholder="Session description..."></textarea>
       </div>
-      <button onclick="saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
+      <button id="saveStudioBtn" onclick="saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
       <div id="studioMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       <div class="items-list" id="studioList"></div>
     </div>
@@ -416,7 +416,7 @@
         <label>Bio</label>
         <textarea id="collabBio" placeholder="Short bio..."></textarea>
       </div>
-      <button onclick="saveCollab()" style="max-width:400px; width:100%;">Add Collaborator</button>
+      <button id="saveCollabBtn" onclick="saveCollab()" style="max-width:400px; width:100%;">Add Collaborator</button>
       <div id="collabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       <div class="items-list" id="collabList"></div>
     </div>
@@ -582,6 +582,7 @@
               <div style="font-size:0.8rem; color:#666;">${d.date} · ${d.location}</div>
             </div>
             <div class="item-actions">
+              <button onclick="editEvent('${doc.id}')">Edit</button>
               <button onclick="deleteEvent('${doc.id}')">Delete</button>
             </div>
           </div>
@@ -589,6 +590,49 @@
       `;
     }).join('');
     document.getElementById('eventsList').innerHTML = html || '<p style="color:#666;">No events yet</p>';
+  };
+
+  window.editEvent = async (id) => {
+    const docSnap = await getDoc(doc(db, 'events', id));
+    const d = docSnap.data();
+    document.getElementById('eventName').value = d.name;
+    document.getElementById('eventDate').value = d.date;
+    document.getElementById('eventLoc').value = d.location || '';
+    document.getElementById('eventDesc').value = d.description || '';
+    document.getElementById('eventMsg').textContent = '';
+    document.getElementById('saveEventBtn').textContent = 'Update Event';
+    document.getElementById('saveEventBtn').onclick = () => updateEvent(id);
+    document.getElementById('eventName').focus();
+  };
+
+  window.updateEvent = async (id) => {
+    const name = document.getElementById('eventName').value;
+    const date = document.getElementById('eventDate').value;
+    const location = document.getElementById('eventLoc').value;
+    const description = document.getElementById('eventDesc').value;
+
+    if (!name || !date) {
+      document.getElementById('eventMsg').textContent = 'Name and date required';
+      document.getElementById('eventMsg').className = 'error';
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'events', id), { name, date, location, description });
+      document.getElementById('eventMsg').textContent = '✓ Event updated!';
+      document.getElementById('eventMsg').className = 'success';
+      document.getElementById('eventName').value = '';
+      document.getElementById('eventDate').value = '';
+      document.getElementById('eventLoc').value = '';
+      document.getElementById('eventDesc').value = '';
+      document.getElementById('saveEventBtn').textContent = 'Create Event';
+      document.getElementById('saveEventBtn').onclick = saveEvent;
+      loadEvents();
+      setTimeout(() => { document.getElementById('eventMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('eventMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('eventMsg').className = 'error';
+    }
   };
 
   window.deleteEvent = async (id) => {
@@ -714,6 +758,7 @@
               <div style="font-size:0.8rem; color:#666;">${d.date}</div>
             </div>
             <div class="item-actions">
+              <button onclick="editStudio('${doc.id}')">Edit</button>
               <button onclick="deleteStudio('${doc.id}')">Delete</button>
             </div>
           </div>
@@ -721,6 +766,46 @@
       `;
     }).join('');
     document.getElementById('studioList').innerHTML = html || '<p style="color:#666;">No studio sessions yet</p>';
+  };
+
+  window.editStudio = async (id) => {
+    const docSnap = await getDoc(doc(db, 'studio', id));
+    const d = docSnap.data();
+    document.getElementById('studioName').value = d.name;
+    document.getElementById('studioDate').value = d.date;
+    document.getElementById('studioDesc').value = d.description || '';
+    document.getElementById('studioMsg').textContent = '';
+    document.getElementById('saveStudioBtn').textContent = 'Update Session';
+    document.getElementById('saveStudioBtn').onclick = () => updateStudio(id);
+    document.getElementById('studioName').focus();
+  };
+
+  window.updateStudio = async (id) => {
+    const name = document.getElementById('studioName').value;
+    const date = document.getElementById('studioDate').value;
+    const description = document.getElementById('studioDesc').value;
+
+    if (!name || !date) {
+      document.getElementById('studioMsg').textContent = 'Name and date required';
+      document.getElementById('studioMsg').className = 'error';
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'studio', id), { name, date, description });
+      document.getElementById('studioMsg').textContent = '✓ Session updated!';
+      document.getElementById('studioMsg').className = 'success';
+      document.getElementById('studioName').value = '';
+      document.getElementById('studioDate').value = '';
+      document.getElementById('studioDesc').value = '';
+      document.getElementById('saveStudioBtn').textContent = 'Create Studio Session';
+      document.getElementById('saveStudioBtn').onclick = saveStudio;
+      loadStudio();
+      setTimeout(() => { document.getElementById('studioMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('studioMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('studioMsg').className = 'error';
+    }
   };
 
   window.deleteStudio = async (id) => {
@@ -1000,6 +1085,7 @@
               <div style="font-size:0.8rem; color:#666;">${d.handle}</div>
             </div>
             <div class="item-actions">
+              <button onclick="editCollab('${doc.id}')">Edit</button>
               <button onclick="deleteCollab('${doc.id}')">Delete</button>
             </div>
           </div>
@@ -1007,6 +1093,46 @@
       `;
     }).join('');
     document.getElementById('collabList').innerHTML = html || '<p style="color:#666;">No collaborators yet</p>';
+  };
+
+  window.editCollab = async (id) => {
+    const docSnap = await getDoc(doc(db, 'collaborators', id));
+    const d = docSnap.data();
+    document.getElementById('collabName').value = d.name;
+    document.getElementById('collabHandle').value = d.handle;
+    document.getElementById('collabBio').value = d.bio || '';
+    document.getElementById('collabMsg').textContent = '';
+    document.getElementById('saveCollabBtn').textContent = 'Update Collaborator';
+    document.getElementById('saveCollabBtn').onclick = () => updateCollab(id);
+    document.getElementById('collabName').focus();
+  };
+
+  window.updateCollab = async (id) => {
+    const name = document.getElementById('collabName').value;
+    const handle = document.getElementById('collabHandle').value;
+    const bio = document.getElementById('collabBio').value;
+
+    if (!name || !handle) {
+      document.getElementById('collabMsg').textContent = 'Name and handle required';
+      document.getElementById('collabMsg').className = 'error';
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'collaborators', id), { name, handle, bio });
+      document.getElementById('collabMsg').textContent = '✓ Collaborator updated!';
+      document.getElementById('collabMsg').className = 'success';
+      document.getElementById('collabName').value = '';
+      document.getElementById('collabHandle').value = '';
+      document.getElementById('collabBio').value = '';
+      document.getElementById('saveCollabBtn').textContent = 'Add Collaborator';
+      document.getElementById('saveCollabBtn').onclick = saveCollab;
+      loadCollabs();
+      setTimeout(() => { document.getElementById('collabMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('collabMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('collabMsg').className = 'error';
+    }
   };
 
   window.deleteCollab = async (id) => {
