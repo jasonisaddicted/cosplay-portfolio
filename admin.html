@@ -518,7 +518,12 @@
         const storageRef = ref(storage, `photos/studio/${Date.now()}_${i}_${file.name}`);
         await uploadBytes(storageRef, file);
         const url = await getDownloadURL(storageRef);
-        photos.push({ src: url });
+        photos.push({
+          src: url,
+          coser: handle,
+          character: character,
+          series: series
+        });
       }
 
       // Create studio session with all photos
