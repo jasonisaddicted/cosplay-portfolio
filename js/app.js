@@ -641,6 +641,117 @@ window.openCharacterModal = (character) => {
   Lightbox.openCharacter(character);
 };
 
+// Open featured panel with photo details
+window.openFeaturedPanel = (photo) => {
+  const isMobile = window.innerWidth <= 768;
+  const panelId = isMobile ? 'featured-panel-mobile' : 'featured-panel-desktop';
+  const contentId = isMobile ? 'featured-panel-content-mobile' : 'featured-panel-content-desktop';
+
+  const panel = document.getElementById(panelId);
+  const contentEl = document.getElementById(contentId);
+
+  // Build panel content
+  const html = `
+    <div class="featured-panel-image">
+      <img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">
+    </div>
+    <div class="featured-panel-tabs">
+      <div class="featured-tabs-list">
+        <button class="featured-tab active" data-tab="info">Info</button>
+        ${photo.credit ? '<button class="featured-tab" data-tab="cosplayer">Cosplayer</button>' : ''}
+        ${photo.series ? '<button class="featured-tab" data-tab="series">Series</button>' : ''}
+      </div>
+      <div class="featured-tabs-content">
+        <div class="featured-tab-pane active" data-pane="info">
+          ${photo.character ? `
+            <div class="featured-info-block">
+              <div class="featured-info-label">Character</div>
+              <div class="featured-info-value">${photo.character}</div>
+            </div>
+          ` : ''}
+          ${photo.series ? `
+            <div class="featured-info-block">
+              <div class="featured-info-label">Series</div>
+              <div class="featured-info-value featured-info-clickable" onclick="openCharacterModal('${photo.series}')">${photo.series}</div>
+            </div>
+          ` : ''}
+          ${photo.credit ? `
+            <div class="featured-info-block">
+              <div class="featured-info-label">Cosplayer</div>
+              <div class="featured-info-value featured-info-clickable" onclick="openCosplayerModal('${photo.credit}')">${photo.credit}</div>
+            </div>
+          ` : ''}
+        </div>
+        ${photo.credit ? `
+          <div class="featured-tab-pane" data-pane="cosplayer">
+            <div class="featured-info-block">
+              <div class="featured-info-label">Cosplayer</div>
+              <div class="featured-info-value">${photo.credit}</div>
+            </div>
+            <div class="featured-info-block">
+              <div class="featured-info-label">View More</div>
+              <button class="featured-info-button" onclick="openCosplayerModal('${photo.credit}')">See All Photos</button>
+            </div>
+          </div>
+        ` : ''}
+        ${photo.series ? `
+          <div class="featured-tab-pane" data-pane="series">
+            <div class="featured-info-block">
+              <div class="featured-info-label">Series</div>
+              <div class="featured-info-value">${photo.series}</div>
+            </div>
+            <div class="featured-info-block">
+              <div class="featured-info-label">View More</div>
+              <button class="featured-info-button" onclick="openCharacterModal('${photo.series}')">See All Photos</button>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  contentEl.innerHTML = html;
+
+  // Tab switching
+  contentEl.querySelectorAll('.featured-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
+
+      // Update active tab button
+      contentEl.querySelectorAll('.featured-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Update active pane
+      contentEl.querySelectorAll('.featured-tab-pane').forEach(pane => pane.classList.remove('active'));
+      contentEl.querySelector(`[data-pane="${tabName}"]`).classList.add('active');
+    });
+  });
+
+  // Open panel
+  panel.classList.add('active');
+
+  // Close button
+  panel.querySelector('.featured-panel-close').addEventListener('click', () => {
+    panel.classList.remove('active');
+  });
+
+  // Back button (mobile)
+  const backBtn = panel.querySelector('.featured-panel-back');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      panel.classList.remove('active');
+    });
+  }
+
+  // Close on escape
+  const closeOnEscape = (e) => {
+    if (e.key === 'Escape' && panel.classList.contains('active')) {
+      panel.classList.remove('active');
+    }
+  };
+  document.addEventListener('keydown', closeOnEscape);
+};
+
 // Featured photo modal (mobile grid and desktop clicks)
 window.showFeaturedPhotoModal = (photo) => {
   // Close any existing modal
@@ -765,72 +876,40 @@ function initHome() {
   const maxPicks = 9;
   const featuredPhotos = allFeatured.filter((p, i) => i > 0 && i <= maxPicks);
 
-  // Desktop: Large featured + thumbnails
-  const desktopContainer = document.getElementById('featured-desktop');
-  const mobileContainer = document.getElementById('featured-mobile');
+  // Featured Banner (use first featured photo)
+  if (featuredPhotos.length > 0) {
+    const bannerImg = document.getElementById('featured-banner-img');
+    const bannerTitle = document.querySelector('.featured-banner-title');
+    const bannerSeries = document.querySelector('.featured-banner-series');
+    const bannerCredit = document.querySelector('.featured-banner-credit');
 
-  if (desktopContainer && featuredPhotos.length > 0) {
-    const mainImg = desktopContainer.querySelector('#featured-main-img');
-    const thumbnailsContainer = desktopContainer.querySelector('#featured-thumbnails');
-    let currentFeaturedIndex = 0;
-
-    function updateMainFeatured(index) {
-      const photo = featuredPhotos[index];
-      mainImg.src = photo.src;
-      mainImg.alt = photo.character || '';
-
-      // Update active thumbnail
-      thumbnailsContainer.querySelectorAll('.featured-thumbnail').forEach((thumb, i) => {
-        thumb.classList.toggle('active', i === index);
-      });
-
-      currentFeaturedIndex = index;
-    }
-
-    // Create thumbnails
-    featuredPhotos.forEach((photo, idx) => {
-      const thumb = document.createElement('div');
-      thumb.className = 'featured-thumbnail' + (idx === 0 ? ' active' : '');
-      thumb.innerHTML = `<img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">`;
-
-      thumb.addEventListener('click', () => updateMainFeatured(idx));
-      thumbnailsContainer.appendChild(thumb);
-    });
-
-    // Main image click to open modal
-    mainImg.addEventListener('click', () => {
-      showFeaturedPhotoModal(featuredPhotos[currentFeaturedIndex]);
-    });
-
-    // Navigation buttons
-    desktopContainer.querySelector('#featured-prev').addEventListener('click', () => {
-      updateMainFeatured((currentFeaturedIndex - 1 + featuredPhotos.length) % featuredPhotos.length);
-    });
-
-    desktopContainer.querySelector('#featured-next').addEventListener('click', () => {
-      updateMainFeatured((currentFeaturedIndex + 1) % featuredPhotos.length);
-    });
-
-    // Initialize
-    updateMainFeatured(0);
+    const bannerPhoto = featuredPhotos[0];
+    bannerImg.src = bannerPhoto.src;
+    bannerImg.alt = bannerPhoto.character || '';
+    bannerTitle.textContent = bannerPhoto.character || '';
+    bannerSeries.textContent = bannerPhoto.series || '';
+    bannerCredit.textContent = bannerPhoto.credit || '';
   }
 
-  // Mobile: Grid layout
-  if (mobileContainer && featuredPhotos.length > 0) {
-    const gridContainer = mobileContainer.querySelector('#featured-grid');
-
-    featuredPhotos.forEach(photo => {
+  // Featured Grid
+  const gridContainer = document.getElementById('featured-grid');
+  if (gridContainer && featuredPhotos.length > 0) {
+    featuredPhotos.forEach((photo, idx) => {
       const gridItem = document.createElement('div');
       gridItem.className = 'featured-grid-item';
       gridItem.innerHTML = `<img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">`;
 
       gridItem.addEventListener('click', () => {
-        showFeaturedPhotoModal(photo);
+        openFeaturedPanel(photo);
       });
 
       gridContainer.appendChild(gridItem);
     });
   }
+
+  const pickCount = Math.min(featuredPhotos.length, maxPicks);
+  document.querySelector('.section-header__count').textContent =
+    `${pickCount} photo${pickCount !== 1 ? 's' : ''}`;
 
   const pickCount = Math.min(picks.length, maxPicks);
   document.querySelector('.section-header__count').textContent =

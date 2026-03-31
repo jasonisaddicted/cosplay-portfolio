@@ -38,32 +38,52 @@
 
   <!-- Featured Shots Section -->
   <div class="featured-section">
+    <!-- Featured Banner -->
+    <div class="featured-banner" id="featured-banner">
+      <img id="featured-banner-img" src="" alt="">
+      <div class="featured-banner-overlay"></div>
+      <div class="featured-banner-content">
+        <div class="featured-banner-label">Featured</div>
+        <h2 class="featured-banner-title"></h2>
+        <p class="featured-banner-series"></p>
+        <p class="featured-banner-credit"></p>
+      </div>
+    </div>
+
+    <!-- Section Header -->
     <div class="section-header">
       <span class="section-header__label">This Month</span>
       <h2 class="section-header__title">Featured Shots</h2>
       <span class="section-header__count"></span>
     </div>
 
-    <!-- Desktop: Split Layout (Large Featured + Thumbnails) -->
-    <div class="featured-desktop" id="featured-desktop">
-      <div class="featured-main">
-        <img id="featured-main-img" src="" alt="">
-        <div class="featured-nav">
-          <button id="featured-prev" aria-label="Previous">
-            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-          </button>
-          <button id="featured-next" aria-label="Next">
-            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="featured-thumbnails" id="featured-thumbnails"></div>
-    </div>
-
-    <!-- Mobile: Grid Layout (Similar to Events/Studio) -->
-    <div class="featured-mobile" id="featured-mobile">
+    <!-- Featured Grid (6 columns desktop / 2 columns mobile) -->
+    <div class="featured-grid-wrapper">
       <div class="featured-grid" id="featured-grid"></div>
     </div>
+  </div>
+
+  <!-- Featured Details Panel (Desktop: Right Side) -->
+  <div class="featured-panel featured-panel-desktop" id="featured-panel-desktop">
+    <div class="featured-panel-header">
+      <button class="featured-panel-close" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="featured-panel-content" id="featured-panel-content-desktop"></div>
+  </div>
+
+  <!-- Featured Details Panel (Mobile: Full Screen Overlay) -->
+  <div class="featured-panel featured-panel-mobile" id="featured-panel-mobile">
+    <div class="featured-panel-header">
+      <button class="featured-panel-back" aria-label="Back">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="featured-panel-close" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="featured-panel-content" id="featured-panel-content-mobile"></div>
   </div>
 
   <!-- Footer -->
