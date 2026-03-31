@@ -166,9 +166,38 @@
     <!-- Featured Picks -->
     <div id="featured" class="content active">
       <h2 style="margin-bottom:20px;">Featured Picks</h2>
+
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px;">Batch Upload Photos</h3>
+        <div class="form-group">
+          <label>Drop photos here</label>
+          <div class="upload-area" id="uploadFeaturedBatch" onclick="document.getElementById('uploadFeaturedFiles').click()">
+            <p>Click or drag multiple photos</p>
+            <input type="file" id="uploadFeaturedFiles" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="upload-progress" id="uploadFeaturedBatchStatus"></div>
+        </div>
+        <div class="form-group">
+          <label>Character Name</label>
+          <input type="text" id="batchFeaturedChar" placeholder="e.g., Hu Tao">
+        </div>
+        <div class="form-group">
+          <label>Series</label>
+          <input type="text" id="batchFeaturedSeries" placeholder="e.g., Genshin Impact">
+        </div>
+        <div class="form-group">
+          <label>Cosplayer Handle</label>
+          <input type="text" id="batchFeaturedCredit" placeholder="e.g., @sakurahime_cos">
+        </div>
+        <button onclick="saveBatchFeatured()" style="width:100%;">Upload & Add Featured</button>
+        <div id="batchFeaturedMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+      <h3 style="margin-bottom:15px;">Or Add Single Pick</h3>
       <div class="grid grid-full">
         <div>
-          <h3 style="margin-bottom:15px;">Add New Featured Pick</h3>
           <div class="form-group">
             <label>Upload Photo</label>
             <div class="upload-area" id="uploadFeatured" onclick="document.getElementById('uploadFeaturFile').click()">
@@ -208,6 +237,48 @@
     <!-- Events -->
     <div id="events" class="content">
       <h2 style="margin-bottom:20px;">Events</h2>
+
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px;">Batch Upload Event Photos</h3>
+        <div class="form-group">
+          <label>Drop photos here</label>
+          <div class="upload-area" id="uploadEventBatch" onclick="document.getElementById('uploadEventFiles').click()">
+            <p>Click or drag multiple photos</p>
+            <input type="file" id="uploadEventFiles" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="upload-progress" id="uploadEventBatchStatus"></div>
+        </div>
+        <div class="form-group">
+          <label>Event Name</label>
+          <input type="text" id="batchEventName" placeholder="e.g., FanimeCon 2024">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="text" id="batchEventDate" placeholder="e.g., May 2024">
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="batchEventLoc" placeholder="e.g., San Jose, CA">
+        </div>
+        <div class="form-group">
+          <label>Character Name</label>
+          <input type="text" id="batchEventChar" placeholder="e.g., Hu Tao">
+        </div>
+        <div class="form-group">
+          <label>Series</label>
+          <input type="text" id="batchEventSeries" placeholder="e.g., Genshin Impact">
+        </div>
+        <div class="form-group">
+          <label>Cosplayer Handle</label>
+          <input type="text" id="batchEventHandle" placeholder="e.g., @sakurahime_cos">
+        </div>
+        <button onclick="saveBatchEvent()" style="width:100%;">Upload & Create Event</button>
+        <div id="batchEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
       <div class="form-group" style="max-width:400px;">
         <label>Event Name</label>
         <input type="text" id="eventName" placeholder="e.g., FanimeCon 2024">
@@ -290,6 +361,32 @@
     <!-- Collabs -->
     <div id="collabs" class="content">
       <h2 style="margin-bottom:20px;">Collaborators</h2>
+
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px;">Batch Upload Collab Photos</h3>
+        <div class="form-group">
+          <label>Drop photos here</label>
+          <div class="upload-area" id="uploadCollabBatch" onclick="document.getElementById('uploadCollabFiles').click()">
+            <p>Click or drag multiple photos</p>
+            <input type="file" id="uploadCollabFiles" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="upload-progress" id="uploadCollabBatchStatus"></div>
+        </div>
+        <div class="form-group">
+          <label>Cosplayer Name</label>
+          <input type="text" id="batchCollabName" placeholder="e.g., Sakura Hime">
+        </div>
+        <div class="form-group">
+          <label>Handle</label>
+          <input type="text" id="batchCollabHandle" placeholder="e.g., @sakurahime_cos">
+        </div>
+        <button onclick="saveBatchCollab()" style="width:100%;">Upload & Add Collab</button>
+        <div id="batchCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+      <h3 style="margin-bottom:15px;">Or Add Manually</h3>
       <div class="form-group" style="max-width:400px;">
         <label>Cosplayer Name</label>
         <input type="text" id="collabName" placeholder="e.g., Sakura Hime">
@@ -616,6 +713,183 @@
     }
   };
 
+  // ─ Batch Upload: Featured ─
+  window.saveBatchFeatured = async () => {
+    const files = document.getElementById('uploadFeaturedFiles').files;
+    const character = document.getElementById('batchFeaturedChar').value;
+    const series = document.getElementById('batchFeaturedSeries').value;
+    const credit = document.getElementById('batchFeaturedCredit').value;
+
+    if (!files.length || !character || !series || !credit) {
+      document.getElementById('batchFeaturedMsg').textContent = 'Please fill in all fields and select photos';
+      document.getElementById('batchFeaturedMsg').className = 'error';
+      return;
+    }
+
+    const status = document.getElementById('uploadFeaturedBatchStatus');
+    status.textContent = `Uploading ${files.length} photos...`;
+
+    try {
+      const sortedFiles = Array.from(files).sort((a, b) => {
+        const aNum = parseInt(a.name.match(/\d+/)?.[0] || 999);
+        const bNum = parseInt(b.name.match(/\d+/)?.[0] || 999);
+        return aNum - bNum;
+      });
+
+      for (let i = 0; i < sortedFiles.length; i++) {
+        const file = sortedFiles[i];
+        status.textContent = `Uploading ${i + 1}/${sortedFiles.length}...`;
+        const storageRef = ref(storage, `photos/featured/${Date.now()}_${i}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+
+        await addDoc(collection(db, 'featured'), {
+          src: url,
+          coser: credit,
+          character: character,
+          series: series,
+          order: i + 1
+        });
+      }
+
+      document.getElementById('batchFeaturedMsg').textContent = `✓ ${files.length} featured picks added!`;
+      document.getElementById('batchFeaturedMsg').className = 'success';
+      document.getElementById('uploadFeaturedFiles').value = '';
+      document.getElementById('batchFeaturedChar').value = '';
+      document.getElementById('batchFeaturedSeries').value = '';
+      document.getElementById('batchFeaturedCredit').value = '';
+      document.getElementById('uploadFeaturedBatchStatus').textContent = '';
+      loadFeatured();
+      setTimeout(() => { document.getElementById('batchFeaturedMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('batchFeaturedMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('batchFeaturedMsg').className = 'error';
+    }
+  };
+
+  // ─ Batch Upload: Events ─
+  window.saveBatchEvent = async () => {
+    const files = document.getElementById('uploadEventFiles').files;
+    const eventName = document.getElementById('batchEventName').value;
+    const eventDate = document.getElementById('batchEventDate').value;
+    const eventLoc = document.getElementById('batchEventLoc').value;
+    const character = document.getElementById('batchEventChar').value;
+    const series = document.getElementById('batchEventSeries').value;
+    const handle = document.getElementById('batchEventHandle').value;
+
+    if (!files.length || !eventName || !eventDate || !character || !series || !handle) {
+      document.getElementById('batchEventMsg').textContent = 'Please fill in all fields and select photos';
+      document.getElementById('batchEventMsg').className = 'error';
+      return;
+    }
+
+    const status = document.getElementById('uploadEventBatchStatus');
+    status.textContent = `Uploading ${files.length} photos...`;
+
+    try {
+      const sortedFiles = Array.from(files).sort((a, b) => {
+        const aNum = parseInt(a.name.match(/\d+/)?.[0] || 999);
+        const bNum = parseInt(b.name.match(/\d+/)?.[0] || 999);
+        return aNum - bNum;
+      });
+
+      const photos = [];
+      for (let i = 0; i < sortedFiles.length; i++) {
+        const file = sortedFiles[i];
+        status.textContent = `Uploading ${i + 1}/${sortedFiles.length}...`;
+        const storageRef = ref(storage, `photos/events/${Date.now()}_${i}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        photos.push({
+          src: url,
+          coser: handle,
+          character: character,
+          series: series
+        });
+      }
+
+      await addDoc(collection(db, 'events'), {
+        name: eventName,
+        date: eventDate,
+        location: eventLoc,
+        description: '',
+        cover: photos[0]?.src || '',
+        photos: photos
+      });
+
+      document.getElementById('batchEventMsg').textContent = `✓ Event created with ${files.length} photos!`;
+      document.getElementById('batchEventMsg').className = 'success';
+      document.getElementById('uploadEventFiles').value = '';
+      document.getElementById('batchEventName').value = '';
+      document.getElementById('batchEventDate').value = '';
+      document.getElementById('batchEventLoc').value = '';
+      document.getElementById('batchEventChar').value = '';
+      document.getElementById('batchEventSeries').value = '';
+      document.getElementById('batchEventHandle').value = '';
+      document.getElementById('uploadEventBatchStatus').textContent = '';
+      loadEvents();
+      setTimeout(() => { document.getElementById('batchEventMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('batchEventMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('batchEventMsg').className = 'error';
+    }
+  };
+
+  // ─ Batch Upload: Collabs ─
+  window.saveBatchCollab = async () => {
+    const files = document.getElementById('uploadCollabFiles').files;
+    const name = document.getElementById('batchCollabName').value;
+    const handle = document.getElementById('batchCollabHandle').value;
+
+    if (!files.length || !name || !handle) {
+      document.getElementById('batchCollabMsg').textContent = 'Please fill in all fields and select photos';
+      document.getElementById('batchCollabMsg').className = 'error';
+      return;
+    }
+
+    const status = document.getElementById('uploadCollabBatchStatus');
+    status.textContent = `Uploading ${files.length} photos...`;
+
+    try {
+      const sortedFiles = Array.from(files).sort((a, b) => {
+        const aNum = parseInt(a.name.match(/\d+/)?.[0] || 999);
+        const bNum = parseInt(b.name.match(/\d+/)?.[0] || 999);
+        return aNum - bNum;
+      });
+
+      const photos = [];
+      for (let i = 0; i < sortedFiles.length; i++) {
+        const file = sortedFiles[i];
+        status.textContent = `Uploading ${i + 1}/${sortedFiles.length}...`;
+        const storageRef = ref(storage, `photos/collabs/${Date.now()}_${i}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        photos.push({ src: url });
+      }
+
+      await addDoc(collection(db, 'collaborators'), {
+        name: name,
+        handle: handle,
+        bio: '',
+        cover: photos[0]?.src || '',
+        gankUrl: '',
+        photos: photos
+      });
+
+      document.getElementById('batchCollabMsg').textContent = `✓ Collaborator added with ${files.length} photos!`;
+      document.getElementById('batchCollabMsg').className = 'success';
+      document.getElementById('uploadCollabFiles').value = '';
+      document.getElementById('batchCollabName').value = '';
+      document.getElementById('batchCollabHandle').value = '';
+      document.getElementById('uploadCollabBatchStatus').textContent = '';
+      loadCollabs();
+      setTimeout(() => { document.getElementById('batchCollabMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('batchCollabMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('batchCollabMsg').className = 'error';
+    }
+  };
+
   // ─ Collabs ─
   window.saveCollab = async () => {
     const name = document.getElementById('collabName').value;
@@ -717,7 +991,7 @@
     }
   });
 
-  // Batch upload drag & drop
+  // Batch upload drag & drop - Studio
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
     document.getElementById('uploadStudioBatch').addEventListener(evt, e => {
       e.preventDefault();
@@ -734,6 +1008,66 @@
     document.getElementById('uploadStudioBatch').classList.remove('dragging');
     if (e.dataTransfer.files.length) {
       document.getElementById('uploadStudioFiles').files = e.dataTransfer.files;
+    }
+  });
+
+  // Batch upload drag & drop - Featured
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+    document.getElementById('uploadFeaturedBatch').addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+  document.getElementById('uploadFeaturedBatch').addEventListener('dragover', () => {
+    document.getElementById('uploadFeaturedBatch').classList.add('dragging');
+  });
+  document.getElementById('uploadFeaturedBatch').addEventListener('dragleave', () => {
+    document.getElementById('uploadFeaturedBatch').classList.remove('dragging');
+  });
+  document.getElementById('uploadFeaturedBatch').addEventListener('drop', (e) => {
+    document.getElementById('uploadFeaturedBatch').classList.remove('dragging');
+    if (e.dataTransfer.files.length) {
+      document.getElementById('uploadFeaturedFiles').files = e.dataTransfer.files;
+    }
+  });
+
+  // Batch upload drag & drop - Events
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+    document.getElementById('uploadEventBatch').addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+  document.getElementById('uploadEventBatch').addEventListener('dragover', () => {
+    document.getElementById('uploadEventBatch').classList.add('dragging');
+  });
+  document.getElementById('uploadEventBatch').addEventListener('dragleave', () => {
+    document.getElementById('uploadEventBatch').classList.remove('dragging');
+  });
+  document.getElementById('uploadEventBatch').addEventListener('drop', (e) => {
+    document.getElementById('uploadEventBatch').classList.remove('dragging');
+    if (e.dataTransfer.files.length) {
+      document.getElementById('uploadEventFiles').files = e.dataTransfer.files;
+    }
+  });
+
+  // Batch upload drag & drop - Collabs
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+    document.getElementById('uploadCollabBatch').addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+  document.getElementById('uploadCollabBatch').addEventListener('dragover', () => {
+    document.getElementById('uploadCollabBatch').classList.add('dragging');
+  });
+  document.getElementById('uploadCollabBatch').addEventListener('dragleave', () => {
+    document.getElementById('uploadCollabBatch').classList.remove('dragging');
+  });
+  document.getElementById('uploadCollabBatch').addEventListener('drop', (e) => {
+    document.getElementById('uploadCollabBatch').classList.remove('dragging');
+    if (e.dataTransfer.files.length) {
+      document.getElementById('uploadCollabFiles').files = e.dataTransfer.files;
     }
   });
 </script>
