@@ -314,6 +314,60 @@
       </div>
       <button id="saveEventBtn" onclick="saveEvent()" style="max-width:400px; width:100%;">Create Event</button>
       <div id="eventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+
+      <!-- Photo Management Section -->
+      <div id="eventPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
+        <h3 style="margin-bottom:15px;">Manage Photos in This Event</h3>
+        <div id="eventPhotosList" style="margin-bottom:20px;"></div>
+
+        <!-- Edit Photo Form (hidden by default) -->
+        <div id="photoEditForm" style="display:none; margin-top:20px; padding:20px; background:#1a1a1a; border:1px solid #333;">
+          <h4 style="margin-bottom:15px;">Edit Photo</h4>
+          <div class="form-group" style="max-width:400px;">
+            <label>Cosplayer Handle</label>
+            <input type="text" id="photoEditHandle" placeholder="@handle">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Character</label>
+            <input type="text" id="photoEditCharacter" placeholder="Character name">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Series</label>
+            <input type="text" id="photoEditSeries" placeholder="Series name">
+          </div>
+          <button onclick="savePhotoEdit()" style="max-width:400px; width:100%; margin-right:10px;">Update Photo</button>
+          <button onclick="cancelPhotoEdit()" style="max-width:400px; width:100%; margin-top:10px;">Cancel</button>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+        <!-- Add More Photos Section -->
+        <h3 style="margin-bottom:15px;">Add More Photos to This Event</h3>
+        <div style="background:#181818; border:1px solid #2e2e2e; padding:20px;">
+          <div class="form-group">
+            <label>Drop photos here</label>
+            <div class="upload-area" id="uploadMoreEventPhotos" onclick="document.getElementById('addMoreEventFiles').click()" style="border:2px dashed #2e2e2e; padding:30px; text-align:center; cursor:pointer; margin-bottom:20px;">
+              <p>Click or drag multiple photos</p>
+              <input type="file" id="addMoreEventFiles" accept="image/*" multiple style="display:none;">
+            </div>
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Cosplayer Handle</label>
+            <input type="text" id="addMoreHandle" placeholder="@handle">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Character</label>
+            <input type="text" id="addMoreCharacter" placeholder="Character name">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Series</label>
+            <input type="text" id="addMoreSeries" placeholder="Series name">
+          </div>
+          <button onclick="addPhotosToEvent()" style="max-width:400px; width:100%;">Upload & Add Photos</button>
+          <div id="addMoreEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+        </div>
+      </div>
+
       <div class="items-list" id="eventsList"></div>
     </div>
 
@@ -372,6 +426,32 @@
       </div>
       <button id="saveStudioBtn" onclick="saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
       <div id="studioMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+
+      <!-- Studio Photo Management Section -->
+      <div id="studioPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
+        <h3 style="margin-bottom:15px;">Manage Photos in This Session</h3>
+        <div id="studioPhotosList" style="margin-bottom:20px;"></div>
+
+        <!-- Edit Studio Photo Form (hidden by default) -->
+        <div id="studioPhotoEditForm" style="display:none; margin-top:20px; padding:20px; background:#1a1a1a; border:1px solid #333;">
+          <h4 style="margin-bottom:15px;">Edit Studio Photo</h4>
+          <div class="form-group" style="max-width:400px;">
+            <label>Cosplayer Handle</label>
+            <input type="text" id="studioPhotoEditHandle" placeholder="@handle">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Character</label>
+            <input type="text" id="studioPhotoEditCharacter" placeholder="Character name">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Series</label>
+            <input type="text" id="studioPhotoEditSeries" placeholder="Series name">
+          </div>
+          <button onclick="saveStudioPhotoEdit()" style="max-width:400px; width:100%; margin-right:10px;">Update Photo</button>
+          <button onclick="cancelStudioPhotoEdit()" style="max-width:400px; width:100%; margin-top:10px;">Cancel</button>
+        </div>
+      </div>
+
       <div class="items-list" id="studioList"></div>
     </div>
 
@@ -418,6 +498,52 @@
       </div>
       <button id="saveCollabBtn" onclick="saveCollab()" style="max-width:400px; width:100%;">Add Collaborator</button>
       <div id="collabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+
+      <!-- Collab Photo Management Section -->
+      <div id="collabPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
+        <h3 style="margin-bottom:15px;">Manage Photos for This Collaborator</h3>
+        <div id="collabPhotosList" style="margin-bottom:20px;"></div>
+
+        <!-- Edit Collab Photo Form (hidden by default) -->
+        <div id="collabPhotoEditForm" style="display:none; margin-top:20px; padding:20px; background:#1a1a1a; border:1px solid #333;">
+          <h4 style="margin-bottom:15px;">Edit Photo</h4>
+          <div class="form-group" style="max-width:400px;">
+            <label>Character</label>
+            <input type="text" id="collabPhotoEditCharacter" placeholder="Character name">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Series</label>
+            <input type="text" id="collabPhotoEditSeries" placeholder="Series name">
+          </div>
+          <button onclick="saveCollabPhotoEdit()" style="max-width:400px; width:100%; margin-right:10px;">Update Photo</button>
+          <button onclick="cancelCollabPhotoEdit()" style="max-width:400px; width:100%; margin-top:10px;">Cancel</button>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+        <!-- Add More Photos Section -->
+        <h3 style="margin-bottom:15px;">Add More Photos to This Collaborator</h3>
+        <div style="background:#181818; border:1px solid #2e2e2e; padding:20px;">
+          <div class="form-group">
+            <label>Drop photos here</label>
+            <div class="upload-area" id="uploadMoreCollabPhotos" onclick="document.getElementById('addMoreCollabFiles').click()" style="border:2px dashed #2e2e2e; padding:30px; text-align:center; cursor:pointer; margin-bottom:20px;">
+              <p>Click or drag multiple photos</p>
+              <input type="file" id="addMoreCollabFiles" accept="image/*" multiple style="display:none;">
+            </div>
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Character</label>
+            <input type="text" id="addMoreCollabCharacter" placeholder="Character name">
+          </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Series</label>
+            <input type="text" id="addMoreCollabSeries" placeholder="Series name">
+          </div>
+          <button onclick="addPhotosToCollab()" style="max-width:400px; width:100%;">Upload & Add Photos</button>
+          <div id="addMoreCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+        </div>
+      </div>
+
       <div class="items-list" id="collabList"></div>
     </div>
   </div>
@@ -603,6 +729,11 @@
     document.getElementById('saveEventBtn').textContent = 'Update Event';
     document.getElementById('saveEventBtn').onclick = () => updateEvent(id);
     document.getElementById('eventName').focus();
+
+    // Show photo management section
+    document.getElementById('eventPhotosSection').style.display = 'block';
+    window.currentEditingEventId = id;
+    displayEventPhotos(id);
   };
 
   window.updateEvent = async (id) => {
@@ -639,6 +770,286 @@
     if (confirm('Delete this event?')) {
       await deleteDoc(doc(db, 'events', id));
       loadEvents();
+    }
+  };
+
+  // ─ Event Photo Management ─
+  window.displayEventPhotos = async (id) => {
+    const docSnap = await getDoc(doc(db, 'events', id));
+    const event = docSnap.data();
+    const photos = event.photos || [];
+
+    // Group photos by cosplayer handle
+    const grouped = {};
+    photos.forEach((photo, index) => {
+      const handle = photo.coser || 'Unknown';
+      if (!grouped[handle]) grouped[handle] = [];
+      grouped[handle].push({ ...photo, index });
+    });
+
+    // Build HTML for grouped photos
+    let html = '';
+    Object.entries(grouped).forEach(([handle, coserPhotos]) => {
+      html += `<div style="margin-bottom:20px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
+        <div style="font-weight:bold; margin-bottom:10px; color:#aaa;">Cosplayer: ${handle}</div>`;
+      coserPhotos.forEach(p => {
+        html += `
+          <div style="margin-bottom:10px; padding:10px; background:#0d0d0d; border:1px solid #222; border-radius:3px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1;">
+              <div style="font-size:0.85rem; color:#888;">${p.character || 'N/A'} — ${p.series || 'N/A'}</div>
+              <img src="${p.src}" style="max-width:80px; max-height:60px; margin-top:5px; border-radius:3px;" />
+            </div>
+            <div style="display:flex; gap:5px;">
+              <button onclick="editPhoto('${id}', ${p.index})" style="padding:5px 10px; font-size:0.8rem;">Edit</button>
+              <button onclick="deletePhoto('${id}', ${p.index})" style="padding:5px 10px; font-size:0.8rem; background:#8b0000; color:#fff;">Delete</button>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+    });
+
+    document.getElementById('eventPhotosList').innerHTML = html || '<p style="color:#666;">No photos in this event</p>';
+  };
+
+  window.editPhoto = (eventId, photoIndex) => {
+    window.currentPhotoEventId = eventId;
+    window.currentPhotoIndex = photoIndex;
+
+    // Get the photo data from the DOM (we have it in grouped display)
+    // But we need to fetch fresh from Firestore for accuracy
+    getDoc(doc(db, 'events', eventId)).then(docSnap => {
+      const event = docSnap.data();
+      const photo = event.photos[photoIndex];
+
+      document.getElementById('photoEditHandle').value = photo.coser || '';
+      document.getElementById('photoEditCharacter').value = photo.character || '';
+      document.getElementById('photoEditSeries').value = photo.series || '';
+      document.getElementById('photoEditForm').style.display = 'block';
+    });
+  };
+
+  window.savePhotoEdit = async () => {
+    const eventId = window.currentPhotoEventId;
+    const photoIndex = window.currentPhotoIndex;
+
+    const handle = document.getElementById('photoEditHandle').value;
+    const character = document.getElementById('photoEditCharacter').value;
+    const series = document.getElementById('photoEditSeries').value;
+
+    if (!handle || !character || !series) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const photos = [...event.photos];
+
+      photos[photoIndex] = {
+        ...photos[photoIndex],
+        coser: handle,
+        character: character,
+        series: series
+      };
+
+      await updateDoc(doc(db, 'events', eventId), { photos });
+      document.getElementById('photoEditForm').style.display = 'none';
+      await displayEventPhotos(eventId);
+      alert('✓ Photo updated!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  window.cancelPhotoEdit = () => {
+    document.getElementById('photoEditForm').style.display = 'none';
+    document.getElementById('photoEditHandle').value = '';
+    document.getElementById('photoEditCharacter').value = '';
+    document.getElementById('photoEditSeries').value = '';
+  };
+
+  window.deletePhoto = async (eventId, photoIndex) => {
+    if (!confirm('Delete this photo?')) return;
+
+    try {
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const photos = event.photos.filter((_, i) => i !== photoIndex);
+
+      await updateDoc(doc(db, 'events', eventId), { photos });
+      await displayEventPhotos(eventId);
+      alert('✓ Photo deleted!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  window.addPhotosToEvent = async () => {
+    const eventId = window.currentEditingEventId;
+    const files = document.getElementById('addMoreEventFiles').files;
+    const handle = document.getElementById('addMoreHandle').value;
+    const character = document.getElementById('addMoreCharacter').value;
+    const series = document.getElementById('addMoreSeries').value;
+
+    if (!files.length || !handle || !character || !series) {
+      document.getElementById('addMoreEventMsg').textContent = 'Please select photos and fill in all fields';
+      document.getElementById('addMoreEventMsg').className = 'error';
+      return;
+    }
+
+    const status = document.getElementById('addMoreEventMsg');
+    status.textContent = `Uploading ${files.length} photos...`;
+
+    try {
+      // Sort files by filename numerically
+      const sortedFiles = Array.from(files).sort((a, b) => {
+        const aNum = parseInt(a.name.match(/\d+/)?.[0] || 999);
+        const bNum = parseInt(b.name.match(/\d+/)?.[0] || 999);
+        return aNum - bNum;
+      });
+
+      const newPhotos = [];
+      for (let i = 0; i < sortedFiles.length; i++) {
+        const file = sortedFiles[i];
+        status.textContent = `Uploading ${i + 1}/${sortedFiles.length}...`;
+
+        const storageRef = ref(storage, `photos/events/${Date.now()}_${i}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        newPhotos.push({
+          src: url,
+          coser: handle,
+          character: character,
+          series: series
+        });
+      }
+
+      // Fetch event and append photos
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const existingPhotos = event.photos || [];
+
+      await updateDoc(doc(db, 'events', eventId), {
+        photos: [...existingPhotos, ...newPhotos]
+      });
+
+      status.textContent = `✓ ${files.length} photos added!`;
+      status.className = 'success';
+      document.getElementById('addMoreEventFiles').value = '';
+      document.getElementById('addMoreHandle').value = '';
+      document.getElementById('addMoreCharacter').value = '';
+      document.getElementById('addMoreSeries').value = '';
+      await displayEventPhotos(eventId);
+      setTimeout(() => { status.textContent = ''; }, 3000);
+    } catch (err) {
+      status.textContent = 'Error: ' + err.message;
+      status.className = 'error';
+    }
+  };
+
+  // ─ Studio Photo Management ─
+  window.displayStudioPhotos = async (id) => {
+    const docSnap = await getDoc(doc(db, 'studio', id));
+    const session = docSnap.data();
+    const cosplayers = session.cosplayers || [];
+
+    let html = '';
+    cosplayers.forEach((coser, cosplayerIdx) => {
+      const photos = coser.photos || [];
+      html += `<div style="margin-bottom:20px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
+        <div style="font-weight:bold; margin-bottom:10px; color:#aaa;">Cosplayer: ${coser.handle}</div>`;
+      photos.forEach((p, photoIdx) => {
+        html += `
+          <div style="margin-bottom:10px; padding:10px; background:#0d0d0d; border:1px solid #222; border-radius:3px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1;">
+              <div style="font-size:0.85rem; color:#888;">${p.character || 'N/A'} — ${p.series || 'N/A'}</div>
+              <img src="${p.src}" style="max-width:80px; max-height:60px; margin-top:5px; border-radius:3px;" />
+            </div>
+            <div style="display:flex; gap:5px;">
+              <button onclick="editStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="padding:5px 10px; font-size:0.8rem;">Edit</button>
+              <button onclick="deleteStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="padding:5px 10px; font-size:0.8rem; background:#8b0000; color:#fff;">Delete</button>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+    });
+
+    document.getElementById('studioPhotosList').innerHTML = html || '<p style="color:#666;">No photos in this session</p>';
+  };
+
+  window.editStudioPhoto = async (sessionId, cosplayerIdx, photoIdx) => {
+    window.currentStudioSessionId = sessionId;
+    window.currentStudioCosplayerIdx = cosplayerIdx;
+    window.currentStudioPhotoIdx = photoIdx;
+
+    const docSnap = await getDoc(doc(db, 'studio', sessionId));
+    const session = docSnap.data();
+    const photo = session.cosplayers[cosplayerIdx].photos[photoIdx];
+
+    document.getElementById('studioPhotoEditHandle').value = photo.coser || '';
+    document.getElementById('studioPhotoEditCharacter').value = photo.character || '';
+    document.getElementById('studioPhotoEditSeries').value = photo.series || '';
+    document.getElementById('studioPhotoEditForm').style.display = 'block';
+  };
+
+  window.saveStudioPhotoEdit = async () => {
+    const sessionId = window.currentStudioSessionId;
+    const cosplayerIdx = window.currentStudioCosplayerIdx;
+    const photoIdx = window.currentStudioPhotoIdx;
+
+    const handle = document.getElementById('studioPhotoEditHandle').value;
+    const character = document.getElementById('studioPhotoEditCharacter').value;
+    const series = document.getElementById('studioPhotoEditSeries').value;
+
+    if (!handle || !character || !series) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'studio', sessionId));
+      const session = docSnap.data();
+      const cosplayers = JSON.parse(JSON.stringify(session.cosplayers));
+
+      cosplayers[cosplayerIdx].photos[photoIdx] = {
+        ...cosplayers[cosplayerIdx].photos[photoIdx],
+        coser: handle,
+        character: character,
+        series: series
+      };
+
+      await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
+      document.getElementById('studioPhotoEditForm').style.display = 'none';
+      await displayStudioPhotos(sessionId);
+      alert('✓ Photo updated!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  window.cancelStudioPhotoEdit = () => {
+    document.getElementById('studioPhotoEditForm').style.display = 'none';
+    document.getElementById('studioPhotoEditHandle').value = '';
+    document.getElementById('studioPhotoEditCharacter').value = '';
+    document.getElementById('studioPhotoEditSeries').value = '';
+  };
+
+  window.deleteStudioPhoto = async (sessionId, cosplayerIdx, photoIdx) => {
+    if (!confirm('Delete this photo?')) return;
+
+    try {
+      const docSnap = await getDoc(doc(db, 'studio', sessionId));
+      const session = docSnap.data();
+      const cosplayers = JSON.parse(JSON.stringify(session.cosplayers));
+
+      cosplayers[cosplayerIdx].photos.splice(photoIdx, 1);
+
+      await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
+      await displayStudioPhotos(sessionId);
+      alert('✓ Photo deleted!');
+    } catch (err) {
+      alert('Error: ' + err.message);
     }
   };
 
@@ -778,6 +1189,11 @@
     document.getElementById('saveStudioBtn').textContent = 'Update Session';
     document.getElementById('saveStudioBtn').onclick = () => updateStudio(id);
     document.getElementById('studioName').focus();
+
+    // Show photo management section
+    document.getElementById('studioPhotosSection').style.display = 'block';
+    window.currentEditingStudioId = id;
+    displayStudioPhotos(id);
   };
 
   window.updateStudio = async (id) => {
@@ -1105,6 +1521,11 @@
     document.getElementById('saveCollabBtn').textContent = 'Update Collaborator';
     document.getElementById('saveCollabBtn').onclick = () => updateCollab(id);
     document.getElementById('collabName').focus();
+
+    // Show photo management section
+    document.getElementById('collabPhotosSection').style.display = 'block';
+    window.currentEditingCollabId = id;
+    displayCollabPhotos(id);
   };
 
   window.updateCollab = async (id) => {
@@ -1139,6 +1560,157 @@
     if (confirm('Delete this collaborator?')) {
       await deleteDoc(doc(db, 'collaborators', id));
       loadCollabs();
+    }
+  };
+
+  // ─ Collab Photo Management ─
+  window.displayCollabPhotos = async (id) => {
+    const docSnap = await getDoc(doc(db, 'collaborators', id));
+    const collab = docSnap.data();
+    const photos = collab.photos || [];
+
+    let html = '';
+    photos.forEach((photo, index) => {
+      html += `
+        <div style="margin-bottom:10px; padding:10px; background:#0d0d0d; border:1px solid #222; border-radius:3px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="flex:1;">
+            <div style="font-size:0.85rem; color:#888;">${photo.character || 'N/A'} — ${photo.series || 'N/A'}</div>
+            <img src="${photo.src}" style="max-width:80px; max-height:60px; margin-top:5px; border-radius:3px;" />
+          </div>
+          <div style="display:flex; gap:5px;">
+            <button onclick="editCollabPhoto('${id}', ${index})" style="padding:5px 10px; font-size:0.8rem;">Edit</button>
+            <button onclick="deleteCollabPhoto('${id}', ${index})" style="padding:5px 10px; font-size:0.8rem; background:#8b0000; color:#fff;">Delete</button>
+          </div>
+        </div>`;
+    });
+
+    document.getElementById('collabPhotosList').innerHTML = html || '<p style="color:#666;">No photos for this collaborator</p>';
+  };
+
+  window.editCollabPhoto = async (collabId, photoIndex) => {
+    window.currentCollabId = collabId;
+    window.currentCollabPhotoIndex = photoIndex;
+
+    const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+    const collab = docSnap.data();
+    const photo = collab.photos[photoIndex];
+
+    document.getElementById('collabPhotoEditCharacter').value = photo.character || '';
+    document.getElementById('collabPhotoEditSeries').value = photo.series || '';
+    document.getElementById('collabPhotoEditForm').style.display = 'block';
+  };
+
+  window.saveCollabPhotoEdit = async () => {
+    const collabId = window.currentCollabId;
+    const photoIndex = window.currentCollabPhotoIndex;
+
+    const character = document.getElementById('collabPhotoEditCharacter').value;
+    const series = document.getElementById('collabPhotoEditSeries').value;
+
+    if (!character || !series) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+      const collab = docSnap.data();
+      const photos = [...collab.photos];
+
+      photos[photoIndex] = {
+        ...photos[photoIndex],
+        character: character,
+        series: series
+      };
+
+      await updateDoc(doc(db, 'collaborators', collabId), { photos });
+      document.getElementById('collabPhotoEditForm').style.display = 'none';
+      await displayCollabPhotos(collabId);
+      alert('✓ Photo updated!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  window.cancelCollabPhotoEdit = () => {
+    document.getElementById('collabPhotoEditForm').style.display = 'none';
+    document.getElementById('collabPhotoEditCharacter').value = '';
+    document.getElementById('collabPhotoEditSeries').value = '';
+  };
+
+  window.deleteCollabPhoto = async (collabId, photoIndex) => {
+    if (!confirm('Delete this photo?')) return;
+
+    try {
+      const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+      const collab = docSnap.data();
+      const photos = collab.photos.filter((_, i) => i !== photoIndex);
+
+      await updateDoc(doc(db, 'collaborators', collabId), { photos });
+      await displayCollabPhotos(collabId);
+      alert('✓ Photo deleted!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  window.addPhotosToCollab = async () => {
+    const collabId = window.currentEditingCollabId;
+    const files = document.getElementById('addMoreCollabFiles').files;
+    const character = document.getElementById('addMoreCollabCharacter').value;
+    const series = document.getElementById('addMoreCollabSeries').value;
+
+    if (!files.length || !character || !series) {
+      document.getElementById('addMoreCollabMsg').textContent = 'Please select photos and fill in all fields';
+      document.getElementById('addMoreCollabMsg').className = 'error';
+      return;
+    }
+
+    const status = document.getElementById('addMoreCollabMsg');
+    status.textContent = `Uploading ${files.length} photos...`;
+
+    try {
+      // Sort files by filename numerically
+      const sortedFiles = Array.from(files).sort((a, b) => {
+        const aNum = parseInt(a.name.match(/\d+/)?.[0] || 999);
+        const bNum = parseInt(b.name.match(/\d+/)?.[0] || 999);
+        return aNum - bNum;
+      });
+
+      const newPhotos = [];
+      for (let i = 0; i < sortedFiles.length; i++) {
+        const file = sortedFiles[i];
+        status.textContent = `Uploading ${i + 1}/${sortedFiles.length}...`;
+
+        const storageRef = ref(storage, `photos/collaborators/${Date.now()}_${i}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        newPhotos.push({
+          src: url,
+          character: character,
+          series: series
+        });
+      }
+
+      // Fetch collab and append photos
+      const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+      const collab = docSnap.data();
+      const existingPhotos = collab.photos || [];
+
+      await updateDoc(doc(db, 'collaborators', collabId), {
+        photos: [...existingPhotos, ...newPhotos]
+      });
+
+      status.textContent = `✓ ${files.length} photos added!`;
+      status.className = 'success';
+      document.getElementById('addMoreCollabFiles').value = '';
+      document.getElementById('addMoreCollabCharacter').value = '';
+      document.getElementById('addMoreCollabSeries').value = '';
+      await displayCollabPhotos(collabId);
+      setTimeout(() => { status.textContent = ''; }, 3000);
+    } catch (err) {
+      status.textContent = 'Error: ' + err.message;
+      status.className = 'error';
     }
   };
 
