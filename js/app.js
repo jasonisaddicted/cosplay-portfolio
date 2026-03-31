@@ -3,16 +3,16 @@
 //  Handles: nav scroll, lightbox, page init routing
 // ============================================================
 
-// ── Site Identity (runs immediately on script load) ───────
-(function () {
+// ── Site Identity (runs after Firebase loads) ───────
+function initSiteIdentity() {
   const navBrand = document.getElementById('nav-brand');
-  if (navBrand) {
+  if (navBrand && window.CONFIG) {
     navBrand.innerHTML =
       CONFIG.photographer +
       (CONFIG.subtitle ? `<span class="nav__brand-sub">${CONFIG.subtitle}</span>` : '');
   }
   const footerBrand = document.getElementById('footer-brand');
-  if (footerBrand) {
+  if (footerBrand && window.CONFIG) {
     footerBrand.innerHTML =
       CONFIG.photographer +
       (CONFIG.subtitle ? ` <span class="footer__brand-sub">${CONFIG.subtitle}</span>` : '');
@@ -21,7 +21,7 @@
   if (footerCopy) {
     footerCopy.textContent = `© ${new Date().getFullYear()} · All rights reserved`;
   }
-})();
+}
 
 // ── Nav scroll behavior ──────────────────────────────────────
 (function () {
@@ -742,7 +742,9 @@ function initCollabs() {
 }
 
 // ── Init ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+// Wait for Firebase to load, then initialize
+window.addEventListener('firebase-config-loaded', () => {
+  initSiteIdentity();
   initHome();
   initEvents();
   initStudio();
