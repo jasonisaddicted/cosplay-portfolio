@@ -1231,6 +1231,7 @@
   };
 
   window.editStudioPhoto = async (sessionId, cosplayerIdx, photoIdx) => {
+    window.currentPhotoType = 'studio';
     window.currentStudioSessionId = sessionId;
     window.currentStudioCosplayerIdx = cosplayerIdx;
     window.currentStudioPhotoIdx = photoIdx;
@@ -1239,10 +1240,13 @@
     const session = docSnap.data();
     const photo = session.cosplayers[cosplayerIdx].photos[photoIdx];
 
-    document.getElementById('studioPhotoEditHandle').value = photo.coser || '';
-    document.getElementById('studioPhotoEditCharacter').value = photo.character || '';
-    document.getElementById('studioPhotoEditSeries').value = photo.series || '';
-    document.getElementById('studioPhotoEditForm').style.display = 'block';
+    document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditHandle').value = photo.coser || '';
+    document.getElementById('photoEditHandle').style.display = 'block';
+    document.getElementById('photoEditHandle').parentElement.style.display = 'block';
+    document.getElementById('photoEditCharacter').value = photo.character || '';
+    document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditModal').style.display = 'flex';
   };
 
   window.saveStudioPhotoEdit = async () => {
@@ -2050,6 +2054,7 @@
   };
 
   window.editCollabPhoto = async (collabId, photoIndex) => {
+    window.currentPhotoType = 'collab';
     window.currentCollabId = collabId;
     window.currentCollabPhotoIndex = photoIndex;
 
@@ -2057,9 +2062,13 @@
     const collab = docSnap.data();
     const photo = collab.photos[photoIndex];
 
-    document.getElementById('collabPhotoEditCharacter').value = photo.character || '';
-    document.getElementById('collabPhotoEditSeries').value = photo.series || '';
-    document.getElementById('collabPhotoEditForm').style.display = 'block';
+    document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditHandle').value = '';
+    document.getElementById('photoEditHandle').style.display = 'none';
+    document.getElementById('photoEditHandle').parentElement.style.display = 'none';
+    document.getElementById('photoEditCharacter').value = photo.character || '';
+    document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditModal').style.display = 'flex';
   };
 
   window.saveCollabPhotoEdit = async () => {
