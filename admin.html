@@ -79,6 +79,14 @@
     input:focus, textarea:focus, select:focus { outline: none; border-color: #c8a46e; }
     textarea { resize: vertical; min-height: 80px; }
 
+    /* Hide number input spinners */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+
     /* File upload */
     .upload-area {
       border: 2px dashed #2e2e2e;
@@ -781,10 +789,11 @@
               <div style="font-size:0.85rem; color:#888;">${p.character || 'N/A'} — ${p.series || 'N/A'}</div>
               <img src="${p.src}" style="max-width:80px; max-height:60px; margin-top:5px; border-radius:3px;" />
             </div>
-            <div style="display:flex; gap:5px; align-items:center;">
+            <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
               <div style="display:flex; gap:3px; align-items:center;">
                 <label style="margin:0; font-size:0.75rem; color:#999;">Pos:</label>
-                <input type="number" min="1" max="100" value="${p.index + 1}" class="eventPhotoPosition" style="width:50px; padding:4px; font-size:0.8rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+                <input type="number" min="1" max="100" value="${p.index + 1}" data-original="${p.index + 1}" class="eventPhotoPosition" data-photo-id="event_${id}_${p.index}" style="width:50px; padding:4px; font-size:0.8rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+                <button class="eventPhotoApplyBtn" data-photo-id="event_${id}_${p.index}" onclick="applyEventPhotoPositionChange('event_${id}_${p.index}')" style="padding:4px 8px; font-size:0.75rem; background:#555; color:#999; border:none; border-radius:2px; cursor:not-allowed;" disabled>Apply</button>
               </div>
               <button onclick="editPhoto('${id}', ${p.index})" style="padding:5px 10px; font-size:0.8rem;">Edit</button>
               <button onclick="deletePhoto('${id}', ${p.index})" style="padding:5px 10px; font-size:0.8rem; background:#8b0000; color:#fff;">Delete</button>
@@ -795,6 +804,70 @@
     });
 
     document.getElementById('eventPhotosList').innerHTML = html || '<p style="color:#666;">No photos in this event</p>';
+    setupEventPhotoListeners();
+  };
+
+  window.setupEventPhotoListeners = () => {
+    document.querySelectorAll('.eventPhotoPosition').forEach(input => {
+      input.addEventListener('focus', (e) => {
+        e.target.select();
+      });
+      input.addEventListener('input', (e) => {
+        const photoId = e.target.getAttribute('data-photo-id');
+        const btn = document.querySelector(`.eventPhotoApplyBtn[data-photo-id="${photoId}"]`);
+        const original = e.target.getAttribute('data-original');
+        if (e.target.value !== original) {
+          btn.disabled = false;
+          btn.style.background = '#22aa22';
+          btn.style.color = '#fff';
+          btn.style.cursor = 'pointer';
+        } else {
+          btn.disabled = true;
+          btn.style.background = '#555';
+          btn.style.color = '#999';
+          btn.style.cursor = 'not-allowed';
+        }
+      });
+    });
+  };
+
+  window.applyEventPhotoPositionChange = async (photoId) => {
+    const parts = photoId.split('_');
+    const eventId = parts[1];
+    const photoIndex = parseInt(parts[2]);
+
+    const input = document.querySelector(`.eventPhotoPosition[data-photo-id="${photoId}"]`);
+    const newPosition = parseInt(input.value);
+    const original = parseInt(input.getAttribute('data-original'));
+
+    if (newPosition === original) return;
+    if (newPosition < 1 || newPosition > 100) {
+      alert('Position must be between 1 and 100');
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const photos = [...event.photos];
+
+      // Get the photo to move
+      const photoToMove = photos[photoIndex];
+
+      // Remove from current position
+      photos.splice(photoIndex, 1);
+
+      // Insert at new position (adjusted for removal)
+      const insertPos = Math.min(newPosition - 1, photos.length);
+      photos.splice(insertPos, 0, photoToMove);
+
+      await updateDoc(doc(db, 'events', eventId), { photos });
+      await displayEventPhotos(eventId);
+      alert('✓ Photo position updated!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+      input.value = original;
+    }
   };
 
   window.editPhoto = async (eventId, photoIndex) => {
@@ -1074,10 +1147,11 @@
               <div style="font-size:0.85rem; color:#888;">${p.character || 'N/A'} — ${p.series || 'N/A'}</div>
               <img src="${p.src}" style="max-width:80px; max-height:60px; margin-top:5px; border-radius:3px;" />
             </div>
-            <div style="display:flex; gap:5px; align-items:center;">
+            <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
               <div style="display:flex; gap:3px; align-items:center;">
                 <label style="margin:0; font-size:0.75rem; color:#999;">Pos:</label>
-                <input type="number" min="1" max="100" value="${photoIdx + 1}" class="studioPhotoPosition" style="width:50px; padding:4px; font-size:0.8rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+                <input type="number" min="1" max="100" value="${photoIdx + 1}" data-original="${photoIdx + 1}" class="studioPhotoPosition" data-photo-id="studio_${id}_${cosplayerIdx}_${photoIdx}" style="width:50px; padding:4px; font-size:0.8rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+                <button class="studioPhotoApplyBtn" data-photo-id="studio_${id}_${cosplayerIdx}_${photoIdx}" onclick="applyStudioPhotoPositionChange('studio_${id}_${cosplayerIdx}_${photoIdx}')" style="padding:4px 8px; font-size:0.75rem; background:#555; color:#999; border:none; border-radius:2px; cursor:not-allowed;" disabled>Apply</button>
               </div>
               <button onclick="editStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="padding:5px 10px; font-size:0.8rem;">Edit</button>
               <button onclick="deleteStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="padding:5px 10px; font-size:0.8rem; background:#8b0000; color:#fff;">Delete</button>
@@ -1088,6 +1162,72 @@
     });
 
     document.getElementById('studioPhotosList').innerHTML = html || '<p style="color:#666;">No photos in this session</p>';
+    setupStudioPhotoListeners();
+  };
+
+  window.setupStudioPhotoListeners = () => {
+    document.querySelectorAll('.studioPhotoPosition').forEach(input => {
+      input.addEventListener('focus', (e) => {
+        e.target.select();
+      });
+      input.addEventListener('input', (e) => {
+        const photoId = e.target.getAttribute('data-photo-id');
+        const btn = document.querySelector(`.studioPhotoApplyBtn[data-photo-id="${photoId}"]`);
+        const original = e.target.getAttribute('data-original');
+        if (e.target.value !== original) {
+          btn.disabled = false;
+          btn.style.background = '#22aa22';
+          btn.style.color = '#fff';
+          btn.style.cursor = 'pointer';
+        } else {
+          btn.disabled = true;
+          btn.style.background = '#555';
+          btn.style.color = '#999';
+          btn.style.cursor = 'not-allowed';
+        }
+      });
+    });
+  };
+
+  window.applyStudioPhotoPositionChange = async (photoId) => {
+    const parts = photoId.split('_');
+    const sessionId = parts[1];
+    const cosplayerIdx = parseInt(parts[2]);
+    const photoIdx = parseInt(parts[3]);
+
+    const input = document.querySelector(`.studioPhotoPosition[data-photo-id="${photoId}"]`);
+    const newPosition = parseInt(input.value);
+    const original = parseInt(input.getAttribute('data-original'));
+
+    if (newPosition === original) return;
+    if (newPosition < 1 || newPosition > 100) {
+      alert('Position must be between 1 and 100');
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'studio', sessionId));
+      const session = docSnap.data();
+      const cosplayers = JSON.parse(JSON.stringify(session.cosplayers));
+      const photos = cosplayers[cosplayerIdx].photos;
+
+      // Get the photo to move
+      const photoToMove = photos[photoIdx];
+
+      // Remove from current position
+      photos.splice(photoIdx, 1);
+
+      // Insert at new position (adjusted for removal)
+      const insertPos = Math.min(newPosition - 1, photos.length);
+      photos.splice(insertPos, 0, photoToMove);
+
+      await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
+      await displayStudioPhotos(sessionId);
+      alert('✓ Photo position updated!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+      input.value = original;
+    }
   };
 
   window.editStudioPhoto = async (sessionId, cosplayerIdx, photoIdx) => {
@@ -1830,10 +1970,11 @@
             <div style="font-size:0.85rem; color:#888;">${photo.character || 'N/A'} — ${photo.series || 'N/A'}</div>
             <img src="${photo.src}" style="max-width:80px; max-height:60px; margin-top:5px; border-radius:3px;" />
           </div>
-          <div style="display:flex; gap:5px; align-items:center;">
+          <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
             <div style="display:flex; gap:3px; align-items:center;">
               <label style="margin:0; font-size:0.75rem; color:#999;">Pos:</label>
-              <input type="number" min="1" max="100" value="${index + 1}" class="collabPhotoPosition" style="width:50px; padding:4px; font-size:0.8rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+              <input type="number" min="1" max="100" value="${index + 1}" data-original="${index + 1}" class="collabPhotoPosition" data-photo-id="collab_${id}_${index}" style="width:50px; padding:4px; font-size:0.8rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+              <button class="collabPhotoApplyBtn" data-photo-id="collab_${id}_${index}" onclick="applyCollabPhotoPositionChange('collab_${id}_${index}')" style="padding:4px 8px; font-size:0.75rem; background:#555; color:#999; border:none; border-radius:2px; cursor:not-allowed;" disabled>Apply</button>
             </div>
             <button onclick="editCollabPhoto('${id}', ${index})" style="padding:5px 10px; font-size:0.8rem;">Edit</button>
             <button onclick="deleteCollabPhoto('${id}', ${index})" style="padding:5px 10px; font-size:0.8rem; background:#8b0000; color:#fff;">Delete</button>
@@ -1842,6 +1983,70 @@
     });
 
     document.getElementById('collabPhotosList').innerHTML = html || '<p style="color:#666;">No photos for this collaborator</p>';
+    setupCollabPhotoListeners();
+  };
+
+  window.setupCollabPhotoListeners = () => {
+    document.querySelectorAll('.collabPhotoPosition').forEach(input => {
+      input.addEventListener('focus', (e) => {
+        e.target.select();
+      });
+      input.addEventListener('input', (e) => {
+        const photoId = e.target.getAttribute('data-photo-id');
+        const btn = document.querySelector(`.collabPhotoApplyBtn[data-photo-id="${photoId}"]`);
+        const original = e.target.getAttribute('data-original');
+        if (e.target.value !== original) {
+          btn.disabled = false;
+          btn.style.background = '#22aa22';
+          btn.style.color = '#fff';
+          btn.style.cursor = 'pointer';
+        } else {
+          btn.disabled = true;
+          btn.style.background = '#555';
+          btn.style.color = '#999';
+          btn.style.cursor = 'not-allowed';
+        }
+      });
+    });
+  };
+
+  window.applyCollabPhotoPositionChange = async (photoId) => {
+    const parts = photoId.split('_');
+    const collabId = parts[1];
+    const photoIndex = parseInt(parts[2]);
+
+    const input = document.querySelector(`.collabPhotoPosition[data-photo-id="${photoId}"]`);
+    const newPosition = parseInt(input.value);
+    const original = parseInt(input.getAttribute('data-original'));
+
+    if (newPosition === original) return;
+    if (newPosition < 1 || newPosition > 100) {
+      alert('Position must be between 1 and 100');
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+      const collab = docSnap.data();
+      const photos = [...collab.photos];
+
+      // Get the photo to move
+      const photoToMove = photos[photoIndex];
+
+      // Remove from current position
+      photos.splice(photoIndex, 1);
+
+      // Insert at new position (adjusted for removal)
+      const insertPos = Math.min(newPosition - 1, photos.length);
+      photos.splice(insertPos, 0, photoToMove);
+
+      await updateDoc(doc(db, 'collaborators', collabId), { photos });
+      await displayCollabPhotos(collabId);
+      alert('✓ Photo position updated!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+      input.value = original;
+    }
   };
 
   window.editCollabPhoto = async (collabId, photoIndex) => {
