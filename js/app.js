@@ -840,7 +840,9 @@ window.showFeaturedPhotoModal = (photo) => {
 
 // ── Page: Home ───────────────────────────────────────────────
 function initHome() {
+  console.log('🏠 initHome called');
   if (!document.body.classList.contains('page-home')) return;
+  console.log('🏠 page-home class found, initializing...');
 
   const cfg = CONFIG;
   const [hero, ...picks] = cfg.featured;
@@ -893,8 +895,10 @@ function initHome() {
 
   // Featured Grid
   const gridContainer = document.getElementById('featured-grid');
+  console.log('About to populate grid:', { gridContainer: !!gridContainer, photoCount: featuredPhotos.length });
   if (gridContainer && featuredPhotos.length > 0) {
     featuredPhotos.forEach((photo, idx) => {
+      console.log('Creating grid item', idx, photo.character);
       const gridItem = document.createElement('div');
       gridItem.className = 'featured-grid-item';
       gridItem.innerHTML = `<img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">`;
@@ -904,14 +908,11 @@ function initHome() {
       });
 
       gridContainer.appendChild(gridItem);
+      console.log('Appended item', idx, 'Grid now has', gridContainer.children.length, 'children');
     });
   }
 
   const pickCount = Math.min(featuredPhotos.length, maxPicks);
-  document.querySelector('.section-header__count').textContent =
-    `${pickCount} photo${pickCount !== 1 ? 's' : ''}`;
-
-  const pickCount = Math.min(picks.length, maxPicks);
   document.querySelector('.section-header__count').textContent =
     `${pickCount} photo${pickCount !== 1 ? 's' : ''}`;
 
