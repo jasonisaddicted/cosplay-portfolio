@@ -320,25 +320,6 @@
         <h3 style="margin-bottom:15px;">Manage Photos in This Event</h3>
         <div id="eventPhotosList" style="margin-bottom:20px;"></div>
 
-        <!-- Edit Photo Form (hidden by default) -->
-        <div id="photoEditForm" style="display:none; margin-top:20px; padding:20px; background:#1a1a1a; border:1px solid #333;">
-          <h4 style="margin-bottom:15px;">Edit Photo</h4>
-          <div class="form-group" style="max-width:400px;">
-            <label>Cosplayer Handle</label>
-            <input type="text" id="photoEditHandle" placeholder="@handle">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Character</label>
-            <input type="text" id="photoEditCharacter" placeholder="Character name">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Series</label>
-            <input type="text" id="photoEditSeries" placeholder="Series name">
-          </div>
-          <button onclick="savePhotoEdit()" style="max-width:400px; width:100%; margin-right:10px;">Update Photo</button>
-          <button onclick="cancelPhotoEdit()" style="max-width:400px; width:100%; margin-top:10px;">Cancel</button>
-        </div>
-
         <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
 
         <!-- Add More Photos Section -->
@@ -431,25 +412,6 @@
       <div id="studioPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
         <h3 style="margin-bottom:15px;">Manage Photos in This Session</h3>
         <div id="studioPhotosList" style="margin-bottom:20px;"></div>
-
-        <!-- Edit Studio Photo Form (hidden by default) -->
-        <div id="studioPhotoEditForm" style="display:none; margin-top:20px; padding:20px; background:#1a1a1a; border:1px solid #333;">
-          <h4 style="margin-bottom:15px;">Edit Studio Photo</h4>
-          <div class="form-group" style="max-width:400px;">
-            <label>Cosplayer Handle</label>
-            <input type="text" id="studioPhotoEditHandle" placeholder="@handle">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Character</label>
-            <input type="text" id="studioPhotoEditCharacter" placeholder="Character name">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Series</label>
-            <input type="text" id="studioPhotoEditSeries" placeholder="Series name">
-          </div>
-          <button onclick="saveStudioPhotoEdit()" style="max-width:400px; width:100%; margin-right:10px;">Update Photo</button>
-          <button onclick="cancelStudioPhotoEdit()" style="max-width:400px; width:100%; margin-top:10px;">Cancel</button>
-        </div>
       </div>
 
       <div class="items-list" id="studioList"></div>
@@ -504,21 +466,6 @@
         <h3 style="margin-bottom:15px;">Manage Photos for This Collaborator</h3>
         <div id="collabPhotosList" style="margin-bottom:20px;"></div>
 
-        <!-- Edit Collab Photo Form (hidden by default) -->
-        <div id="collabPhotoEditForm" style="display:none; margin-top:20px; padding:20px; background:#1a1a1a; border:1px solid #333;">
-          <h4 style="margin-bottom:15px;">Edit Photo</h4>
-          <div class="form-group" style="max-width:400px;">
-            <label>Character</label>
-            <input type="text" id="collabPhotoEditCharacter" placeholder="Character name">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Series</label>
-            <input type="text" id="collabPhotoEditSeries" placeholder="Series name">
-          </div>
-          <button onclick="saveCollabPhotoEdit()" style="max-width:400px; width:100%; margin-right:10px;">Update Photo</button>
-          <button onclick="cancelCollabPhotoEdit()" style="max-width:400px; width:100%; margin-top:10px;">Cancel</button>
-        </div>
-
         <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
 
         <!-- Add More Photos Section -->
@@ -545,6 +492,32 @@
       </div>
 
       <div class="items-list" id="collabList"></div>
+    </div>
+  </div>
+
+  <!-- Global Photo Edit Modal -->
+  <div id="photoEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center;">
+    <div style="background:#181818; border:1px solid #2e2e2e; padding:30px; border-radius:8px; max-width:500px; max-height:80vh; overflow-y:auto; position:relative;">
+      <button onclick="closePhotoModal()" style="position:absolute; top:10px; right:10px; background:#666; color:#fff; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;">✕</button>
+      <h3 id="photoModalTitle" style="margin-bottom:20px;">Edit Photo</h3>
+
+      <div class="form-group" style="margin-bottom:15px;">
+        <label>Cosplayer Handle</label>
+        <input type="text" id="photoEditHandle" placeholder="@handle" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+      </div>
+      <div class="form-group" style="margin-bottom:15px;">
+        <label>Character</label>
+        <input type="text" id="photoEditCharacter" placeholder="Character name" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Series</label>
+        <input type="text" id="photoEditSeries" placeholder="Series name" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button onclick="savePhotoEditModal()" style="flex:1; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Save</button>
+        <button onclick="closePhotoModal()" style="flex:1; padding:10px; background:#666; color:#fff; border:none; border-radius:3px; cursor:pointer;">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
@@ -811,59 +784,110 @@
     document.getElementById('eventPhotosList').innerHTML = html || '<p style="color:#666;">No photos in this event</p>';
   };
 
-  window.editPhoto = (eventId, photoIndex) => {
+  window.editPhoto = async (eventId, photoIndex) => {
+    window.currentPhotoType = 'event';
     window.currentPhotoEventId = eventId;
     window.currentPhotoIndex = photoIndex;
 
-    // Get the photo data from the DOM (we have it in grouped display)
-    // But we need to fetch fresh from Firestore for accuracy
-    getDoc(doc(db, 'events', eventId)).then(docSnap => {
-      const event = docSnap.data();
-      const photo = event.photos[photoIndex];
+    const docSnap = await getDoc(doc(db, 'events', eventId));
+    const event = docSnap.data();
+    const photo = event.photos[photoIndex];
 
-      document.getElementById('photoEditHandle').value = photo.coser || '';
-      document.getElementById('photoEditCharacter').value = photo.character || '';
-      document.getElementById('photoEditSeries').value = photo.series || '';
-      document.getElementById('photoEditForm').style.display = 'block';
-    });
+    document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditHandle').value = photo.coser || '';
+    document.getElementById('photoEditHandle').style.display = 'block';
+    document.getElementById('photoEditHandle').parentElement.style.display = 'block';
+    document.getElementById('photoEditCharacter').value = photo.character || '';
+    document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditModal').style.display = 'flex';
   };
 
-  window.savePhotoEdit = async () => {
-    const eventId = window.currentPhotoEventId;
-    const photoIndex = window.currentPhotoIndex;
+  window.editStudioPhoto = async (sessionId, cosplayerIdx, photoIdx) => {
+    window.currentPhotoType = 'studio';
+    window.currentStudioSessionId = sessionId;
+    window.currentStudioCosplayerIdx = cosplayerIdx;
+    window.currentStudioPhotoIdx = photoIdx;
 
+    const docSnap = await getDoc(doc(db, 'studio', sessionId));
+    const session = docSnap.data();
+    const photo = session.cosplayers[cosplayerIdx].photos[photoIdx];
+
+    document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditHandle').value = photo.coser || '';
+    document.getElementById('photoEditHandle').style.display = 'block';
+    document.getElementById('photoEditHandle').parentElement.style.display = 'block';
+    document.getElementById('photoEditCharacter').value = photo.character || '';
+    document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditModal').style.display = 'flex';
+  };
+
+  window.editCollabPhoto = async (collabId, photoIndex) => {
+    window.currentPhotoType = 'collab';
+    window.currentCollabId = collabId;
+    window.currentCollabPhotoIndex = photoIndex;
+
+    const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+    const collab = docSnap.data();
+    const photo = collab.photos[photoIndex];
+
+    document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditHandle').value = '';
+    document.getElementById('photoEditHandle').style.display = 'none';
+    document.getElementById('photoEditHandle').parentElement.style.display = 'none';
+    document.getElementById('photoEditCharacter').value = photo.character || '';
+    document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditModal').style.display = 'flex';
+  };
+
+  window.savePhotoEditModal = async () => {
+    const type = window.currentPhotoType;
     const handle = document.getElementById('photoEditHandle').value;
     const character = document.getElementById('photoEditCharacter').value;
     const series = document.getElementById('photoEditSeries').value;
 
-    if (!handle || !character || !series) {
+    if (!character || !series || (type !== 'collab' && !handle)) {
       alert('Please fill in all fields');
       return;
     }
 
     try {
-      const docSnap = await getDoc(doc(db, 'events', eventId));
-      const event = docSnap.data();
-      const photos = [...event.photos];
-
-      photos[photoIndex] = {
-        ...photos[photoIndex],
-        coser: handle,
-        character: character,
-        series: series
-      };
-
-      await updateDoc(doc(db, 'events', eventId), { photos });
-      document.getElementById('photoEditForm').style.display = 'none';
-      await displayEventPhotos(eventId);
-      alert('✓ Photo updated!');
+      if (type === 'event') {
+        const eventId = window.currentPhotoEventId;
+        const photoIndex = window.currentPhotoIndex;
+        const docSnap = await getDoc(doc(db, 'events', eventId));
+        const event = docSnap.data();
+        const photos = [...event.photos];
+        photos[photoIndex] = { ...photos[photoIndex], coser: handle, character, series };
+        await updateDoc(doc(db, 'events', eventId), { photos });
+        await displayEventPhotos(eventId);
+      } else if (type === 'studio') {
+        const sessionId = window.currentStudioSessionId;
+        const cosplayerIdx = window.currentStudioCosplayerIdx;
+        const photoIdx = window.currentStudioPhotoIdx;
+        const docSnap = await getDoc(doc(db, 'studio', sessionId));
+        const session = docSnap.data();
+        const cosplayers = JSON.parse(JSON.stringify(session.cosplayers));
+        cosplayers[cosplayerIdx].photos[photoIdx] = { ...cosplayers[cosplayerIdx].photos[photoIdx], coser: handle, character, series };
+        await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
+        await displayStudioPhotos(sessionId);
+      } else if (type === 'collab') {
+        const collabId = window.currentCollabId;
+        const photoIndex = window.currentCollabPhotoIndex;
+        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+        const collab = docSnap.data();
+        const photos = [...collab.photos];
+        photos[photoIndex] = { ...photos[photoIndex], character, series };
+        await updateDoc(doc(db, 'collaborators', collabId), { photos });
+        await displayCollabPhotos(collabId);
+      }
+      closePhotoModal();
     } catch (err) {
       alert('Error: ' + err.message);
     }
   };
 
-  window.cancelPhotoEdit = () => {
-    document.getElementById('photoEditForm').style.display = 'none';
+  window.closePhotoModal = () => {
+    document.getElementById('photoEditModal').style.display = 'none';
     document.getElementById('photoEditHandle').value = '';
     document.getElementById('photoEditCharacter').value = '';
     document.getElementById('photoEditSeries').value = '';
