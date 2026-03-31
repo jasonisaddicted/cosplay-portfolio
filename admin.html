@@ -234,6 +234,24 @@
             <label>Order (priority)</label>
             <input type="number" id="featuredOrder" placeholder="1" value="1">
           </div>
+          <div class="form-group">
+            <label>Crop Position (for portrait images)</label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <label style="flex:1; min-width:80px; display:flex; align-items:center; padding:8px; background:#0d0d0d; border:1px solid #333; border-radius:3px; cursor:pointer;">
+                <input type="radio" name="featuredCropPos" value="top" style="margin-right:5px;">
+                <span>Top</span>
+              </label>
+              <label style="flex:1; min-width:80px; display:flex; align-items:center; padding:8px; background:#0d0d0d; border:1px solid #333; border-radius:3px; cursor:pointer;">
+                <input type="radio" name="featuredCropPos" value="center" checked style="margin-right:5px;">
+                <span>Center</span>
+              </label>
+              <label style="flex:1; min-width:80px; display:flex; align-items:center; padding:8px; background:#0d0d0d; border:1px solid #333; border-radius:3px; cursor:pointer;">
+                <input type="radio" name="featuredCropPos" value="bottom" style="margin-right:5px;">
+                <span>Bottom</span>
+              </label>
+            </div>
+            <div style="font-size:0.75rem; color:#666; margin-top:5px;">Shows where to crop portrait images on desktop</div>
+          </div>
           <button onclick="saveFeatured()" style="width:100%;">Save Featured Pick</button>
           <div id="featureMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
@@ -649,6 +667,7 @@
     const series = document.getElementById('featuredSeries').value;
     const credit = document.getElementById('featuredCredit').value;
     const order = parseInt(document.getElementById('featuredOrder').value) || 1;
+    const cropPos = document.querySelector('input[name="featuredCropPos"]:checked').value || 'center';
 
     if (!character || !series) {
       document.getElementById('featureMsg').textContent = 'Please fill in all fields';
@@ -663,6 +682,7 @@
         series,
         credit,
         order,
+        cropPosition: cropPos,
         source: null  // Optional - can be set later if from a specific album
       });
       document.getElementById('featureMsg').textContent = '✓ Saved!';
@@ -671,6 +691,7 @@
       document.getElementById('featuredSeries').value = '';
       document.getElementById('featuredCredit').value = '';
       document.getElementById('featuredSrc').value = '';
+      document.querySelector('input[name="featuredCropPos"][value="center"]').checked = true;
       loadFeatured();
       setTimeout(() => { document.getElementById('featureMsg').textContent = ''; }, 3000);
     } catch (err) {
@@ -871,6 +892,7 @@
           series: photo.series,
           credit: photo.coser || '',
           order: order,
+          cropPosition: 'center',
           source: {
             type: photo.albumType,
             id: photo.albumId
@@ -1921,7 +1943,8 @@
           coser: credit,
           character: character,
           series: series,
-          order: i + 1
+          order: i + 1,
+          cropPosition: 'center'
         });
       }
 

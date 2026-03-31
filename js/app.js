@@ -651,8 +651,19 @@ function initHome() {
   // Hero
   if (hero) {
     const heroSection = document.getElementById('hero');
-    heroSection.querySelector('.hero__img').src     = hero.src;
-    heroSection.querySelector('.hero__img').alt     = hero.character || '';
+    const heroImg = heroSection.querySelector('.hero__img');
+    heroImg.src     = hero.src;
+    heroImg.alt     = hero.character || '';
+
+    // Apply crop position for portrait images
+    const cropPos = hero.cropPosition || 'center';
+    const cropMap = {
+      'top': 'center top',
+      'center': 'center center',
+      'bottom': 'center bottom'
+    };
+    heroImg.style.objectPosition = cropMap[cropPos] || 'center center';
+
     heroSection.querySelector('.hero__character').textContent = hero.character || '';
     heroSection.querySelector('.hero__series').textContent   = hero.series    || '';
     if (hero.credit) {
