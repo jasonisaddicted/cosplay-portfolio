@@ -715,7 +715,7 @@
               <div style="font-size:0.8rem; color:#666;">${d.credit}</div>
             </div>
             <div class="item-actions">
-              ${!isBanner ? `<button onclick="setFeaturedBanner('${doc.id}')" style="padding:6px 12px; background:#555; border:none; color:#fff; cursor:pointer; font-size:0.8rem; margin-right:5px;">Set Banner</button>` : ''}
+              ${isBanner ? `<button disabled style="padding:6px 12px; background:#999; border:none; color:#fff; cursor:default; font-size:0.8rem; margin-right:5px;">Banner Set</button>` : `<button onclick="setFeaturedBanner('${doc.id}')" style="padding:6px 12px; background:#4CAF50; border:none; color:#fff; cursor:pointer; font-size:0.8rem; margin-right:5px; font-weight:bold;">Set Banner</button>`}
               <button onclick="deleteFeatured('${doc.id}')" style="padding:6px 12px; background:#c74545; border:none; color:#fff; cursor:pointer; font-size:0.8rem;">Delete</button>
             </div>
           </div>
@@ -739,17 +739,22 @@
     const snap = await getDocs(q);
     const docs = snap.docs;
 
-    // Find index of this photo
-    const targetIndex = docs.findIndex(d => d.id === id);
-    if (targetIndex === 0) return; // Already banner
+    // Find the target document
+    const targetDoc = docs.find(d => d.id === id);
+    if (!targetDoc) return;
 
-    // Reorder: move to front, shift others down
-    for (let i = 0; i < docs.length; i++) {
-      let newOrder = i + 1;
-      if (i === 0) newOrder = 0; // Banner goes to 0
-      if (docs[i].id === id) newOrder = 0;
+    // Get current order of target
+    const currentOrder = targetDoc.data().order;
+    if (currentOrder === 0) return; // Already banner
 
-      await updateDoc(docs[i].ref, { order: newOrder });
+    // Update all documents: shift up those with order < currentOrder, set target to 0
+    for (const doc of docs) {
+      const order = doc.data().order;
+      if (doc.id === id) {
+        await updateDoc(doc.ref, { order: 0 });
+      } else if (order < currentOrder) {
+        await updateDoc(doc.ref, { order: order + 1 });
+      }
     }
     loadFeatured();
   };
