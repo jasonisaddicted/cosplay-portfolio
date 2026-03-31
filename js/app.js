@@ -138,6 +138,7 @@ const Lightbox = (() => {
         }
         ${photo.character ? `<div class="info-panel__character">${photo.character}</div>` : ''}
         ${photo.series    ? `<div class="info-panel__series">${photo.series}</div>`       : ''}
+        ${coserAlbums.length > 0 ? `<div class="info-panel__project-count" style="font-size:0.75rem; color:#999; margin-top:8px;">Appears in ${coserAlbums.length} project${coserAlbums.length !== 1 ? 's' : ''}</div>` : ''}
       </div>`;
 
     // ── Work Together block ───────────────────────────────
@@ -180,7 +181,8 @@ const Lightbox = (() => {
 
         workHtml = `
           <div class="info-panel__section">
-            <span class="info-panel__section-label">WORK TOGETHER</span>
+            <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
+            <div style="font-size:0.8rem; color:#999; margin-bottom:12px;">See all of ${igHandle || 'this cosplayer'}'s work in different events, studio sessions, and collaborations</div>
             ${tabsHtml}
             <div class="info-panel__album-list">${accordions}</div>
           </div>`;
@@ -197,7 +199,8 @@ const Lightbox = (() => {
 
         workHtml = `
           <div class="info-panel__section">
-            <span class="info-panel__section-label">WORK TOGETHER</span>
+            <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
+            <div style="font-size:0.8rem; color:#999; margin-bottom:12px;">See all of ${igHandle || 'this cosplayer'}'s work in different events, studio sessions, and collaborations</div>
             ${tabsHtml}
             <div class="info-panel__album-list">${cards}</div>
           </div>`;
