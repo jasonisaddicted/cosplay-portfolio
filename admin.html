@@ -249,16 +249,33 @@
           <div class="upload-progress" id="uploadEventBatchStatus"></div>
         </div>
         <div class="form-group">
-          <label>Event Name</label>
-          <input type="text" id="batchEventName" placeholder="e.g., FanimeCon 2024">
+          <label>Event</label>
+          <div style="display:flex; gap:10px;">
+            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="eventMode" value="new" checked onchange="toggleEventMode('new')"> <span style="margin-left:5px;">Create New</span></label>
+            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="eventMode" value="existing" onchange="toggleEventMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Date</label>
-          <input type="text" id="batchEventDate" placeholder="e.g., May 2024">
+        <div id="newEventFields">
+          <div class="form-group">
+            <label>Event Name</label>
+            <input type="text" id="batchEventName" placeholder="e.g., FanimeCon 2024">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="text" id="batchEventDate" placeholder="e.g., May 2024">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="batchEventLoc" placeholder="e.g., San Jose, CA">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Location</label>
-          <input type="text" id="batchEventLoc" placeholder="e.g., San Jose, CA">
+        <div id="existingEventFields" style="display:none;">
+          <div class="form-group">
+            <label>Select Event</label>
+            <select id="batchEventSelect" style="width:100%; padding:10px; background:#111; border:1px solid #2e2e2e; color:#e4e4e4;">
+              <option value="">Loading events...</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
           <label>Character Name</label>
@@ -272,7 +289,7 @@
           <label>Cosplayer Handle</label>
           <input type="text" id="batchEventHandle" placeholder="e.g., @sakurahime_cos">
         </div>
-        <button onclick="saveBatchEvent()" style="width:100%;">Upload & Create Event</button>
+        <button onclick="saveBatchEvent()" style="width:100%;">Upload Photos</button>
         <div id="batchEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
@@ -409,7 +426,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
-    getFirestore, collection, addDoc, doc, deleteDoc, getDocs, query, orderBy
+    getFirestore, collection, addDoc, doc, deleteDoc, getDocs, getDoc, updateDoc, query, orderBy
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   import {
     getAuth, signInWithEmailAndPassword, signOut
@@ -767,17 +784,39 @@
     }
   };
 
+  // ─ Event Mode Toggle ─
+  window.toggleEventMode = (mode) => {
+    const newFields = document.getElementById('newEventFields');
+    const existingFields = document.getElementById('existingEventFields');
+
+    if (mode === 'new') {
+      newFields.style.display = 'block';
+      existingFields.style.display = 'none';
+    } else {
+      newFields.style.display = 'none';
+      existingFields.style.display = 'block';
+      loadEventsList();
+    }
+  };
+
+  window.loadEventsList = async () => {
+    const snap = await getDocs(collection(db, 'events'));
+    const select = document.getElementById('batchEventSelect');
+    const options = snap.docs.map(doc =>
+      `<option value="${doc.id}">${doc.data().name}</option>`
+    ).join('');
+    select.innerHTML = `<option value="">Select an event...</option>${options}`;
+  };
+
   // ─ Batch Upload: Events ─
   window.saveBatchEvent = async () => {
     const files = document.getElementById('uploadEventFiles').files;
-    const eventName = document.getElementById('batchEventName').value;
-    const eventDate = document.getElementById('batchEventDate').value;
-    const eventLoc = document.getElementById('batchEventLoc').value;
+    const mode = document.querySelector('input[name="eventMode"]:checked').value;
     const character = document.getElementById('batchEventChar').value;
     const series = document.getElementById('batchEventSeries').value;
     const handle = document.getElementById('batchEventHandle').value;
 
-    if (!files.length || !eventName || !eventDate || !character || !series || !handle) {
+    if (!files.length || !character || !series || !handle) {
       document.getElementById('batchEventMsg').textContent = 'Please fill in all fields and select photos';
       document.getElementById('batchEventMsg').className = 'error';
       return;
@@ -808,16 +847,46 @@
         });
       }
 
-      await addDoc(collection(db, 'events'), {
-        name: eventName,
-        date: eventDate,
-        location: eventLoc,
-        description: '',
-        cover: photos[0]?.src || '',
-        photos: photos
-      });
+      if (mode === 'new') {
+        const eventName = document.getElementById('batchEventName').value;
+        const eventDate = document.getElementById('batchEventDate').value;
+        const eventLoc = document.getElementById('batchEventLoc').value;
 
-      document.getElementById('batchEventMsg').textContent = `✓ Event created with ${files.length} photos!`;
+        if (!eventName || !eventDate) {
+          document.getElementById('batchEventMsg').textContent = 'Event name and date required for new events';
+          document.getElementById('batchEventMsg').className = 'error';
+          return;
+        }
+
+        await addDoc(collection(db, 'events'), {
+          name: eventName,
+          date: eventDate,
+          location: eventLoc,
+          description: '',
+          cover: photos[0]?.src || '',
+          photos: photos
+        });
+
+        document.getElementById('batchEventMsg').textContent = `✓ Event created with ${files.length} photos!`;
+      } else {
+        const eventId = document.getElementById('batchEventSelect').value;
+        if (!eventId) {
+          document.getElementById('batchEventMsg').textContent = 'Please select an event';
+          document.getElementById('batchEventMsg').className = 'error';
+          return;
+        }
+
+        const eventRef = doc(db, 'events', eventId);
+        const eventDoc = await getDoc(eventRef);
+        const existingPhotos = eventDoc.data().photos || [];
+
+        await updateDoc(eventRef, {
+          photos: [...existingPhotos, ...photos]
+        });
+
+        document.getElementById('batchEventMsg').textContent = `✓ Added ${files.length} photos to event!`;
+      }
+
       document.getElementById('batchEventMsg').className = 'success';
       document.getElementById('uploadEventFiles').value = '';
       document.getElementById('batchEventName').value = '';
