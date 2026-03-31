@@ -641,6 +641,92 @@ window.openCharacterModal = (character) => {
   Lightbox.openCharacter(character);
 };
 
+// Featured photo modal (mobile grid and desktop clicks)
+window.showFeaturedPhotoModal = (photo) => {
+  // Close any existing modal
+  const existing = document.querySelector('.featured-photo-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'featured-photo-modal';
+  modal.style.cssText = `
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  `;
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 0;
+  `;
+
+  content.innerHTML = `
+    <div style="position: relative;">
+      <img src="${photo.src}" alt="${photo.character || ''}" style="width:100%; height:auto; aspect-ratio:3/4; object-fit:cover; display:block;">
+      <button class="featured-modal-close" style="position:absolute; top:12px; right:12px; width:32px; height:32px; background:rgba(0,0,0,0.6); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+        <svg viewBox="0 0 24 24" style="width:20px; height:20px;"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="padding: 24px;">
+      <h3 style="font-size:1.4rem; font-weight:700; color:var(--white); margin-bottom:16px;">${photo.character || 'Untitled'}</h3>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        ${photo.credit ? `
+          <div>
+            <div style="font-size:0.7rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-bottom:4px;">Cosplayer</div>
+            <div class="featured-modal-coser" style="font-size:0.95rem; color:var(--text); cursor:pointer; transition:color 0.2s ease;">${photo.credit}</div>
+          </div>
+        ` : ''}
+        ${photo.series ? `
+          <div>
+            <div style="font-size:0.7rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-bottom:4px;">Series</div>
+            <div class="featured-modal-series" style="font-size:0.95rem; color:var(--text); cursor:pointer; transition:color 0.2s ease; font-style:italic;">${photo.series}</div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  // Close button
+  content.querySelector('.featured-modal-close').addEventListener('click', () => modal.remove());
+
+  // Cosplayer click
+  const coserEl = content.querySelector('.featured-modal-coser');
+  if (coserEl && photo.credit) {
+    coserEl.addEventListener('click', () => {
+      modal.remove();
+      openCosplayerModal(photo.credit);
+    });
+    coserEl.style.color = 'var(--accent-light)';
+    coserEl.style.textDecoration = 'underline';
+  }
+
+  // Series click
+  const seriesEl = content.querySelector('.featured-modal-series');
+  if (seriesEl && photo.series) {
+    seriesEl.addEventListener('click', () => {
+      modal.remove();
+      openCharacterModal(photo.series);
+    });
+    seriesEl.style.color = 'var(--accent-light)';
+    seriesEl.style.textDecoration = 'underline';
+  }
+
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+};
+
 // ── Page: Home ───────────────────────────────────────────────
 function initHome() {
   if (!document.body.classList.contains('page-home')) return;
@@ -693,7 +779,7 @@ function initHome() {
         ${p.series    ? `<div class="pick-item__series">${p.series}</div>` : ''}
       </div>
     `;
-    el.addEventListener('click', () => Lightbox.open(i));
+    el.addEventListener('click', () => showFeaturedPhotoModal(p));
     grid.appendChild(el);
 
     // Make cosplayer and character names clickable on desktop
@@ -713,15 +799,14 @@ function initHome() {
     }
   });
 
-  // Mobile carousel
+  // Mobile grid (2 columns, scrollable)
   const isMobile = window.innerWidth <= 768;
   const carousel = document.getElementById('picks-carousel');
   if (isMobile && allFeatured.length > 1) {
     carousel.classList.add('active');
     const slidesContainer = document.getElementById('carousel-slides');
-    let currentSlide = 0;
 
-    // Render carousel slides (skip hero, max 9 picks)
+    // Render grid slides (skip hero, max 9 picks)
     allFeatured.forEach((p, i) => {
       if (i === 0) return;
       if (i > maxPicks) return;
@@ -729,78 +814,14 @@ function initHome() {
       const slide = document.createElement('div');
       slide.className = 'carousel-slide';
       slide.innerHTML = `<img src="${p.src}" alt="${p.character || ''}" loading="lazy">`;
+
+      // Click to open modal with photo details
+      slide.addEventListener('click', () => {
+        showFeaturedPhotoModal(p);
+      });
+
       slidesContainer.appendChild(slide);
     });
-
-    const totalSlides = Math.min(allFeatured.length - 1, maxPicks);
-    document.getElementById('carousel-total').textContent = totalSlides;
-
-    function updateCarousel() {
-      const offset = -currentSlide * 100;
-      slidesContainer.style.transform = `translateX(${offset}%)`;
-      document.getElementById('carousel-current').textContent = currentSlide + 1;
-      updateCarouselInfo();
-    }
-
-    function updateCarouselInfo() {
-      const photo = allFeatured[currentSlide + 1];
-      const infoEl = document.getElementById('carousel-info');
-      if (photo) {
-        infoEl.innerHTML = `
-          <h3>${photo.character || 'Untitled'}</h3>
-          <div class="carousel-info-meta">
-            ${photo.credit ? `
-              <div>
-                <div class="carousel-info-item">Cosplayer</div>
-                <div class="carousel-info-value carousel-info-coser">${photo.credit}</div>
-              </div>
-            ` : ''}
-            ${photo.series ? `
-              <div>
-                <div class="carousel-info-item">Series</div>
-                <div class="carousel-info-value">${photo.series}</div>
-              </div>
-            ` : ''}
-          </div>
-        `;
-        // Make cosplayer clickable
-        const coserLink = infoEl.querySelector('.carousel-info-coser');
-        if (coserLink && photo.credit) {
-          coserLink.addEventListener('click', () => openCosplayerModal(photo.credit));
-        }
-      }
-    }
-
-    document.getElementById('carousel-next').addEventListener('click', () => {
-      if (currentSlide < totalSlides - 1) {
-        currentSlide++;
-        updateCarousel();
-      }
-    });
-
-    document.getElementById('carousel-prev').addEventListener('click', () => {
-      if (currentSlide > 0) {
-        currentSlide--;
-        updateCarousel();
-      }
-    });
-
-    // Swipe support
-    let touchStartX = 0;
-    const viewport = document.querySelector('.carousel-viewport');
-    viewport.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
-    viewport.addEventListener('touchend', (e) => {
-      const touchEndX = e.changedTouches[0].clientX;
-      if (touchStartX - touchEndX > 50 && currentSlide < totalSlides - 1) {
-        currentSlide++;
-        updateCarousel();
-      } else if (touchEndX - touchStartX > 50 && currentSlide > 0) {
-        currentSlide--;
-        updateCarousel();
-      }
-    });
-
-    updateCarousel();
   }
 
   const pickCount = Math.min(picks.length, maxPicks);
