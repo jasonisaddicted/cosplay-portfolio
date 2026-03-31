@@ -308,9 +308,9 @@ const Lightbox = (() => {
     // Structured photo objects preserve coser/character/series for each photo
     const albumObjs = album.photos.map(p => ({
       src:       p.src,
-      coser:     originalPhoto.coser     || '',
-      character: originalPhoto.character || '',
-      series:    originalPhoto.series    || ''
+      coser:     p.coser || originalPhoto.coser || '',
+      character: p.character || originalPhoto.character || '',
+      series:    p.series || originalPhoto.series || ''
     }));
 
     function renderSubPanel(selIdx) {
@@ -341,7 +341,7 @@ const Lightbox = (() => {
         buildInfoPanel(savedPhotos[savedCurrent]);
       });
 
-      // Photo click → update main image only; description follows the photo's data
+      // Photo click → update main image and info panel with that photo's metadata
       infoPanel.querySelectorAll('.info-panel__subgrid-photo').forEach(div => {
         div.addEventListener('click', () => {
           const i = parseInt(div.dataset.i);
@@ -349,6 +349,7 @@ const Lightbox = (() => {
           current = i;
           imgEl.src = albumObjs[i].src;
           if (counter) counter.textContent = `${i + 1} / ${albumObjs.length}`;
+          buildInfoPanel(albumObjs[i]);
           renderSubPanel(i);
         });
       });
