@@ -606,9 +606,9 @@ function initAlbum() {
       const offset = allPhotos.length;
       coser.photos.forEach(p => allPhotos.push({
         src:       p.src,
-        coser:     coser.name,
-        character: coser.character,
-        series:    coser.series || ''
+        coser:     p.coser || coser.handle,
+        character: p.character || coser.character,
+        series:    p.series || coser.series || ''
       }));
 
       const section = document.createElement('div');
