@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events — Cosplay Portfolio</title>
+  <link rel="stylesheet" href="css/style.css?v=5">
+</head>
+<body class="page-events">
+
+  <!-- Navigation -->
+  <nav class="nav scrolled">
+    <a class="nav__brand" href="index.html" id="nav-brand">Portfolio</a>
+    <ul class="nav__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="events.html">Events</a></li>
+      <li><a href="studio.html">Studio</a></li>
+      <li><a href="collabs.html">Collabs</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page Hero -->
+  <div class="page-hero mt-nav">
+    <div class="page-hero__bg"></div>
+    <div class="page-hero__content">
+      <div class="page-hero__label">Gallery</div>
+      <h1 class="page-hero__title">Events</h1>
+      <p class="page-hero__sub">Conventions, expos &amp; gatherings</p>
+    </div>
+  </div>
+
+  <!-- Section Header -->
+  <div class="section-header">
+    <span class="section-header__label">Browse</span>
+    <h2 class="section-header__title">All Events</h2>
+    <span class="section-header__count"></span>
+  </div>
+
+  <!-- Albums Grid -->
+  <div class="albums-grid" id="albums-grid" data-type="events"></div>
+
+  <!-- Footer -->
+  <footer>
+    <span class="footer__brand" id="footer-brand"></span>
+    <span class="footer__copy" id="footer-copy"></span>
+  </footer>
+
+  <!-- Mobile Preview Button -->
+  <button class="mob-toggle" id="mob-toggle" aria-label="Mobile preview" title="Preview on mobile">
+    <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+  </button>
+  <div class="mob-modal" id="mob-modal">
+    <button class="mob-modal__close" id="mob-close" aria-label="Close preview">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <span class="mob-modal__label">Mobile Preview — 390px</span>
+    <div class="phone-frame">
+      <div class="phone-frame__notch"></div>
+      <div class="phone-frame__screen">
+        <iframe id="mob-iframe" src=""></iframe>
+      </div>
+      <div class="phone-frame__bar"></div>
+    </div>
+  </div>
+
+  <script src="js/protect.js?v=5"></script>
+  <script src="js/config.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
+  <script>
+    document.title = `Events · ${CONFIG.photographer}`;
+  </script>
+  <script>
+    (function () {
+      const toggle = document.getElementById('mob-toggle');
+      const modal  = document.getElementById('mob-modal');
+      const close  = document.getElementById('mob-close');
+      const iframe = document.getElementById('mob-iframe');
+      toggle.addEventListener('click', () => {
+        iframe.src = window.location.href;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+      function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        iframe.src = '';
+      }
+      close.addEventListener('click', closeModal);
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+    })();
+  </script>
+</body>
+</html>

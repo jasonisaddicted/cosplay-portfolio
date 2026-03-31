@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Panel — jianshen.cos.visual</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      background: #181818;
+      color: #e4e4e4;
+      font-family: 'Montserrat', sans-serif;
+      padding: 20px;
+    }
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #212121;
+      border: 1px solid #2e2e2e;
+      border-radius: 2px;
+      padding: 40px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #2e2e2e;
+    }
+    .admin-header h1 { font-size: 1.8rem; letter-spacing: 0.1em; }
+    .admin-header button {
+      padding: 8px 16px;
+      background: #c8a46e;
+      border: none;
+      color: #181818;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .admin-header button:hover { background: #dfc08f; }
+
+    /* Auth screens */
+    .auth-screen { display: none; }
+    .auth-screen.active { display: flex; }
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(24,24,24,0.95);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-form {
+      background: #212121;
+      border: 1px solid #2e2e2e;
+      padding: 40px;
+      max-width: 380px;
+      width: 100%;
+    }
+    .auth-form h2 { margin-bottom: 30px; font-size: 1.4rem; letter-spacing: 0.08em; }
+    .auth-form input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      background: #181818;
+      border: 1px solid #2e2e2e;
+      color: #e4e4e4;
+      font-family: inherit;
+    }
+    .auth-form input::placeholder { color: #777; }
+    .auth-form button {
+      width: 100%;
+      padding: 12px;
+      background: #c8a46e;
+      border: none;
+      color: #181818;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+    }
+    .auth-form button:hover { background: #dfc08f; }
+    .auth-form .error { color: #ff6b6b; font-size: 0.85rem; margin-top: 16px; }
+
+    /* Tabs */
+    .admin-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #2e2e2e;
+    }
+    .admin-tab {
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      color: #777;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .admin-tab:hover { color: #e4e4e4; }
+    .admin-tab.active {
+      color: #c8a46e;
+      border-bottom-color: #c8a46e;
+    }
+
+    /* Content area */
+    .admin-content { display: none; }
+    .admin-content.active { display: block; }
+
+    /* Form styles */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #c8a46e;
+      margin-bottom: 8px;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      background: #181818;
+      border: 1px solid #2e2e2e;
+      color: #e4e4e4;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 18px;
+      background: #c8a46e;
+      border: none;
+      color: #181818;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      margin-top: 10px;
+    }
+    .btn:hover { background: #dfc08f; }
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid #2e2e2e;
+      color: #e4e4e4;
+    }
+    .btn.secondary:hover { border-color: #c8a46e; color: #c8a46e; }
+
+    /* File upload */
+    .file-upload-area {
+      border: 2px dashed #2e2e2e;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 20px;
+    }
+    .file-upload-area:hover { border-color: #c8a46e; background: rgba(200,164,110,0.05); }
+    .file-upload-area input[type="file"] { display: none; }
+    .file-upload-area p { color: #777; font-size: 0.9rem; }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #2e2e2e;
+      border-top-color: #c8a46e;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Messages */
+    .message {
+      padding: 12px 16px;
+      border-radius: 2px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+    .message.success { background: rgba(75,192,75,0.2); color: #4bc04b; }
+    .message.error { background: rgba(255,107,107,0.2); color: #ff6b6b; }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+      .admin-container { padding: 20px; }
+      .form-row { grid-template-columns: 1fr; }
+      .admin-tabs { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="authScreen" class="auth-screen active">
+  <div class="auth-form">
+    <h2>Admin Login</h2>
+    <input id="authEmail" type="email" placeholder="Email" value="">
+    <input id="authPassword" type="password" placeholder="Password" value="">
+    <button id="authSubmit">Sign In</button>
+    <div id="authError" class="error"></div>
+  </div>
+</div>
+
+<!-- Admin Dashboard -->
+<div id="adminPanel" style="display: none;">
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1>Admin Panel</h1>
+      <button id="logoutBtn">Sign Out</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="site-config">Site Config</button>
+      <button class="admin-tab" data-tab="featured">Featured</button>
+      <button class="admin-tab" data-tab="events">Events</button>
+      <button class="admin-tab" data-tab="studio">Studio</button>
+      <button class="admin-tab" data-tab="collabs">Collabs</button>
+    </div>
+
+    <!-- Site Config -->
+    <div id="site-config" class="admin-content active">
+      <h2>Site Configuration</h2>
+      <div class="form-group">
+        <label>Photographer Name</label>
+        <input id="cfgPhotographer" type="text" placeholder="e.g., jianshen.cos.visual">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Subtitle</label>
+          <input id="cfgSubtitle" type="text" placeholder="e.g., 建伸">
+        </div>
+        <div class="form-group">
+          <label>Tagline</label>
+          <input id="cfgTagline" type="text" placeholder="e.g., Cosplay Photography">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Hero Label</label>
+        <input id="cfgHeroLabel" type="text" placeholder="e.g., March 2025 — Featured Shots">
+      </div>
+      <button class="btn" id="saveSiteConfig">Save Configuration</button>
+    </div>
+
+    <!-- Featured Picks -->
+    <div id="featured" class="admin-content">
+      <h2>Featured Picks</h2>
+      <p style="margin-bottom: 20px; color: #777; font-size: 0.9rem;">First entry = hero image. Rest appear in picks grid (max 9).</p>
+      <div id="featuredList"></div>
+      <button class="btn" id="addFeatured">+ Add Featured Pick</button>
+    </div>
+
+    <!-- Events -->
+    <div id="events" class="admin-content">
+      <h2>Event Albums</h2>
+      <div id="eventsList"></div>
+      <button class="btn" id="addEvent">+ Add Event Album</button>
+    </div>
+
+    <!-- Studio -->
+    <div id="studio" class="admin-content">
+      <h2>Studio Sessions</h2>
+      <div id="studioList"></div>
+      <button class="btn" id="addStudio">+ Add Studio Session</button>
+    </div>
+
+    <!-- Collabs -->
+    <div id="collabs" class="admin-content">
+      <h2>Collaborators</h2>
+      <div id="collabsList"></div>
+      <button class="btn" id="addCollab">+ Add Collaborator</button>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import {
+    getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBAxdGpFkLtnceC1foAXMQbHQ5xh2jgW4M",
+    authDomain: "jianshencosvisual-328dc.firebaseapp.com",
+    projectId: "jianshencosvisual-328dc",
+    storageBucket: "jianshencosvisual-328dc.firebasestorage.app",
+    messagingSenderId: "190010774007",
+    appId: "1:190010774007:web:fe4e23c6170d5d458a1ef2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const authScreen = document.getElementById('authScreen');
+  const adminPanel = document.getElementById('adminPanel');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const authSubmit = document.getElementById('authSubmit');
+  const authError = document.getElementById('authError');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const messagesDiv = document.getElementById('messages');
+
+  // Pre-fill with provided credentials (for first-time setup)
+  authEmail.value = 'jianshen.image.visual@gmail.com';
+  authPassword.value = 'Metro2033_Bf3_new';
+
+  // Auth handlers
+  authSubmit.addEventListener('click', async () => {
+    try {
+      authError.textContent = '';
+      authSubmit.disabled = true;
+      authSubmit.innerHTML = '<span class="spinner"></span>';
+      await signInWithEmailAndPassword(auth, authEmail.value, authPassword.value);
+    } catch (error) {
+      authError.textContent = error.message;
+      authSubmit.disabled = false;
+      authSubmit.innerHTML = 'Sign In';
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await signOut(auth);
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      authScreen.classList.remove('active');
+      adminPanel.style.display = 'block';
+      loadAllData();
+    } else {
+      authScreen.classList.add('active');
+      adminPanel.style.display = 'none';
+    }
+  });
+
+  // Tab switching
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      const tabId = tab.dataset.tab;
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
+
+  // Load and display all data
+  async function loadAllData() {
+    // Site config
+    const siteSnap = await getDoc(doc(db, 'site', 'config'));
+    if (siteSnap.exists()) {
+      const cfg = siteSnap.data();
+      document.getElementById('cfgPhotographer').value = cfg.photographer || '';
+      document.getElementById('cfgSubtitle').value = cfg.subtitle || '';
+      document.getElementById('cfgTagline').value = cfg.tagline || '';
+      document.getElementById('cfgHeroLabel').value = cfg.heroLabel || '';
+    }
+  }
+
+  document.getElementById('saveSiteConfig').addEventListener('click', async () => {
+    try {
+      await setDoc(doc(db, 'site', 'config'), {
+        photographer: document.getElementById('cfgPhotographer').value,
+        subtitle: document.getElementById('cfgSubtitle').value,
+        tagline: document.getElementById('cfgTagline').value,
+        heroLabel: document.getElementById('cfgHeroLabel').value
+      });
+      showMessage('Site configuration saved!', 'success');
+    } catch (error) {
+      showMessage('Error: ' + error.message, 'error');
+    }
+  });
+
+  function showMessage(text, type) {
+    const msg = document.createElement('div');
+    msg.className = 'message ' + type;
+    msg.textContent = text;
+    messagesDiv.appendChild(msg);
+    setTimeout(() => msg.remove(), 4000);
+  }
+
+  // Import { getDoc } for site config loading
+  import { getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+</script>
+
+</body>
+</html>
