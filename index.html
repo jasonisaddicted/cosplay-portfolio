@@ -36,31 +36,34 @@
     </div>
   </section>
 
-  <!-- Monthly Picks -->
-  <div class="section-header">
-    <span class="section-header__label">This Month</span>
-    <h2 class="section-header__title">Featured Shots</h2>
-    <span class="section-header__count"></span>
-  </div>
-
-  <!-- Desktop Grid -->
-  <div class="picks-grid" id="picks-grid"></div>
-
-  <!-- Mobile Carousel -->
-  <div class="picks-carousel" id="picks-carousel">
-    <div class="carousel-viewport">
-      <div class="carousel-slides" id="carousel-slides"></div>
+  <!-- Featured Shots Section -->
+  <div class="featured-section">
+    <div class="section-header">
+      <span class="section-header__label">This Month</span>
+      <h2 class="section-header__title">Featured Shots</h2>
+      <span class="section-header__count"></span>
     </div>
-    <div class="carousel-controls">
-      <button class="carousel-btn" id="carousel-prev" aria-label="Previous photo">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-      </button>
-      <span class="carousel-counter"><span id="carousel-current">1</span> / <span id="carousel-total">0</span></span>
-      <button class="carousel-btn" id="carousel-next" aria-label="Next photo">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-      </button>
+
+    <!-- Desktop: Split Layout (Large Featured + Thumbnails) -->
+    <div class="featured-desktop" id="featured-desktop">
+      <div class="featured-main">
+        <img id="featured-main-img" src="" alt="">
+        <div class="featured-nav">
+          <button id="featured-prev" aria-label="Previous">
+            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button id="featured-next" aria-label="Next">
+            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="featured-thumbnails" id="featured-thumbnails"></div>
     </div>
-    <div class="carousel-info" id="carousel-info"></div>
+
+    <!-- Mobile: Grid Layout (Similar to Events/Studio) -->
+    <div class="featured-mobile" id="featured-mobile">
+      <div class="featured-grid" id="featured-grid"></div>
+    </div>
   </div>
 
   <!-- Footer -->

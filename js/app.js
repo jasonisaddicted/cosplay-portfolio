@@ -760,67 +760,75 @@ function initHome() {
     heroSection.addEventListener('click', () => Lightbox.open(0));
   }
 
-  // Picks grid — show up to 9 picks (featured[1..9])
-  const grid = document.getElementById('picks-grid');
+  // Featured section — show up to 9 picks (featured[1..9])
   const allFeatured = cfg.featured;
   const maxPicks = 9;
+  const featuredPhotos = allFeatured.filter((p, i) => i > 0 && i <= maxPicks);
 
-  allFeatured.forEach((p, i) => {
-    if (i === 0) return;  // hero is separate
-    if (i > maxPicks) return;
+  // Desktop: Large featured + thumbnails
+  const desktopContainer = document.getElementById('featured-desktop');
+  const mobileContainer = document.getElementById('featured-mobile');
 
-    const el = document.createElement('div');
-    el.className = 'pick-item';
-    el.innerHTML = `
-      <img src="${p.src}" alt="${p.character || ''}" loading="lazy">
-      <div class="pick-item__info">
-        ${p.credit    ? `<div class="pick-item__label">COSER</div><div class="pick-item__coser">${p.credit}</div>` : ''}
-        ${p.character ? `<div class="pick-item__character">${p.character}</div>` : ''}
-        ${p.series    ? `<div class="pick-item__series">${p.series}</div>` : ''}
-      </div>
-    `;
-    el.addEventListener('click', () => showFeaturedPhotoModal(p));
-    grid.appendChild(el);
+  if (desktopContainer && featuredPhotos.length > 0) {
+    const mainImg = desktopContainer.querySelector('#featured-main-img');
+    const thumbnailsContainer = desktopContainer.querySelector('#featured-thumbnails');
+    let currentFeaturedIndex = 0;
 
-    // Make cosplayer and character names clickable on desktop
-    const coserEl = el.querySelector('.pick-item__coser');
-    if (coserEl && p.credit) {
-      coserEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openCosplayerModal(p.credit);
+    function updateMainFeatured(index) {
+      const photo = featuredPhotos[index];
+      mainImg.src = photo.src;
+      mainImg.alt = photo.character || '';
+
+      // Update active thumbnail
+      thumbnailsContainer.querySelectorAll('.featured-thumbnail').forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === index);
       });
+
+      currentFeaturedIndex = index;
     }
-    const charEl = el.querySelector('.pick-item__character');
-    if (charEl && p.character) {
-      charEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openCharacterModal(p.character);
+
+    // Create thumbnails
+    featuredPhotos.forEach((photo, idx) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'featured-thumbnail' + (idx === 0 ? ' active' : '');
+      thumb.innerHTML = `<img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">`;
+
+      thumb.addEventListener('click', () => updateMainFeatured(idx));
+      thumbnailsContainer.appendChild(thumb);
+    });
+
+    // Main image click to open modal
+    mainImg.addEventListener('click', () => {
+      showFeaturedPhotoModal(featuredPhotos[currentFeaturedIndex]);
+    });
+
+    // Navigation buttons
+    desktopContainer.querySelector('#featured-prev').addEventListener('click', () => {
+      updateMainFeatured((currentFeaturedIndex - 1 + featuredPhotos.length) % featuredPhotos.length);
+    });
+
+    desktopContainer.querySelector('#featured-next').addEventListener('click', () => {
+      updateMainFeatured((currentFeaturedIndex + 1) % featuredPhotos.length);
+    });
+
+    // Initialize
+    updateMainFeatured(0);
+  }
+
+  // Mobile: Grid layout
+  if (mobileContainer && featuredPhotos.length > 0) {
+    const gridContainer = mobileContainer.querySelector('#featured-grid');
+
+    featuredPhotos.forEach(photo => {
+      const gridItem = document.createElement('div');
+      gridItem.className = 'featured-grid-item';
+      gridItem.innerHTML = `<img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">`;
+
+      gridItem.addEventListener('click', () => {
+        showFeaturedPhotoModal(photo);
       });
-    }
-  });
 
-  // Mobile grid (2 columns, scrollable)
-  const isMobile = window.innerWidth <= 768;
-  const carousel = document.getElementById('picks-carousel');
-  if (isMobile && allFeatured.length > 1) {
-    carousel.classList.add('active');
-    const slidesContainer = document.getElementById('carousel-slides');
-
-    // Render grid slides (skip hero, max 9 picks)
-    allFeatured.forEach((p, i) => {
-      if (i === 0) return;
-      if (i > maxPicks) return;
-
-      const slide = document.createElement('div');
-      slide.className = 'carousel-slide';
-      slide.innerHTML = `<img src="${p.src}" alt="${p.character || ''}" loading="lazy">`;
-
-      // Click to open modal with photo details
-      slide.addEventListener('click', () => {
-        showFeaturedPhotoModal(p);
-      });
-
-      slidesContainer.appendChild(slide);
+      gridContainer.appendChild(gridItem);
     });
   }
 
