@@ -610,7 +610,14 @@
     }
 
     try {
-      await addDoc(collection(db, 'featured'), { src, character, series, credit, order });
+      await addDoc(collection(db, 'featured'), {
+        src,
+        character,
+        series,
+        credit,
+        order,
+        source: null  // Optional - can be set later if from a specific album
+      });
       document.getElementById('featureMsg').textContent = '✓ Saved!';
       document.getElementById('featureMsg').className = 'success';
       document.getElementById('featuredChar').value = '';
@@ -1492,19 +1499,29 @@
         });
       }
 
-      // Create studio session with all photos
-      await addDoc(collection(db, 'studio'), {
+      // Create studio session first without photos to get the ID
+      const newSessionRef = await addDoc(collection(db, 'studio'), {
         name: sessionName,
         date: sessionDate,
         description: '',
         cover: photos[0]?.src || '',
+        cosplayers: []
+      });
+
+      // Add source tags and update with the session ID
+      const photosWithSource = photos.map(p => ({
+        ...p,
+        source: { type: 'studio', id: newSessionRef.id }
+      }));
+
+      await updateDoc(newSessionRef, {
         cosplayers: [
           {
             name: character,
             handle: handle,
             character: character,
             series: series,
-            photos: photos
+            photos: photosWithSource
           }
         ]
       });
@@ -1741,7 +1758,8 @@
           src: url,
           coser: handle,
           character: character,
-          series: series
+          series: series,
+          source: null  // Will be set after event creation
         });
       }
 
@@ -1756,14 +1774,22 @@
           return;
         }
 
-        await addDoc(collection(db, 'events'), {
+        const newEventRef = await addDoc(collection(db, 'events'), {
           name: eventName,
           date: eventDate,
           location: eventLoc,
           description: '',
           cover: photos[0]?.src || '',
-          photos: photos
+          photos: []
         });
+
+        // Add source tags now that we have the event ID
+        const photosWithSource = photos.map(p => ({
+          ...p,
+          source: { type: 'events', id: newEventRef.id }
+        }));
+
+        await updateDoc(newEventRef, { photos: photosWithSource });
 
         document.getElementById('batchEventMsg').textContent = `✓ Event created with ${files.length} photos!`;
       } else {
@@ -1778,8 +1804,14 @@
         const eventDoc = await getDoc(eventRef);
         const existingPhotos = eventDoc.data().photos || [];
 
+        // Add source tags
+        const photosWithSource = photos.map(p => ({
+          ...p,
+          source: { type: 'events', id: eventId }
+        }));
+
         await updateDoc(eventRef, {
-          photos: [...existingPhotos, ...photos]
+          photos: [...existingPhotos, ...photosWithSource]
         });
 
         document.getElementById('batchEventMsg').textContent = `✓ Added ${files.length} photos to event!`;
@@ -1834,14 +1866,23 @@
         photos.push({ src: url });
       }
 
-      await addDoc(collection(db, 'collaborators'), {
+      // Create collaborator first to get the ID
+      const newCollabRef = await addDoc(collection(db, 'collaborators'), {
         name: name,
         handle: handle,
         bio: '',
         cover: photos[0]?.src || '',
         gankUrl: '',
-        photos: photos
+        photos: []
       });
+
+      // Add source tags and update with the collab ID
+      const photosWithSource = photos.map(p => ({
+        ...p,
+        source: { type: 'collaborators', id: newCollabRef.id }
+      }));
+
+      await updateDoc(newCollabRef, { photos: photosWithSource });
 
       document.getElementById('batchCollabMsg').textContent = `✓ Collaborator added with ${files.length} photos!`;
       document.getElementById('batchCollabMsg').className = 'success';
