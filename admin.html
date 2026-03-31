@@ -232,6 +232,44 @@
     <!-- Studio -->
     <div id="studio" class="content">
       <h2 style="margin-bottom:20px;">Studio Sessions</h2>
+
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px;">Batch Upload Photos</h3>
+        <div class="form-group">
+          <label>Drop all photos here</label>
+          <div class="upload-area" id="uploadStudioBatch" onclick="document.getElementById('uploadStudioFiles').click()">
+            <p>Click or drag multiple photos</p>
+            <input type="file" id="uploadStudioFiles" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="upload-progress" id="uploadStudioStatus"></div>
+        </div>
+        <div class="form-group">
+          <label>Character Name</label>
+          <input type="text" id="batchCharacter" placeholder="e.g., Hu Tao">
+        </div>
+        <div class="form-group">
+          <label>Series</label>
+          <input type="text" id="batchSeries" placeholder="e.g., Genshin Impact">
+        </div>
+        <div class="form-group">
+          <label>Cosplayer Handle</label>
+          <input type="text" id="batchHandle" placeholder="e.g., @sakurahime_cos">
+        </div>
+        <div class="form-group">
+          <label>Session Name</label>
+          <input type="text" id="batchSessionName" placeholder="e.g., Genshin Impact Session">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="text" id="batchSessionDate" placeholder="e.g., January 2025">
+        </div>
+        <button onclick="saveBatchStudio()" style="width:100%;">Upload & Create Session</button>
+        <div id="batchMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
       <div class="form-group" style="max-width:400px;">
         <label>Session Name</label>
         <input type="text" id="studioName" placeholder="e.g., Genshin Impact Session">
@@ -447,6 +485,69 @@
   };
 
   // ─ Studio ─
+  window.saveBatchStudio = async () => {
+    const files = document.getElementById('uploadStudioFiles').files;
+    const character = document.getElementById('batchCharacter').value;
+    const series = document.getElementById('batchSeries').value;
+    const handle = document.getElementById('batchHandle').value;
+    const sessionName = document.getElementById('batchSessionName').value;
+    const sessionDate = document.getElementById('batchSessionDate').value;
+
+    if (!files.length || !character || !series || !handle || !sessionName) {
+      document.getElementById('batchMsg').textContent = 'Please fill in all fields and select photos';
+      document.getElementById('batchMsg').className = 'error';
+      return;
+    }
+
+    const status = document.getElementById('uploadStudioStatus');
+    status.textContent = `Uploading ${files.length} photos...`;
+
+    try {
+      const photos = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        status.textContent = `Uploading ${i + 1}/${files.length}...`;
+
+        const storageRef = ref(storage, `photos/studio/${Date.now()}_${i}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        photos.push({ src: url });
+      }
+
+      // Create studio session with all photos
+      await addDoc(collection(db, 'studio'), {
+        name: sessionName,
+        date: sessionDate,
+        description: '',
+        cover: photos[0]?.src || '',
+        cosplayers: [
+          {
+            name: character,
+            handle: handle,
+            character: character,
+            series: series,
+            photos: photos
+          }
+        ]
+      });
+
+      document.getElementById('batchMsg').textContent = `✓ ${files.length} photos uploaded & session created!`;
+      document.getElementById('batchMsg').className = 'success';
+      document.getElementById('uploadStudioFiles').value = '';
+      document.getElementById('batchCharacter').value = '';
+      document.getElementById('batchSeries').value = '';
+      document.getElementById('batchHandle').value = '';
+      document.getElementById('batchSessionName').value = '';
+      document.getElementById('batchSessionDate').value = '';
+      document.getElementById('uploadStudioStatus').textContent = '';
+      loadStudio();
+      setTimeout(() => { document.getElementById('batchMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('batchMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('batchMsg').className = 'error';
+    }
+  };
+
   window.saveStudio = async () => {
     const name = document.getElementById('studioName').value;
     const date = document.getElementById('studioDate').value;
@@ -601,6 +702,26 @@
     if (file) {
       document.getElementById('uploadFeaturFile').files = e.dataTransfer.files;
       document.getElementById('uploadFeaturFile').dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
+  // Batch upload drag & drop
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+    document.getElementById('uploadStudioBatch').addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+  document.getElementById('uploadStudioBatch').addEventListener('dragover', () => {
+    document.getElementById('uploadStudioBatch').classList.add('dragging');
+  });
+  document.getElementById('uploadStudioBatch').addEventListener('dragleave', () => {
+    document.getElementById('uploadStudioBatch').classList.remove('dragging');
+  });
+  document.getElementById('uploadStudioBatch').addEventListener('drop', (e) => {
+    document.getElementById('uploadStudioBatch').classList.remove('dragging');
+    if (e.dataTransfer.files.length) {
+      document.getElementById('uploadStudioFiles').files = e.dataTransfer.files;
     }
   });
 </script>
