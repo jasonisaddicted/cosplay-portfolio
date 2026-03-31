@@ -94,6 +94,34 @@ const Lightbox = (() => {
     return results;
   }
 
+  // Auto-discovers all albums featuring this character
+  function findCharacterAlbums(character) {
+    const results = [];
+    if (!character || typeof CONFIG === 'undefined') return results;
+    (CONFIG.events || []).forEach(album => {
+      const cp = (album.photos || []).filter(p => p.character === character);
+      if (cp.length) results.push({ id: album.id, type: 'events', name: album.name, photos: cp });
+    });
+    (CONFIG.studio || []).forEach(album => {
+      const allPhotos = [];
+      (album.cosplayers || []).forEach(coser => {
+        const cp = (coser.photos || []).filter(p => p.character === character);
+        if (cp.length) allPhotos.push(...cp);
+      });
+      if (allPhotos.length) results.push({ id: album.id, type: 'studio', name: album.name, photos: allPhotos });
+    });
+    (CONFIG.collaborators || []).forEach(collab => {
+      const cp = (collab.photos || []).filter(p => p.character === character);
+      if (cp.length) results.push({
+        id: collab.name.replace(/\s+/g, '-').toLowerCase(),
+        type: 'collab',
+        name: collab.name,
+        photos: cp
+      });
+    });
+    return results;
+  }
+
   const igSVG = `<svg class="info-panel__ig-icon" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
@@ -106,6 +134,152 @@ const Lightbox = (() => {
     stroke-linecap="round" stroke-linejoin="round">
     <polyline points="6 9 12 15 18 9"/>
   </svg>`;
+
+  // ── Build character panel (all photos of a character) ───
+  function buildCharacterPanel(character) {
+    clearPanelTimers();
+    infoPanel.innerHTML = '';
+
+    const characterAlbums = findCharacterAlbums(character);
+    const isMobile = window.innerWidth <= 767;
+
+    if (characterAlbums.length === 0) {
+      infoPanel.innerHTML = `<div class="info-panel__scroll"><p style="color:#999;">No photos found</p></div>`;
+      return;
+    }
+
+    // ── Character identity block ──────────────────────────────
+    const characterHtml = `
+      <div class="info-panel__section">
+        <span class="info-panel__section-label">CHARACTER</span>
+        <div class="info-panel__character" style="font-size:1.1rem; margin-bottom:4px;">${character}</div>
+        <div class="info-panel__project-count" style="font-size:0.75rem; color:#999;">Appears in ${characterAlbums.length} project${characterAlbums.length !== 1 ? 's' : ''}</div>
+      </div>`;
+
+    // ── Projects block ─────────────────────────────────────────
+    const hasEvents = characterAlbums.some(a => a.type === 'events');
+    const hasStudio = characterAlbums.some(a => a.type === 'studio');
+    const hasCollab = characterAlbums.some(a => a.type === 'collab');
+
+    const tabsHtml = `
+      <div class="info-panel__filter-tabs">
+        <button class="info-panel__filter-tab active" data-filter="all">All</button>
+        ${hasEvents ? '<button class="info-panel__filter-tab" data-filter="events">Events</button>' : ''}
+        ${hasStudio ? '<button class="info-panel__filter-tab" data-filter="studio">Studio</button>' : ''}
+        ${hasCollab ? '<button class="info-panel__filter-tab" data-filter="collab">Collab</button>' : ''}
+      </div>`;
+
+    let projectsHtml = '';
+    if (isMobile) {
+      const accordions = characterAlbums.map((a, i) => `
+        <div class="info-panel__accordion" data-ai="${i}" data-type="${a.type}">
+          <div class="info-panel__accordion-header">
+            <div class="info-panel__accordion-thumb">
+              <img src="${a.photos[0].src}" alt="${a.name}">
+            </div>
+            <div class="info-panel__accordion-meta">
+              <div class="info-panel__album-name">${a.name}</div>
+              <div class="info-panel__album-count">${a.photos.length} photo${a.photos.length !== 1 ? 's' : ''}</div>
+            </div>
+            ${chevronSVG}
+          </div>
+          <div class="info-panel__accordion-photos">
+            ${a.photos.map((p, pi) =>
+              `<div class="info-panel__acc-photo" data-ai="${i}" data-pi="${pi}">
+                 <img src="${p.src}" alt="">
+               </div>`
+            ).join('')}
+          </div>
+        </div>`).join('');
+
+      projectsHtml = `
+        <div class="info-panel__section">
+          <span class="info-panel__section-label">PROJECTS</span>
+          ${tabsHtml}
+          <div class="info-panel__album-list">${accordions}</div>
+        </div>`;
+    } else {
+      const cards = characterAlbums.map((a, i) => `
+        <div class="info-panel__album-card" data-ai="${i}" data-type="${a.type}">
+          <div class="info-panel__album-cover">
+            <img src="${a.photos[0].src}" alt="${a.name}">
+          </div>
+          <div class="info-panel__album-info">
+            <div class="info-panel__album-name">${a.name}</div>
+            <div class="info-panel__album-count">${a.photos.length} photo${a.photos.length !== 1 ? 's' : ''}</div>
+          </div>
+        </div>`).join('');
+
+      projectsHtml = `
+        <div class="info-panel__section">
+          <span class="info-panel__section-label">PROJECTS</span>
+          ${tabsHtml}
+          <div class="info-panel__album-grid">${cards}</div>
+        </div>`;
+    }
+
+    infoPanel.innerHTML = `
+      <div class="info-panel__scroll">
+        ${characterHtml}
+        ${projectsHtml}
+      </div>`;
+
+    // ── Filter tabs ──
+    infoPanel.querySelectorAll('.info-panel__filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        infoPanel.querySelectorAll('.info-panel__filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const filter = tab.dataset.filter;
+        infoPanel.querySelectorAll('.info-panel__accordion, .info-panel__album-card').forEach(item => {
+          item.style.display = (filter === 'all' || item.dataset.type === filter) ? '' : 'none';
+        });
+      });
+    });
+
+    if (isMobile) {
+      // ── Mobile accordion ──
+      infoPanel.querySelectorAll('.info-panel__accordion').forEach((acc, i) => {
+        const album = characterAlbums[i];
+        const header = acc.querySelector('.info-panel__accordion-header');
+
+        header.addEventListener('click', () => {
+          const wasOpen = acc.classList.contains('open');
+          infoPanel.querySelectorAll('.info-panel__accordion.open').forEach(a => a.classList.remove('open'));
+          if (!wasOpen) acc.classList.add('open');
+        });
+      });
+
+      // ── Photo tap ──
+      infoPanel.querySelectorAll('.info-panel__acc-photo').forEach(div => {
+        div.addEventListener('click', () => {
+          const ai = parseInt(div.dataset.ai);
+          const pi = parseInt(div.dataset.pi);
+          const album = characterAlbums[ai];
+          Lightbox.init(album.photos.map(p => ({
+            src: p.src,
+            coser: p.coser || '',
+            character: p.character || '',
+            series: p.series || ''
+          })));
+          Lightbox.open(pi);
+        });
+      });
+    } else {
+      // ── Desktop card click ──
+      infoPanel.querySelectorAll('.info-panel__album-card').forEach((card, i) => {
+        card.addEventListener('click', () => {
+          const album = characterAlbums[i];
+          Lightbox.init(album.photos.map(p => ({
+            src: p.src,
+            coser: p.coser || '',
+            character: p.character || '',
+            series: p.series || ''
+          })));
+          Lightbox.open(0);
+        });
+      });
+    }
+  }
 
   // ── Build & render the coser info + Work Together panel ───
   function buildInfoPanel(photo) {
@@ -136,7 +310,7 @@ const Lightbox = (() => {
               ? `<div class="info-panel__ig-row">${igSVG}<span class="info-panel__ig-handle">${igHandle}</span></div>`
               : '')
         }
-        ${photo.character ? `<div class="info-panel__character">${photo.character}</div>` : ''}
+        ${photo.character ? `<div class="info-panel__character" style="cursor:pointer; color:#c8a46e; text-decoration:underline;" data-character="${photo.character}">${photo.character}</div>` : ''}
         ${photo.series    ? `<div class="info-panel__series">${photo.series}</div>`       : ''}
         ${coserAlbums.length > 0 ? `<div class="info-panel__project-count" style="font-size:0.75rem; color:#999; margin-top:8px;">Appears in ${coserAlbums.length} project${coserAlbums.length !== 1 ? 's' : ''}</div>` : ''}
       </div>`;
@@ -212,6 +386,15 @@ const Lightbox = (() => {
         ${coserHtml}
         ${workHtml}
       </div>`;
+
+    // ── Character click: show all photos of this character ──
+    const characterEl = infoPanel.querySelector('[data-character]');
+    if (characterEl) {
+      characterEl.addEventListener('click', () => {
+        const character = characterEl.dataset.character;
+        buildCharacterPanel(character);
+      });
+    }
 
     // ── Filter tab logic (works for both desktop cards + mobile accordions) ──
     const itemSelector = isMobile ? '.info-panel__accordion' : '.info-panel__album-card';
