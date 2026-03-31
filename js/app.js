@@ -43,6 +43,35 @@ function initSiteIdentity() {
   });
 })();
 
+// ── Mobile hamburger menu ────────────────────────────────────
+(function () {
+  const hamburger = document.getElementById('nav-hamburger');
+  const navLinks = document.getElementById('nav-links');
+  if (!hamburger || !navLinks) return;
+
+  hamburger.addEventListener('click', () => {
+    const isOpen = hamburger.getAttribute('aria-expanded') === 'true';
+    hamburger.setAttribute('aria-expanded', !isOpen);
+    navLinks.classList.toggle('active');
+  });
+
+  // Close menu when a link is clicked
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.setAttribute('aria-expanded', 'false');
+      navLinks.classList.remove('active');
+    });
+  });
+
+  // Close menu on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+      hamburger.setAttribute('aria-expanded', 'false');
+      navLinks.classList.remove('active');
+    }
+  });
+})();
+
 // ── Lightbox ─────────────────────────────────────────────────
 // Fully CONFIG-driven. To add cosers/albums/photos: edit config.js only.
 // handle in event photos (photo.coser) must match cosplayer handle in studio
