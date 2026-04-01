@@ -155,6 +155,20 @@
 
     .success { color: #4bc04b; }
     .error { color: #ff6b6b; }
+
+    /* Photo Grid Responsive */
+    @media (max-width: 1400px) {
+      .event-photo-grid { grid-template-columns: repeat(5, 1fr) !important; }
+    }
+    @media (max-width: 1100px) {
+      .event-photo-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    }
+    @media (max-width: 900px) {
+      .event-photo-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+    @media (max-width: 600px) {
+      .event-photo-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
   </style>
 </head>
 <body>
@@ -436,8 +450,18 @@
 
       <!-- Photo Management Section -->
       <div id="eventPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
+        <!-- Cosplayers Order Panel -->
+        <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
+          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleCoserOrderPanel(this)">
+            📋 Arrange Cosplayer Order (Click to expand/collapse)
+          </h4>
+          <div id="coserOrderList" style="display:none; padding:10px;">
+            <!-- Populated by JavaScript -->
+          </div>
+        </div>
+
         <h3 style="margin-bottom:15px;">Manage Photos in This Event</h3>
-        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Edit position numbers and click "Apply" to reorder</p>
+        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (6 columns) — Edit position numbers and drag photos to reorder</p>
         <div id="eventPhotosList" style="margin-bottom:15px;"></div>
         <div id="eventPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
         <button onclick="applyEventPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
@@ -1329,30 +1353,42 @@
       grouped[handle].push({ ...photo, index });
     });
 
-    // Build HTML for grouped photos
+    // Display cosplayer order panel
+    displayCoserOrderPanel(id, Object.keys(grouped));
+
+    // Build HTML for grouped photos in grid layout
     let html = '';
     Object.entries(grouped).forEach(([handle, coserPhotos]) => {
-      html += `<div style="margin-bottom:20px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
-        <div style="font-weight:bold; margin-bottom:10px; color:#aaa;">Cosplayer: ${handle} (drag to reorder)</div>`;
+      html += `
+        <div style="margin-bottom:30px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
+          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="toggleCoserPhotosGroup(this)">
+            ${handle} (${coserPhotos.length} photos) — Click to expand/collapse
+          </h4>
+          <div class="coser-photos-group" style="display:block; padding:10px;">
+            <div class="event-photo-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:15px;">`;
+
       coserPhotos.forEach(p => {
         html += `
-          <div draggable="true" ondragstart="window.dragStartHandler(event, '${id}', 0, ${p.index}, 'event')" ondragover="window.dragOverHandler(event)" ondrop="window.dropHandler(event, '${id}', 0, ${p.index}, 'event')" ondragend="window.dragEndHandler(event)" data-event-photo-index="${p.index}" style="margin-bottom:10px; padding:10px; background:#0d0d0d; border:2px solid #222; border-radius:3px; display:flex; justify-content:space-between; align-items:center; cursor:grab; opacity:1; transition:all 0.2s;">
-            <div style="flex:1;">
-              <div style="font-size:0.85rem; color:#888;">${p.character || 'N/A'} — ${p.series || 'N/A'}</div>
-              <img src="${p.src}" style="max-width:80px; max-height:60px; margin-top:5px; border-radius:3px;" />
-            </div>
-            <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
-              <div style="display:flex; gap:3px; align-items:center;">
-                <label style="margin:0; font-size:0.75rem; color:#999;">Pos:</label>
-                <input type="number" min="1" max="100" value="${p.index + 1}" data-original="${p.index + 1}" class="eventPhotoPosition" data-photo-id="event_${id}_${p.index}" style="width:50px; padding:4px; font-size:0.8rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
-                <button class="eventPhotoApplyBtn" data-photo-id="event_${id}_${p.index}" onclick="applyEventPhotoPositionChange('event_${id}_${p.index}')" style="padding:4px 8px; font-size:0.75rem; background:#555; color:#999; border:none; border-radius:2px; cursor:not-allowed;" disabled>Apply</button>
-              </div>
-              <button onclick="editPhoto('${id}', ${p.index})" style="padding:5px 10px; font-size:0.8rem;">Edit</button>
-              <button onclick="deletePhoto('${id}', ${p.index})" style="padding:5px 10px; font-size:0.8rem; background:#8b0000; color:#fff;">Delete</button>
-            </div>
-          </div>`;
+              <div draggable="true" ondragstart="window.dragStartHandler(event, '${id}', 0, ${p.index}, 'event')" ondragover="window.dragOverHandler(event)" ondrop="window.dropHandler(event, '${id}', 0, ${p.index}, 'event')" ondragend="window.dragEndHandler(event)" data-event-photo-index="${p.index}" style="padding:10px; background:#0d0d0d; border:2px solid #222; border-radius:3px; cursor:grab; opacity:1; transition:all 0.2s; display:flex; flex-direction:column;">
+                <img src="${p.src}" style="width:100%; aspect-ratio:3/4; object-fit:cover; margin-bottom:8px; border-radius:2px;" alt="${p.character || 'Photo'}" />
+                <div style="font-size:0.75rem; color:#888; margin-bottom:6px; line-height:1.3;">${p.character || 'N/A'}</div>
+                <div style="font-size:0.7rem; color:#666; margin-bottom:8px; line-height:1.2;">${p.series || 'N/A'}</div>
+                <div style="display:flex; gap:3px; align-items:center; margin-bottom:6px;">
+                  <label style="margin:0; font-size:0.65rem; color:#999;">Pos:</label>
+                  <input type="number" min="1" max="100" value="${p.index + 1}" data-original="${p.index + 1}" class="eventPhotoPosition" data-photo-id="event_${id}_${p.index}" style="width:40px; padding:3px; font-size:0.7rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+                  <button class="eventPhotoApplyBtn" data-photo-id="event_${id}_${p.index}" onclick="applyEventPhotoPositionChange('event_${id}_${p.index}')" style="padding:2px 6px; font-size:0.65rem; background:#555; color:#999; border:none; border-radius:2px; cursor:not-allowed;" disabled>✓</button>
+                </div>
+                <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                  <button onclick="editPhoto('${id}', ${p.index})" style="flex:1; padding:4px; font-size:0.7rem; background:#444; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
+                  <button onclick="deletePhoto('${id}', ${p.index})" style="flex:1; padding:4px; font-size:0.7rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete</button>
+                </div>
+              </div>`;
       });
-      html += '</div>';
+
+      html += `
+            </div>
+          </div>
+        </div>`;
     });
 
     document.getElementById('eventPhotosList').innerHTML = html || '<p style="color:#666;">No photos in this event</p>';
@@ -3037,6 +3073,127 @@
       closeBannerEditModal();
       loadBannerPhoto();
     } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  // ── Cosplayer Order Management ──────────────────────────────
+  window.displayCoserOrderPanel = (eventId, cosers) => {
+    const container = document.getElementById('coserOrderList');
+    if (cosers.length === 0) {
+      container.innerHTML = '<p style="color:#666;">No cosplayers in this event</p>';
+      return;
+    }
+
+    let html = '<div style="padding:10px; background:#181818; border-radius:3px;">';
+    cosers.forEach((coser, idx) => {
+      html += `
+        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserDrop(event, '${eventId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser="${coser}" data-event-id="${eventId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; user-select:none;">
+          <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
+          <span style="flex:1; color:#fff; font-size:0.9rem;">${coser}</span>
+          <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
+        </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  };
+
+  window.toggleCoserOrderPanel = (header) => {
+    const panel = header.nextElementSibling;
+    if (panel) {
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      header.style.opacity = panel.style.display === 'none' ? '0.6' : '1';
+    }
+  };
+
+  window.toggleCoserPhotosGroup = (header) => {
+    const group = header.nextElementSibling;
+    if (group) {
+      group.style.display = group.style.display === 'none' ? 'block' : 'none';
+      header.style.opacity = group.style.display === 'none' ? '0.6' : '1';
+    }
+  };
+
+  // Cosplayer drag handlers
+  let draggedCoser = null;
+
+  window.dragCoserStart = (e) => {
+    draggedCoser = e.target.closest('.coser-order-item');
+    draggedCoser.style.opacity = '0.5';
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  window.dragCoserOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const item = e.target.closest('.coser-order-item');
+    if (item && item !== draggedCoser) {
+      item.style.borderTop = '2px solid #c8a46e';
+    }
+  };
+
+  window.dragCoserDrop = (e, eventId, targetIdx) => {
+    e.preventDefault();
+    if (!draggedCoser) return;
+
+    const fromCoser = draggedCoser.getAttribute('data-coser');
+    const toItem = e.target.closest('.coser-order-item');
+    if (!toItem || toItem === draggedCoser) {
+      draggedCoser.style.opacity = '1';
+      draggedCoser = null;
+      return;
+    }
+
+    const toCoser = toItem.getAttribute('data-coser');
+
+    // Find all cosers in order
+    const container = document.getElementById('coserOrderList');
+    const allItems = Array.from(container.querySelectorAll('.coser-order-item'));
+    const coserOrder = allItems.map(item => item.getAttribute('data-coser'));
+
+    // Swap positions
+    const fromIdx = coserOrder.indexOf(fromCoser);
+    [coserOrder[fromIdx], coserOrder[targetIdx]] = [coserOrder[targetIdx], coserOrder[fromIdx]];
+
+    // Save reordered cosers to Firebase (update photos order)
+    saveCoserOrder(eventId, coserOrder);
+
+    draggedCoser.style.opacity = '1';
+    draggedCoser = null;
+  };
+
+  window.dragCoserEnd = (e) => {
+    if (draggedCoser) {
+      draggedCoser.style.opacity = '1';
+    }
+    // Remove border from all items
+    document.querySelectorAll('.coser-order-item').forEach(item => {
+      item.style.borderTop = '1px solid #333';
+    });
+  };
+
+  window.saveCoserOrder = async (eventId, coserOrder) => {
+    try {
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const photos = [...event.photos];
+
+      // Group photos by cosplayer in the new order
+      const reorderedPhotos = [];
+      coserOrder.forEach(coser => {
+        const coserPhotos = photos.filter(p => p.coser === coser);
+        reorderedPhotos.push(...coserPhotos);
+      });
+
+      // Add any remaining photos (e.g., 'Unknown' cosplayer)
+      const orderedCosers = new Set(coserOrder);
+      const remainingPhotos = photos.filter(p => !orderedCosers.has(p.coser || 'Unknown'));
+      reorderedPhotos.push(...remainingPhotos);
+
+      await updateDoc(doc(db, 'events', eventId), { photos: reorderedPhotos });
+      await displayEventPhotos(eventId);
+    } catch (err) {
+      console.error('Error saving cosplayer order:', err);
       alert('Error: ' + err.message);
     }
   };
