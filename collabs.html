@@ -37,6 +37,29 @@
   <!-- Collab Entries -->
   <div class="collab-list" id="collab-list"></div>
 
+  <!-- Collab Details Panel (Desktop: Right Side) -->
+  <div class="collab-panel collab-panel-desktop" id="collab-panel-desktop">
+    <div class="collab-panel-header">
+      <button class="collab-panel-close" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="collab-panel-content" id="collab-panel-content-desktop"></div>
+  </div>
+
+  <!-- Collab Details Panel (Mobile: Full Screen Overlay) -->
+  <div class="collab-panel collab-panel-mobile" id="collab-panel-mobile">
+    <div class="collab-panel-header">
+      <button class="collab-panel-back" aria-label="Back">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="collab-panel-close" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="collab-panel-content" id="collab-panel-content-mobile"></div>
+  </div>
+
   <!-- Footer -->
   <footer>
     <span class="footer__brand" id="footer-brand"></span>
@@ -81,9 +104,9 @@
     </div>
   </div>
 
-  <script src="js/protect.js?v=5"></script>
-  <script type="module" src="js/firebase-init.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/protect.js?v=8"></script>
+  <script type="module" src="js/firebase-init.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
   <script>
     document.title = `Collaborators · ${CONFIG.photographer}`;
   </script>

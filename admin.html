@@ -511,6 +511,10 @@
         <input type="text" id="collabHandle" placeholder="e.g., @sakurahime_cos">
       </div>
       <div class="form-group" style="max-width:400px;">
+        <label>Instagram</label>
+        <input type="text" id="collabInstagram" placeholder="e.g., @sakurahime_cosplay">
+      </div>
+      <div class="form-group" style="max-width:400px;">
         <label>Bio</label>
         <textarea id="collabBio" placeholder="Short bio..."></textarea>
       </div>
@@ -2171,6 +2175,7 @@
   window.saveCollab = async () => {
     const name = document.getElementById('collabName').value;
     const handle = document.getElementById('collabHandle').value;
+    const instagram = document.getElementById('collabInstagram').value;
     const bio = document.getElementById('collabBio').value;
 
     if (!name || !handle) {
@@ -2181,12 +2186,13 @@
 
     try {
       await addDoc(collection(db, 'collaborators'), {
-        name, handle, bio, cover: '', gankUrl: '', photos: []
+        name, handle, instagram, bio, cover: '', gankUrl: '', photos: []
       });
       document.getElementById('collabMsg').textContent = '✓ Collaborator added!';
       document.getElementById('collabMsg').className = 'success';
       document.getElementById('collabName').value = '';
       document.getElementById('collabHandle').value = '';
+      document.getElementById('collabInstagram').value = '';
       document.getElementById('collabBio').value = '';
       loadCollabs();
       setTimeout(() => { document.getElementById('collabMsg').textContent = ''; }, 3000);
@@ -2223,6 +2229,7 @@
     const d = docSnap.data();
     document.getElementById('collabName').value = d.name;
     document.getElementById('collabHandle').value = d.handle;
+    document.getElementById('collabInstagram').value = d.instagram || '';
     document.getElementById('collabBio').value = d.bio || '';
     document.getElementById('collabMsg').textContent = '';
     document.getElementById('saveCollabBtn').textContent = 'Update Collaborator';
@@ -2238,6 +2245,7 @@
   window.updateCollab = async (id) => {
     const name = document.getElementById('collabName').value;
     const handle = document.getElementById('collabHandle').value;
+    const instagram = document.getElementById('collabInstagram').value;
     const bio = document.getElementById('collabBio').value;
 
     if (!name || !handle) {
@@ -2247,11 +2255,12 @@
     }
 
     try {
-      await updateDoc(doc(db, 'collaborators', id), { name, handle, bio });
+      await updateDoc(doc(db, 'collaborators', id), { name, handle, instagram, bio });
       document.getElementById('collabMsg').textContent = '✓ Collaborator updated!';
       document.getElementById('collabMsg').className = 'success';
       document.getElementById('collabName').value = '';
       document.getElementById('collabHandle').value = '';
+      document.getElementById('collabInstagram').value = '';
       document.getElementById('collabBio').value = '';
       document.getElementById('saveCollabBtn').textContent = 'Add Collaborator';
       document.getElementById('saveCollabBtn').onclick = saveCollab;

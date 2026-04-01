@@ -752,6 +752,154 @@ window.openFeaturedPanel = (photo) => {
   document.addEventListener('keydown', closeOnEscape);
 };
 
+// Collaborators panel (Projects & Appearances)
+window.openCollabPanel = (collab) => {
+  const isMobile = window.innerWidth <= 768;
+  const panelId = isMobile ? 'collab-panel-mobile' : 'collab-panel-desktop';
+  const contentId = isMobile ? 'collab-panel-content-mobile' : 'collab-panel-content-desktop';
+
+  const panel = document.getElementById(panelId);
+  const contentEl = document.getElementById(contentId);
+
+  if (!panel || !contentEl) return;
+
+  // Collect all photos from collab
+  const allPhotos = collab.photos || [];
+
+  // Filter photos by album
+  const eventPhotos = [];
+  const studioPhotos = [];
+
+  (CONFIG.events || []).forEach(album => {
+    (album.photos || []).forEach(p => {
+      if (p.coser && p.coser.toLowerCase() === collab.handle.toLowerCase()) {
+        eventPhotos.push({ ...p, album: album.name });
+      }
+    });
+  });
+
+  (CONFIG.studio || []).forEach(album => {
+    (album.photos || []).forEach(p => {
+      if (p.coser && p.coser.toLowerCase() === collab.handle.toLowerCase()) {
+        studioPhotos.push({ ...p, album: album.name });
+      }
+    });
+  });
+
+  // Build photo grid HTML for a given set of photos
+  const buildPhotoGrid = (photos) => {
+    if (!photos.length) {
+      return '<div style="padding: 24px; text-align: center; color: var(--text-muted);">No photos in this category.</div>';
+    }
+    return `
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; padding: 16px;">
+        ${photos.map((p, idx) => `
+          <div style="aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); cursor: pointer;" title="${p.character || 'Photo'}">
+            <img src="${p.src}" alt="${p.character || ''}" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+        `).join('')}
+      </div>
+    `;
+  };
+
+  // Build panel content
+  const html = `
+    <div class="collab-panel-image">
+      <img src="${collab.cover}" alt="${collab.name}" loading="lazy">
+    </div>
+    <div class="collab-panel-tabs">
+      <div class="collab-tabs-list">
+        <button class="collab-tab active" data-tab="all">All (${allPhotos.length})</button>
+        <button class="collab-tab" data-tab="events">Events (${eventPhotos.length})</button>
+        <button class="collab-tab" data-tab="studio">Studio (${studioPhotos.length})</button>
+      </div>
+      <div class="collab-tabs-content">
+        <div class="collab-tab-pane active" data-pane="all">
+          <div style="padding: 16px;">
+            <div class="collab-info-block">
+              <div class="collab-info-label">Collaborator</div>
+              <div class="collab-info-value">${collab.name}</div>
+            </div>
+            <div class="collab-info-block">
+              <div class="collab-info-label">Handle</div>
+              <div class="collab-info-value">${collab.handle}</div>
+            </div>
+            ${collab.instagram ? `
+              <div class="collab-info-block">
+                <div class="collab-info-label">Instagram</div>
+                <div class="collab-info-value">
+                  <a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <circle cx="17.5" cy="6.5" r="1.5"></circle>
+                    </svg>
+                    ${collab.instagram}
+                  </a>
+                </div>
+              </div>
+            ` : ''}
+            ${collab.bio ? `
+              <div class="collab-info-block">
+                <div class="collab-info-label">Bio</div>
+                <div class="collab-info-value">${collab.bio}</div>
+              </div>
+            ` : ''}
+          </div>
+          ${buildPhotoGrid(allPhotos)}
+        </div>
+        <div class="collab-tab-pane" data-pane="events">
+          ${buildPhotoGrid(eventPhotos)}
+        </div>
+        <div class="collab-tab-pane" data-pane="studio">
+          ${buildPhotoGrid(studioPhotos)}
+        </div>
+      </div>
+    </div>
+  `;
+
+  contentEl.innerHTML = html;
+
+  // Tab switching
+  contentEl.querySelectorAll('.collab-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
+
+      // Update active tab button
+      contentEl.querySelectorAll('.collab-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Update active pane
+      contentEl.querySelectorAll('.collab-tab-pane').forEach(pane => pane.classList.remove('active'));
+      contentEl.querySelector(`[data-pane="${tabName}"]`).classList.add('active');
+    });
+  });
+
+  // Open panel
+  panel.classList.add('active');
+
+  // Close button
+  panel.querySelector('.collab-panel-close').addEventListener('click', () => {
+    panel.classList.remove('active');
+  });
+
+  // Back button (mobile)
+  const backBtn = panel.querySelector('.collab-panel-back');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      panel.classList.remove('active');
+    });
+  }
+
+  // Close on escape
+  const closeOnEscape = (e) => {
+    if (e.key === 'Escape' && panel.classList.contains('active')) {
+      panel.classList.remove('active');
+    }
+  };
+  document.addEventListener('keydown', closeOnEscape);
+};
+
 // Featured photo modal (mobile grid and desktop clicks)
 window.showFeaturedPhotoModal = (photo) => {
   // Close any existing modal
@@ -1170,8 +1318,18 @@ function initCollabs() {
       </div>
       <div class="collab-entry__body">
         <div class="collab-entry__label">Collaborator</div>
-        <h2 class="collab-entry__name">${c.name}</h2>
+        <h2 class="collab-entry__name collab-entry__name--clickable">${c.name}</h2>
         <div class="collab-entry__handle">${c.handle}</div>
+        ${c.instagram ? `
+          <div class="collab-entry__instagram">
+            <svg class="collab-entry__instagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <circle cx="17.5" cy="6.5" r="1.5"></circle>
+            </svg>
+            <a href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" class="collab-entry__instagram-link">${c.instagram}</a>
+          </div>
+        ` : ''}
         <p class="collab-entry__bio">${c.bio}</p>
         <div class="collab-entry__divider"></div>
         <div class="collab-entry__projects-label">Our Work Together</div>
@@ -1182,6 +1340,12 @@ function initCollabs() {
         </a>
       </div>
     `;
+
+    // Make coser name clickable to open panel
+    const nameEl = entry.querySelector('.collab-entry__name');
+    nameEl.addEventListener('click', () => {
+      openCollabPanel(c);
+    });
 
     entry.querySelectorAll('.collab-thumb').forEach(thumb => {
       thumb.addEventListener('click', () => {
