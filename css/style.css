@@ -118,6 +118,7 @@ ul { list-style: none; }
 }
 .nav__hamburger[aria-expanded="true"] span:nth-child(2) {
   opacity: 0;
+  visibility: hidden;
 }
 .nav__hamburger[aria-expanded="true"] span:nth-child(3) {
   transform: rotate(-45deg) translate(7px, -7px);
@@ -338,7 +339,7 @@ ul { list-style: none; }
 }
 @media (max-width: 768px) {
   .featured-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 }
@@ -1314,6 +1315,12 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    pointer-events: none;
+    visibility: hidden;
+  }
+  .lightbox.active {
+    pointer-events: all;
+    visibility: visible;
   }
 
   /* Photo area sticks to top while panel content scrolls below */
