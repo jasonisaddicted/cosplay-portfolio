@@ -241,19 +241,31 @@
 
           <!-- Desktop Preview (16:9) -->
           <div style="margin-bottom:25px;">
-            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Desktop (16:9)</label>
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Desktop (16:9) — Drag box to move, drag edges to resize</label>
             <div id="cropPreviewDesktop" style="position:relative; width:100%; aspect-ratio:16/9; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair;">
               <img id="cropImageDesktop" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
-              <div id="cropBoxDesktop" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;"></div>
+              <div id="cropBoxDesktop" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;">
+                <!-- Resize handles -->
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; left:-4px; cursor:nwse-resize;" data-resize="nw"></div>
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; right:-4px; cursor:nesw-resize;" data-resize="ne"></div>
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; left:-4px; cursor:nesw-resize;" data-resize="sw"></div>
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; right:-4px; cursor:nwse-resize;" data-resize="se"></div>
+              </div>
             </div>
           </div>
 
           <!-- Mobile Preview (3:4) -->
           <div style="margin-bottom:20px; max-width:240px;">
-            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile (3:4)</label>
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile (3:4) — Drag box to move, drag edges to resize</label>
             <div id="cropPreviewMobile" style="position:relative; width:100%; aspect-ratio:3/4; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair;">
               <img id="cropImageMobile" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
-              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;"></div>
+              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;">
+                <!-- Resize handles -->
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; left:-4px; cursor:nwse-resize;" data-resize="nw"></div>
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; right:-4px; cursor:nesw-resize;" data-resize="ne"></div>
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; left:-4px; cursor:nesw-resize;" data-resize="sw"></div>
+                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; right:-4px; cursor:nwse-resize;" data-resize="se"></div>
+              </div>
             </div>
           </div>
 
@@ -3058,12 +3070,19 @@
   let cropState = {
     desktopX: 50,
     desktopY: 50,
+    desktopWidth: 160,    // in pixels
+    desktopHeight: 90,
     mobileX: 50,
     mobileY: 50,
+    mobileWidth: 120,     // in pixels
+    mobileHeight: 160,
     isDraggingDesktop: false,
     isDraggingMobile: false,
+    isResizingDesktop: false,
+    isResizingMobile: false,
     dragOffsetX: 0,
-    dragOffsetY: 0
+    dragOffsetY: 0,
+    resizeDir: null
   };
 
   window.initCropTool = (imageSrc) => {
@@ -3090,18 +3109,28 @@
     const desktopPreview = document.getElementById('cropPreviewDesktop');
     const mobilePreview = document.getElementById('cropPreviewMobile');
 
-    // Desktop crop box mousedown
+    // Desktop crop box mousedown (for dragging)
     desktopBox.addEventListener('mousedown', (e) => {
-      cropState.isDraggingDesktop = true;
+      if (e.target.hasAttribute('data-resize')) {
+        cropState.isResizingDesktop = true;
+        cropState.resizeDir = e.target.getAttribute('data-resize');
+      } else {
+        cropState.isDraggingDesktop = true;
+      }
       const boxRect = desktopBox.getBoundingClientRect();
       cropState.dragOffsetX = e.clientX - boxRect.left;
       cropState.dragOffsetY = e.clientY - boxRect.top;
       e.preventDefault();
     });
 
-    // Mobile crop box mousedown
+    // Mobile crop box mousedown (for dragging/resizing)
     mobileBox.addEventListener('mousedown', (e) => {
-      cropState.isDraggingMobile = true;
+      if (e.target.hasAttribute('data-resize')) {
+        cropState.isResizingMobile = true;
+        cropState.resizeDir = e.target.getAttribute('data-resize');
+      } else {
+        cropState.isDraggingMobile = true;
+      }
       const boxRect = mobileBox.getBoundingClientRect();
       cropState.dragOffsetX = e.clientX - boxRect.left;
       cropState.dragOffsetY = e.clientY - boxRect.top;
@@ -3110,37 +3139,114 @@
 
     // Global mouse move
     document.addEventListener('mousemove', (e) => {
+      // Desktop dragging
       if (cropState.isDraggingDesktop) {
         const rect = desktopPreview.getBoundingClientRect();
-
         let x = e.clientX - rect.left - cropState.dragOffsetX;
         let y = e.clientY - rect.top - cropState.dragOffsetY;
 
-        // Constrain to bounds (0 to container size)
         x = Math.max(0, Math.min(x, rect.width));
         y = Math.max(0, Math.min(y, rect.height));
 
-        // Convert to percentage
         cropState.desktopX = Math.round((x / rect.width) * 100);
         cropState.desktopY = Math.round((y / rect.height) * 100);
-
         updateCropBoxPositions();
       }
 
+      // Desktop resizing
+      if (cropState.isResizingDesktop) {
+        const rect = desktopPreview.getBoundingClientRect();
+        const boxRect = desktopBox.getBoundingClientRect();
+        const deltaX = e.clientX - (boxRect.left + boxRect.width / 2);
+        const deltaY = e.clientY - (boxRect.top + boxRect.height / 2);
+
+        let newWidth = boxRect.width;
+        let newHeight = boxRect.height;
+        const aspectRatio = 16 / 9;
+
+        // Calculate new size based on which corner is dragged
+        if (cropState.resizeDir.includes('e')) {
+          newWidth = cropState.desktopWidth + deltaX * 2;
+        }
+        if (cropState.resizeDir.includes('w')) {
+          newWidth = cropState.desktopWidth - deltaX * 2;
+        }
+        if (cropState.resizeDir.includes('s')) {
+          newHeight = cropState.desktopHeight + deltaY * 2;
+        }
+        if (cropState.resizeDir.includes('n')) {
+          newHeight = cropState.desktopHeight - deltaY * 2;
+        }
+
+        // Maintain aspect ratio
+        const calcHeightFromWidth = newWidth / aspectRatio;
+        if (Math.abs(calcHeightFromWidth - newHeight) < Math.abs(newWidth / aspectRatio - newHeight)) {
+          newHeight = calcHeightFromWidth;
+        } else {
+          newWidth = newHeight * aspectRatio;
+        }
+
+        // Minimum size: 80px
+        newWidth = Math.max(80, Math.min(newWidth, rect.width));
+        newHeight = newWidth / aspectRatio;
+
+        cropState.desktopWidth = newWidth;
+        cropState.desktopHeight = newHeight;
+        updateCropBoxPositions();
+      }
+
+      // Mobile dragging
       if (cropState.isDraggingMobile) {
         const rect = mobilePreview.getBoundingClientRect();
-
         let x = e.clientX - rect.left - cropState.dragOffsetX;
         let y = e.clientY - rect.top - cropState.dragOffsetY;
 
-        // Constrain to bounds (0 to container size)
         x = Math.max(0, Math.min(x, rect.width));
         y = Math.max(0, Math.min(y, rect.height));
 
-        // Convert to percentage
         cropState.mobileX = Math.round((x / rect.width) * 100);
         cropState.mobileY = Math.round((y / rect.height) * 100);
+        updateCropBoxPositions();
+      }
 
+      // Mobile resizing
+      if (cropState.isResizingMobile) {
+        const rect = mobilePreview.getBoundingClientRect();
+        const boxRect = mobileBox.getBoundingClientRect();
+        const deltaX = e.clientX - (boxRect.left + boxRect.width / 2);
+        const deltaY = e.clientY - (boxRect.top + boxRect.height / 2);
+
+        let newWidth = boxRect.width;
+        let newHeight = boxRect.height;
+        const aspectRatio = 3 / 4;
+
+        if (cropState.resizeDir.includes('e')) {
+          newWidth = cropState.mobileWidth + deltaX * 2;
+        }
+        if (cropState.resizeDir.includes('w')) {
+          newWidth = cropState.mobileWidth - deltaX * 2;
+        }
+        if (cropState.resizeDir.includes('s')) {
+          newHeight = cropState.mobileHeight + deltaY * 2;
+        }
+        if (cropState.resizeDir.includes('n')) {
+          newHeight = cropState.mobileHeight - deltaY * 2;
+        }
+
+        // Maintain aspect ratio
+        const calcHeightFromWidth = newWidth / aspectRatio;
+        if (Math.abs(calcHeightFromWidth - newHeight) < Math.abs(newWidth / aspectRatio - newHeight)) {
+          newHeight = calcHeightFromWidth;
+        } else {
+          newWidth = newHeight * aspectRatio;
+        }
+
+        // Minimum size: 80px
+        newHeight = Math.max(80, Math.min(newHeight, rect.height));
+        newWidth = newHeight * aspectRatio;
+
+        cropState.mobileWidth = newWidth;
+        cropState.mobileHeight = newHeight;
         updateCropBoxPositions();
       }
     });
@@ -3149,6 +3255,9 @@
     document.addEventListener('mouseup', () => {
       cropState.isDraggingDesktop = false;
       cropState.isDraggingMobile = false;
+      cropState.isResizingDesktop = false;
+      cropState.isResizingMobile = false;
+      cropState.resizeDir = null;
     });
   };
 
@@ -3158,22 +3267,17 @@
     const desktopImg = document.getElementById('cropImageDesktop');
     const mobileImg = document.getElementById('cropImageMobile');
 
-    const desktopBoxWidth = 160;
-    const desktopBoxHeight = 90;
-
     // Desktop - position box with center at crop point
-    desktopBox.style.width = desktopBoxWidth + 'px';
-    desktopBox.style.height = desktopBoxHeight + 'px';
+    desktopBox.style.width = cropState.desktopWidth + 'px';
+    desktopBox.style.height = cropState.desktopHeight + 'px';
     desktopBox.style.left = cropState.desktopX + '%';
     desktopBox.style.top = cropState.desktopY + '%';
     desktopBox.style.transform = 'translate(-50%, -50%)';
     desktopImg.style.objectPosition = cropState.desktopX + '% ' + cropState.desktopY + '%';
 
-    const mobileBoxWidth = 120;
-    const mobileBoxHeight = 160;
     // Mobile - position box with center at crop point
-    mobileBox.style.width = mobileBoxWidth + 'px';
-    mobileBox.style.height = mobileBoxHeight + 'px';
+    mobileBox.style.width = cropState.mobileWidth + 'px';
+    mobileBox.style.height = cropState.mobileHeight + 'px';
     mobileBox.style.left = cropState.mobileX + '%';
     mobileBox.style.top = cropState.mobileY + '%';
     mobileBox.style.transform = 'translate(-50%, -50%)';
@@ -3194,12 +3298,19 @@
     cropState = {
       desktopX: 50,
       desktopY: 50,
+      desktopWidth: 160,
+      desktopHeight: 90,
       mobileX: 50,
       mobileY: 50,
+      mobileWidth: 120,
+      mobileHeight: 160,
       isDraggingDesktop: false,
       isDraggingMobile: false,
+      isResizingDesktop: false,
+      isResizingMobile: false,
       dragOffsetX: 0,
-      dragOffsetY: 0
+      dragOffsetY: 0,
+      resizeDir: null
     };
     updateCropBoxPositions();
   };
