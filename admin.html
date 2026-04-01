@@ -197,6 +197,10 @@
           <label>Cosplayer Handle</label>
           <input type="text" id="batchFeaturedCredit" placeholder="e.g., @sakurahime_cos">
         </div>
+        <div class="form-group">
+          <label>Caption (Optional)</label>
+          <input type="text" id="batchFeaturedCaption" placeholder="e.g., Photo shoot details">
+        </div>
         <button onclick="saveBatchFeatured()" style="width:100%;">Upload & Add Featured</button>
         <div id="batchFeaturedMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
@@ -229,6 +233,10 @@
           <div class="form-group">
             <label>Cosplayer Handle</label>
             <input type="text" id="featuredCredit" placeholder="e.g., @sakurahime_cos">
+          </div>
+          <div class="form-group">
+            <label>Caption (Optional)</label>
+            <input type="text" id="featuredCaption" placeholder="e.g., Photo shoot details">
           </div>
           <div class="form-group">
             <label>Order (priority)</label>
@@ -339,6 +347,10 @@
           <label>Cosplayer Handle</label>
           <input type="text" id="batchEventHandle" placeholder="e.g., @sakurahime_cos">
         </div>
+        <div class="form-group">
+          <label>Caption (Optional)</label>
+          <input type="text" id="batchEventCaption" placeholder="e.g., Photo shoot details">
+        </div>
         <button onclick="saveBatchEvent()" style="width:100%;">Upload Photos</button>
         <div id="batchEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
@@ -397,6 +409,10 @@
             <label>Series</label>
             <input type="text" id="addMoreSeries" placeholder="Series name">
           </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Caption (Optional)</label>
+            <input type="text" id="addMoreCaption" placeholder="Photo shoot details">
+          </div>
           <button onclick="addPhotosToEvent()" style="max-width:400px; width:100%;">Upload & Add Photos</button>
           <div id="addMoreEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
@@ -430,6 +446,10 @@
         <div class="form-group">
           <label>Cosplayer Handle</label>
           <input type="text" id="batchHandle" placeholder="e.g., @sakurahime_cos">
+        </div>
+        <div class="form-group">
+          <label>Caption (Optional)</label>
+          <input type="text" id="batchCaption" placeholder="e.g., Photo shoot details">
         </div>
         <div class="form-group">
           <label>Session Name</label>
@@ -488,11 +508,7 @@
           <div class="upload-progress" id="uploadCollabBatchStatus"></div>
         </div>
         <div class="form-group">
-          <label>Cosplayer Name</label>
-          <input type="text" id="batchCollabName" placeholder="e.g., Sakura Hime">
-        </div>
-        <div class="form-group">
-          <label>Handle</label>
+          <label>Cosplayer Handle (IG)</label>
           <input type="text" id="batchCollabHandle" placeholder="e.g., @sakurahime_cos">
         </div>
         <button onclick="saveBatchCollab()" style="width:100%;">Upload & Add Collab</button>
@@ -503,19 +519,11 @@
 
       <h3 style="margin-bottom:15px;">Or Add Manually</h3>
       <div class="form-group" style="max-width:400px;">
-        <label>Cosplayer Name</label>
-        <input type="text" id="collabName" placeholder="e.g., Sakura Hime">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Handle</label>
+        <label>Cosplayer Handle (IG)</label>
         <input type="text" id="collabHandle" placeholder="e.g., @sakurahime_cos">
       </div>
       <div class="form-group" style="max-width:400px;">
-        <label>Instagram</label>
-        <input type="text" id="collabInstagram" placeholder="e.g., @sakurahime_cosplay">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Bio</label>
+        <label>Bio (Optional)</label>
         <textarea id="collabBio" placeholder="Short bio..."></textarea>
       </div>
       <button id="saveCollabBtn" onclick="saveCollab()" style="max-width:400px; width:100%;">Add Collaborator</button>
@@ -549,6 +557,10 @@
             <label>Series</label>
             <input type="text" id="addMoreCollabSeries" placeholder="Series name">
           </div>
+          <div class="form-group" style="max-width:400px;">
+            <label>Caption (Optional)</label>
+            <input type="text" id="addMoreCollabCaption" placeholder="Photo shoot details">
+          </div>
           <button onclick="addPhotosToCollab()" style="max-width:400px; width:100%;">Upload & Add Photos</button>
           <div id="addMoreCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
@@ -572,9 +584,13 @@
         <label>Character</label>
         <input type="text" id="photoEditCharacter" placeholder="Character name" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
       </div>
-      <div class="form-group" style="margin-bottom:20px;">
+      <div class="form-group" style="margin-bottom:15px;">
         <label>Series</label>
         <input type="text" id="photoEditSeries" placeholder="Series name" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Caption (Optional)</label>
+        <input type="text" id="photoEditCaption" placeholder="Photo shoot details" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
       </div>
 
       <hr style="border:none; border-top:1px solid #333; margin:20px 0;">
@@ -670,6 +686,7 @@
     const character = document.getElementById('featuredChar').value;
     const series = document.getElementById('featuredSeries').value;
     const credit = document.getElementById('featuredCredit').value;
+    const caption = document.getElementById('featuredCaption').value || '';
     const order = parseInt(document.getElementById('featuredOrder').value) || 1;
     const cropPos = document.querySelector('input[name="featuredCropPos"]:checked').value || 'center';
 
@@ -684,6 +701,7 @@
         src,
         character,
         series,
+        caption,
         credit,
         order,
         cropPosition: cropPos,
@@ -693,6 +711,7 @@
       document.getElementById('featureMsg').className = 'success';
       document.getElementById('featuredChar').value = '';
       document.getElementById('featuredSeries').value = '';
+      document.getElementById('featuredCaption').value = '';
       document.getElementById('featuredCredit').value = '';
       document.getElementById('featuredSrc').value = '';
       document.querySelector('input[name="featuredCropPos"][value="center"]').checked = true;
@@ -1202,6 +1221,7 @@
     const handle = document.getElementById('photoEditHandle').value;
     const character = document.getElementById('photoEditCharacter').value;
     const series = document.getElementById('photoEditSeries').value;
+    const caption = document.getElementById('photoEditCaption').value || '';
     const sourceType = document.getElementById('photoEditSourceType').value;
     const sourceId = document.getElementById('photoEditSourceId').value;
 
@@ -1220,7 +1240,7 @@
         const docSnap = await getDoc(doc(db, 'events', eventId));
         const event = docSnap.data();
         const photos = [...event.photos];
-        photos[photoIndex] = { ...photos[photoIndex], coser: handle, character, series, source };
+        photos[photoIndex] = { ...photos[photoIndex], coser: handle, character, series, caption, source };
         await updateDoc(doc(db, 'events', eventId), { photos });
         await displayEventPhotos(eventId);
       } else if (type === 'studio') {
@@ -1230,7 +1250,7 @@
         const docSnap = await getDoc(doc(db, 'studio', sessionId));
         const session = docSnap.data();
         const cosplayers = JSON.parse(JSON.stringify(session.cosplayers));
-        cosplayers[cosplayerIdx].photos[photoIdx] = { ...cosplayers[cosplayerIdx].photos[photoIdx], coser: handle, character, series, source };
+        cosplayers[cosplayerIdx].photos[photoIdx] = { ...cosplayers[cosplayerIdx].photos[photoIdx], coser: handle, character, series, caption, source };
         await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
         await displayStudioPhotos(sessionId);
       } else if (type === 'collab') {
@@ -1239,7 +1259,7 @@
         const docSnap = await getDoc(doc(db, 'collaborators', collabId));
         const collab = docSnap.data();
         const photos = [...collab.photos];
-        photos[photoIndex] = { ...photos[photoIndex], character, series, source };
+        photos[photoIndex] = { ...photos[photoIndex], character, series, caption, source };
         await updateDoc(doc(db, 'collaborators', collabId), { photos });
         await displayCollabPhotos(collabId);
       }
@@ -1351,6 +1371,7 @@
     const handle = document.getElementById('addMoreHandle').value;
     const character = document.getElementById('addMoreCharacter').value;
     const series = document.getElementById('addMoreSeries').value;
+    const caption = document.getElementById('addMoreCaption').value || '';
 
     if (!files.length || !handle || !character || !series) {
       document.getElementById('addMoreEventMsg').textContent = 'Please select photos and fill in all fields';
@@ -1381,7 +1402,8 @@
           src: url,
           coser: handle,
           character: character,
-          series: series
+          series: series,
+          caption: caption
         });
       }
 
@@ -1400,6 +1422,7 @@
       document.getElementById('addMoreHandle').value = '';
       document.getElementById('addMoreCharacter').value = '';
       document.getElementById('addMoreSeries').value = '';
+      document.getElementById('addMoreCaption').value = '';
       await displayEventPhotos(eventId);
       setTimeout(() => { status.textContent = ''; }, 3000);
     } catch (err) {
@@ -1735,6 +1758,7 @@
     const character = document.getElementById('batchCharacter').value;
     const series = document.getElementById('batchSeries').value;
     const handle = document.getElementById('batchHandle').value;
+    const caption = document.getElementById('batchCaption').value || '';
     const sessionName = document.getElementById('batchSessionName').value;
     const sessionDate = document.getElementById('batchSessionDate').value;
 
@@ -1767,7 +1791,8 @@
           src: url,
           coser: handle,
           character: character,
-          series: series
+          series: series,
+          caption: caption
         });
       }
 
@@ -1804,6 +1829,7 @@
       document.getElementById('batchCharacter').value = '';
       document.getElementById('batchSeries').value = '';
       document.getElementById('batchHandle').value = '';
+      document.getElementById('batchCaption').value = '';
       document.getElementById('batchSessionName').value = '';
       document.getElementById('batchSessionDate').value = '';
       document.getElementById('uploadStudioStatus').textContent = '';
@@ -1923,6 +1949,7 @@
     const character = document.getElementById('batchFeaturedChar').value;
     const series = document.getElementById('batchFeaturedSeries').value;
     const credit = document.getElementById('batchFeaturedCredit').value;
+    const caption = document.getElementById('batchFeaturedCaption').value;
 
     if (!files.length || !character || !series || !credit) {
       document.getElementById('batchFeaturedMsg').textContent = 'Please fill in all fields and select photos';
@@ -1952,6 +1979,7 @@
           coser: credit,
           character: character,
           series: series,
+          caption: caption || '',
           order: i + 1,
           cropPosition: 'center'
         });
@@ -1963,6 +1991,7 @@
       document.getElementById('batchFeaturedChar').value = '';
       document.getElementById('batchFeaturedSeries').value = '';
       document.getElementById('batchFeaturedCredit').value = '';
+      document.getElementById('batchFeaturedCaption').value = '';
       document.getElementById('uploadFeaturedBatchStatus').textContent = '';
       loadFeatured();
       setTimeout(() => { document.getElementById('batchFeaturedMsg').textContent = ''; }, 3000);
@@ -2003,6 +2032,7 @@
     const character = document.getElementById('batchEventChar').value;
     const series = document.getElementById('batchEventSeries').value;
     const handle = document.getElementById('batchEventHandle').value;
+    const caption = document.getElementById('batchEventCaption').value || '';
 
     if (!files.length || !character || !series || !handle) {
       document.getElementById('batchEventMsg').textContent = 'Please fill in all fields and select photos';
@@ -2032,6 +2062,7 @@
           coser: handle,
           character: character,
           series: series,
+          caption: caption,
           source: null  // Will be set after event creation
         });
       }
@@ -2098,6 +2129,7 @@
       document.getElementById('batchEventChar').value = '';
       document.getElementById('batchEventSeries').value = '';
       document.getElementById('batchEventHandle').value = '';
+      document.getElementById('batchEventCaption').value = '';
       document.getElementById('uploadEventBatchStatus').textContent = '';
       loadEvents();
       setTimeout(() => { document.getElementById('batchEventMsg').textContent = ''; }, 3000);
@@ -2110,10 +2142,9 @@
   // ─ Batch Upload: Collabs ─
   window.saveBatchCollab = async () => {
     const files = document.getElementById('uploadCollabFiles').files;
-    const name = document.getElementById('batchCollabName').value;
     const handle = document.getElementById('batchCollabHandle').value;
 
-    if (!files.length || !name || !handle) {
+    if (!files.length || !handle) {
       document.getElementById('batchCollabMsg').textContent = 'Please fill in all fields and select photos';
       document.getElementById('batchCollabMsg').className = 'error';
       return;
@@ -2141,7 +2172,7 @@
 
       // Create collaborator first to get the ID
       const newCollabRef = await addDoc(collection(db, 'collaborators'), {
-        name: name,
+        name: handle,
         handle: handle,
         bio: '',
         cover: photos[0]?.src || '',
@@ -2160,7 +2191,6 @@
       document.getElementById('batchCollabMsg').textContent = `✓ Collaborator added with ${files.length} photos!`;
       document.getElementById('batchCollabMsg').className = 'success';
       document.getElementById('uploadCollabFiles').value = '';
-      document.getElementById('batchCollabName').value = '';
       document.getElementById('batchCollabHandle').value = '';
       document.getElementById('uploadCollabBatchStatus').textContent = '';
       loadCollabs();
@@ -2173,26 +2203,27 @@
 
   // ─ Collabs ─
   window.saveCollab = async () => {
-    const name = document.getElementById('collabName').value;
     const handle = document.getElementById('collabHandle').value;
-    const instagram = document.getElementById('collabInstagram').value;
     const bio = document.getElementById('collabBio').value;
 
-    if (!name || !handle) {
-      document.getElementById('collabMsg').textContent = 'Name and handle required';
+    if (!handle) {
+      document.getElementById('collabMsg').textContent = 'Handle required';
       document.getElementById('collabMsg').className = 'error';
       return;
     }
 
     try {
       await addDoc(collection(db, 'collaborators'), {
-        name, handle, instagram, bio, cover: '', gankUrl: '', photos: []
+        name: handle,
+        handle,
+        bio,
+        cover: '',
+        gankUrl: '',
+        photos: []
       });
       document.getElementById('collabMsg').textContent = '✓ Collaborator added!';
       document.getElementById('collabMsg').className = 'success';
-      document.getElementById('collabName').value = '';
       document.getElementById('collabHandle').value = '';
-      document.getElementById('collabInstagram').value = '';
       document.getElementById('collabBio').value = '';
       loadCollabs();
       setTimeout(() => { document.getElementById('collabMsg').textContent = ''; }, 3000);
@@ -2520,6 +2551,7 @@
     const files = document.getElementById('addMoreCollabFiles').files;
     const character = document.getElementById('addMoreCollabCharacter').value;
     const series = document.getElementById('addMoreCollabSeries').value;
+    const caption = document.getElementById('addMoreCollabCaption').value || '';
 
     if (!files.length || !character || !series) {
       document.getElementById('addMoreCollabMsg').textContent = 'Please select photos and fill in all fields';
@@ -2549,7 +2581,8 @@
         newPhotos.push({
           src: url,
           character: character,
-          series: series
+          series: series,
+          caption: caption
         });
       }
 
@@ -2567,6 +2600,7 @@
       document.getElementById('addMoreCollabFiles').value = '';
       document.getElementById('addMoreCollabCharacter').value = '';
       document.getElementById('addMoreCollabSeries').value = '';
+      document.getElementById('addMoreCollabCaption').value = '';
       await displayCollabPhotos(collabId);
       setTimeout(() => { status.textContent = ''; }, 3000);
     } catch (err) {

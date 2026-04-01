@@ -51,27 +51,26 @@
     </div>
   </div>
 
-  <!-- Featured Details Panel (Desktop: Right Side) -->
-  <div class="featured-panel featured-panel-desktop" id="featured-panel-desktop">
-    <div class="featured-panel-header">
-      <button class="featured-panel-close" aria-label="Close">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="featured-panel-content" id="featured-panel-content-desktop"></div>
+  <!-- Photo Description Panel (Featured) - Unified Design -->
+  <div class="info-panel__standalone" id="featured-panel-desktop" style="display: none;">
+    <div class="info-panel__scroll" id="featured-panel-content-desktop"></div>
+    <button class="info-panel__close-btn" aria-label="Close" style="position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: transparent; border: 1px solid var(--border); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: currentColor; stroke-width: 2;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
   </div>
 
-  <!-- Featured Details Panel (Mobile: Full Screen Overlay) -->
-  <div class="featured-panel featured-panel-mobile" id="featured-panel-mobile">
-    <div class="featured-panel-header">
-      <button class="featured-panel-back" aria-label="Back">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+  <!-- Photo Description Panel (Featured) - Mobile -->
+  <div class="info-panel__standalone info-panel__standalone-mobile" id="featured-panel-mobile" style="display: none;">
+    <div class="info-panel__mobile-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border);">
+      <button class="info-panel__back-btn" aria-label="Back" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+        <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Back
       </button>
-      <button class="featured-panel-close" aria-label="Close">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      <button class="info-panel__close-btn" aria-label="Close" style="background: none; border: none; color: var(--text); cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: currentColor; stroke-width: 2;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="featured-panel-content" id="featured-panel-content-mobile"></div>
+    <div class="info-panel__scroll" id="featured-panel-content-mobile"></div>
   </div>
 
   <!-- Footer -->

@@ -650,103 +650,62 @@ window.openFeaturedPanel = (photo) => {
   const panel = document.getElementById(panelId);
   const contentEl = document.getElementById(contentId);
 
-  // Build panel content
+  // Build panel content (info-panel structure)
   const html = `
-    <div class="featured-panel-image">
-      <img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">
+    <div class="info-panel__section">
+      <span class="info-panel__section-label">Photo</span>
+      <div style="width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 16px;">
+        <img src="${photo.src}" alt="${photo.character || ''}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+      </div>
     </div>
-    <div class="featured-panel-tabs">
-      <div class="featured-tabs-list">
-        <button class="featured-tab active" data-tab="info">Info</button>
-        ${photo.credit ? '<button class="featured-tab" data-tab="cosplayer">Cosplayer</button>' : ''}
-        ${photo.series ? '<button class="featured-tab" data-tab="series">Series</button>' : ''}
-      </div>
-      <div class="featured-tabs-content">
-        <div class="featured-tab-pane active" data-pane="info">
-          ${photo.character ? `
-            <div class="featured-info-block">
-              <div class="featured-info-label">Character</div>
-              <div class="featured-info-value">${photo.character}</div>
-            </div>
-          ` : ''}
-          ${photo.series ? `
-            <div class="featured-info-block">
-              <div class="featured-info-label">Series</div>
-              <div class="featured-info-value featured-info-clickable" onclick="openCharacterModal('${photo.series}')">${photo.series}</div>
-            </div>
-          ` : ''}
-          ${photo.credit ? `
-            <div class="featured-info-block">
-              <div class="featured-info-label">Cosplayer</div>
-              <div class="featured-info-value featured-info-clickable" onclick="openCosplayerModal('${photo.credit}')">${photo.credit}</div>
-            </div>
-          ` : ''}
+    <div class="info-panel__section">
+      <span class="info-panel__section-label">Details</span>
+      ${photo.character ? `
+        <div class="info-panel__section" style="padding-bottom: 12px;">
+          <div style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px;">Character</div>
+          <div style="font-size: 0.9rem; color: var(--text);">${photo.character}</div>
         </div>
-        ${photo.credit ? `
-          <div class="featured-tab-pane" data-pane="cosplayer">
-            <div class="featured-info-block">
-              <div class="featured-info-label">Cosplayer</div>
-              <div class="featured-info-value">${photo.credit}</div>
-            </div>
-            <div class="featured-info-block">
-              <div class="featured-info-label">View More</div>
-              <button class="featured-info-button" onclick="openCosplayerModal('${photo.credit}')">See All Photos</button>
-            </div>
-          </div>
-        ` : ''}
-        ${photo.series ? `
-          <div class="featured-tab-pane" data-pane="series">
-            <div class="featured-info-block">
-              <div class="featured-info-label">Series</div>
-              <div class="featured-info-value">${photo.series}</div>
-            </div>
-            <div class="featured-info-block">
-              <div class="featured-info-label">View More</div>
-              <button class="featured-info-button" onclick="openCharacterModal('${photo.series}')">See All Photos</button>
-            </div>
-          </div>
-        ` : ''}
-      </div>
+      ` : ''}
+      ${photo.series ? `
+        <div class="info-panel__section" style="padding-bottom: 12px;">
+          <div style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px;">Series</div>
+          <div style="font-size: 0.9rem; color: var(--text); cursor: pointer;" onclick="openCharacterModal('${photo.series}')">${photo.series}</div>
+        </div>
+      ` : ''}
+      ${photo.credit ? `
+        <div class="info-panel__section" style="padding-bottom: 12px;">
+          <div style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px;">Cosplayer</div>
+          <div style="font-size: 0.9rem; color: var(--text); cursor: pointer;" onclick="openCosplayerModal('${photo.credit}')">${photo.credit}</div>
+        </div>
+      ` : ''}
     </div>
   `;
 
   contentEl.innerHTML = html;
 
-  // Tab switching
-  contentEl.querySelectorAll('.featured-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const tabName = tab.dataset.tab;
-
-      // Update active tab button
-      contentEl.querySelectorAll('.featured-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      // Update active pane
-      contentEl.querySelectorAll('.featured-tab-pane').forEach(pane => pane.classList.remove('active'));
-      contentEl.querySelector(`[data-pane="${tabName}"]`).classList.add('active');
-    });
-  });
-
   // Open panel
-  panel.classList.add('active');
+  panel.style.display = 'flex';
 
   // Close button
-  panel.querySelector('.featured-panel-close').addEventListener('click', () => {
-    panel.classList.remove('active');
-  });
+  const closeBtn = panel.querySelector('.info-panel__close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      panel.style.display = 'none';
+    });
+  }
 
   // Back button (mobile)
-  const backBtn = panel.querySelector('.featured-panel-back');
+  const backBtn = panel.querySelector('.info-panel__back-btn');
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      panel.classList.remove('active');
+      panel.style.display = 'none';
     });
   }
 
   // Close on escape
   const closeOnEscape = (e) => {
-    if (e.key === 'Escape' && panel.classList.contains('active')) {
-      panel.classList.remove('active');
+    if (e.key === 'Escape' && panel.style.display !== 'none') {
+      panel.style.display = 'none';
     }
   };
   document.addEventListener('keydown', closeOnEscape);
@@ -802,99 +761,89 @@ window.openCollabPanel = (collab) => {
     `;
   };
 
-  // Build panel content
+  // Build panel content using unified info-panel structure
   const html = `
-    <div class="collab-panel-image">
-      <img src="${collab.cover}" alt="${collab.name}" loading="lazy">
-    </div>
-    <div class="collab-panel-tabs">
-      <div class="collab-tabs-list">
-        <button class="collab-tab active" data-tab="all">All (${allPhotos.length})</button>
-        <button class="collab-tab" data-tab="events">Events (${eventPhotos.length})</button>
-        <button class="collab-tab" data-tab="studio">Studio (${studioPhotos.length})</button>
+    <div class="info-panel__section">
+      <span class="info-panel__section-label">Cosplayer</span>
+      <div style="width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 16px;">
+        <img src="${collab.cover}" alt="${collab.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
       </div>
-      <div class="collab-tabs-content">
-        <div class="collab-tab-pane active" data-pane="all">
-          <div style="padding: 16px;">
-            <div class="collab-info-block">
-              <div class="collab-info-label">Collaborator</div>
-              <div class="collab-info-value">${collab.name}</div>
-            </div>
-            <div class="collab-info-block">
-              <div class="collab-info-label">Handle</div>
-              <div class="collab-info-value">${collab.handle}</div>
-            </div>
-            ${collab.instagram ? `
-              <div class="collab-info-block">
-                <div class="collab-info-label">Instagram</div>
-                <div class="collab-info-value">
-                  <a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                      <circle cx="17.5" cy="6.5" r="1.5"></circle>
-                    </svg>
-                    ${collab.instagram}
-                  </a>
-                </div>
-              </div>
-            ` : ''}
-            ${collab.bio ? `
-              <div class="collab-info-block">
-                <div class="collab-info-label">Bio</div>
-                <div class="collab-info-value">${collab.bio}</div>
-              </div>
-            ` : ''}
-          </div>
-          ${buildPhotoGrid(allPhotos)}
+      <div style="font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 8px;">${collab.name}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">${collab.handle}</div>
+      ${collab.instagram ? `
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <circle cx="17.5" cy="6.5" r="1.5"></circle>
+          </svg>
+          <a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; font-size: 0.85rem;">${collab.instagram}</a>
         </div>
-        <div class="collab-tab-pane" data-pane="events">
-          ${buildPhotoGrid(eventPhotos)}
-        </div>
-        <div class="collab-tab-pane" data-pane="studio">
-          ${buildPhotoGrid(studioPhotos)}
-        </div>
+      ` : ''}
+      ${collab.bio ? `<div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-top: 12px;">${collab.bio}</div>` : ''}
+    </div>
+
+    <div class="info-panel__section">
+      <span class="info-panel__section-label">Projects & Appearances</span>
+      <div class="info-panel__filter-tabs" style="margin-bottom: 16px;">
+        <button class="info-panel__filter-tab active" data-filter="all">All (${allPhotos.length})</button>
+        <button class="info-panel__filter-tab" data-filter="events">Events (${eventPhotos.length})</button>
+        <button class="info-panel__filter-tab" data-filter="studio">Studio (${studioPhotos.length})</button>
+      </div>
+
+      <div class="info-panel__album-list" data-filter="all" style="display: block;">
+        ${buildPhotoGrid(allPhotos)}
+      </div>
+      <div class="info-panel__album-list" data-filter="events" style="display: none;">
+        ${buildPhotoGrid(eventPhotos)}
+      </div>
+      <div class="info-panel__album-list" data-filter="studio" style="display: none;">
+        ${buildPhotoGrid(studioPhotos)}
       </div>
     </div>
   `;
 
   contentEl.innerHTML = html;
 
-  // Tab switching
-  contentEl.querySelectorAll('.collab-tab').forEach(tab => {
+  // Tab switching using filter system
+  contentEl.querySelectorAll('.info-panel__filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      const tabName = tab.dataset.tab;
+      const filter = tab.dataset.filter;
 
       // Update active tab button
-      contentEl.querySelectorAll('.collab-tab').forEach(t => t.classList.remove('active'));
+      contentEl.querySelectorAll('.info-panel__filter-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
 
-      // Update active pane
-      contentEl.querySelectorAll('.collab-tab-pane').forEach(pane => pane.classList.remove('active'));
-      contentEl.querySelector(`[data-pane="${tabName}"]`).classList.add('active');
+      // Update visible album list
+      contentEl.querySelectorAll('.info-panel__album-list').forEach(list => {
+        list.style.display = list.dataset.filter === filter ? 'block' : 'none';
+      });
     });
   });
 
   // Open panel
-  panel.classList.add('active');
+  panel.style.display = 'flex';
 
   // Close button
-  panel.querySelector('.collab-panel-close').addEventListener('click', () => {
-    panel.classList.remove('active');
-  });
+  const closeBtn = panel.querySelector('.info-panel__close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      panel.style.display = 'none';
+    });
+  }
 
   // Back button (mobile)
-  const backBtn = panel.querySelector('.collab-panel-back');
+  const backBtn = panel.querySelector('.info-panel__back-btn');
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      panel.classList.remove('active');
+      panel.style.display = 'none';
     });
   }
 
   // Close on escape
   const closeOnEscape = (e) => {
-    if (e.key === 'Escape' && panel.classList.contains('active')) {
-      panel.classList.remove('active');
+    if (e.key === 'Escape' && panel.style.display !== 'none') {
+      panel.style.display = 'none';
     }
   };
   document.addEventListener('keydown', closeOnEscape);
