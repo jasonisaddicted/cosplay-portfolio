@@ -258,12 +258,28 @@
             </div>
           </div>
 
-          <!-- Mobile Preview (Full Width) -->
+          <!-- Mobile Preview (Full Image) -->
           <div style="margin-bottom:20px;">
-            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile (Full Width) — Drag vertically to adjust crop</label>
-            <div id="cropPreviewMobile" style="position:relative; width:100%; aspect-ratio:3/4; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair;">
-              <img id="cropImageMobile" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
-              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;">
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile Display Mode</label>
+            <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+              <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="radio" name="mobileDisplayMode" value="fullWidth" checked style="margin-right:5px;"> Full Width (Edge-to-Edge)
+              </label>
+              <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="radio" name="mobileDisplayMode" value="originalRatio" style="margin-right:5px;"> Original Ratio
+              </label>
+              <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="radio" name="mobileDisplayMode" value="crop" style="margin-right:5px;"> Crop
+              </label>
+            </div>
+
+            <div style="margin-bottom:15px; padding:12px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
+              <p style="margin:0; font-size:0.85rem; color:#888;" id="mobileDisplayInfo">Full width image will stretch to fit width while maintaining aspect ratio.</p>
+            </div>
+
+            <div id="cropPreviewMobile" style="position:relative; width:100%; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair; max-height:600px;">
+              <img id="cropImageMobile" src="" alt="" style="width:100%; height:auto; object-fit:contain; object-position:center; display:block;">
+              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box; display:none;">
               </div>
             </div>
           </div>
@@ -1013,6 +1029,7 @@
       const cropMobileX = parseInt(document.getElementById('cropMobileX').value) || 50;
       const cropMobileY = parseInt(document.getElementById('cropMobileY').value) || 50;
 
+      const mobileMode = document.querySelector('input[name="mobileDisplayMode"]:checked').value;
       const siteConfig = doc(db, 'site', 'config');
       await updateDoc(siteConfig, {
         bannerPhoto: {
@@ -1024,6 +1041,7 @@
           cropPosition: cropPos,
           cropDesktop: { x: cropDesktopX, y: cropDesktopY },
           cropMobile: { x: cropMobileX, y: cropMobileY },
+          mobileMode: mobileMode,
           updatedAt: new Date()
         }
       });
@@ -3069,7 +3087,7 @@
   });
 
   // ─ Banner Photo Crop Tool ─
-  const DRAG_SENSITIVITY = 0.08;  // Damping factor for drag sensitivity (0-1, lower = less sensitive)
+  const DRAG_SENSITIVITY = 0.01;  // Damping factor for drag sensitivity (0-1, lower = less sensitive)
 
   let cropState = {
     desktopX: 50,
@@ -3080,6 +3098,7 @@
     mobileY: 50,
     mobileWidth: null,    // Full width - will be set by updateCropBoxPositions
     mobileHeight: null,   // Height based on image aspect ratio
+    mobileMode: 'fullWidth',  // 'fullWidth', 'originalRatio', or 'crop'
     isDraggingDesktop: false,
     isDraggingMobile: false,
     isResizingDesktop: false,
@@ -3148,12 +3167,16 @@
         let centerX = e.clientX - cropState.dragOffsetX - rect.left;
         let centerY = e.clientY - cropState.dragOffsetY - rect.top;
 
-        // Apply drag sensitivity damping
         centerX = Math.max(0, Math.min(centerX, rect.width));
         centerY = Math.max(0, Math.min(centerY, rect.height));
 
-        cropState.desktopX = Math.round((centerX / rect.width) * 100 * DRAG_SENSITIVITY) / DRAG_SENSITIVITY;
-        cropState.desktopY = Math.round((centerY / rect.height) * 100 * DRAG_SENSITIVITY) / DRAG_SENSITIVITY;
+        // Apply drag sensitivity damping to the result
+        let newX = Math.round((centerX / rect.width) * 100);
+        let newY = Math.round((centerY / rect.height) * 100);
+
+        // Damp movement to reduce sensitivity
+        cropState.desktopX = Math.round(cropState.desktopX + (newX - cropState.desktopX) * DRAG_SENSITIVITY);
+        cropState.desktopY = Math.round(cropState.desktopY + (newY - cropState.desktopY) * DRAG_SENSITIVITY);
         updateCropBoxPositions();
       }
 
@@ -3199,17 +3222,19 @@
         updateCropBoxPositions();
       }
 
-      // Mobile dragging (vertical only - mobile always uses full width)
+      // Mobile dragging (vertical only)
       if (cropState.isDraggingMobile) {
         const rect = mobilePreview.getBoundingClientRect();
         // Mobile X is always full width (100%), only allow Y dragging
         let centerY = e.clientY - cropState.dragOffsetY - rect.top;
 
-        // Apply drag sensitivity damping
         centerY = Math.max(0, Math.min(centerY, rect.height));
 
+        let newY = Math.round((centerY / rect.height) * 100);
+
         cropState.mobileX = 100;  // Always full width
-        cropState.mobileY = Math.round((centerY / rect.height) * 100 * DRAG_SENSITIVITY) / DRAG_SENSITIVITY;
+        // Damp movement to reduce sensitivity
+        cropState.mobileY = Math.round(cropState.mobileY + (newY - cropState.mobileY) * DRAG_SENSITIVITY);
         updateCropBoxPositions();
       }
 
@@ -3263,6 +3288,27 @@
       cropState.isResizingMobile = false;
       cropState.resizeDir = null;
     });
+
+    // Mobile display mode selection
+    document.querySelectorAll('input[name="mobileDisplayMode"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const mode = e.target.value;
+        const cropBox = document.getElementById('cropBoxMobile');
+        const infoText = document.getElementById('mobileDisplayInfo');
+
+        if (mode === 'fullWidth') {
+          cropBox.style.display = 'none';
+          infoText.textContent = 'Full width image will stretch to fit width while maintaining aspect ratio.';
+        } else if (mode === 'originalRatio') {
+          cropBox.style.display = 'none';
+          infoText.textContent = 'Image will display at its original aspect ratio.';
+        } else if (mode === 'crop') {
+          cropBox.style.display = 'block';
+          infoText.textContent = 'Drag to select which part of the image to display.';
+        }
+        updateCropBoxPositions();
+      });
+    });
   };
 
   window.updateCropBoxPositions = () => {
@@ -3315,6 +3361,7 @@
       mobileY: 50,
       mobileWidth: null,
       mobileHeight: null,
+      mobileMode: 'fullWidth',
       isDraggingDesktop: false,
       isDraggingMobile: false,
       isResizingDesktop: false,
@@ -3323,6 +3370,9 @@
       dragOffsetY: 0,
       resizeDir: null
     };
+    document.querySelector('input[name="mobileDisplayMode"][value="fullWidth"]').checked = true;
+    document.getElementById('mobileDisplayInfo').textContent = 'Full width image will stretch to fit width while maintaining aspect ratio.';
+    document.getElementById('cropBoxMobile').style.display = 'none';
     updateCropBoxPositions();
   };
 
@@ -3359,6 +3409,26 @@
         cropState.mobileY = banner.cropMobile.y || 50;
       }
       cropState.mobileX = 100;  // Mobile always full width
+
+      // Load mobile display mode
+      const mobileMode = banner.mobileMode || 'fullWidth';
+      cropState.mobileMode = mobileMode;
+      document.querySelector(`input[name="mobileDisplayMode"][value="${mobileMode}"]`).checked = true;
+
+      // Update crop box visibility based on mode
+      const cropBox = document.getElementById('cropBoxMobile');
+      if (mobileMode === 'crop') {
+        cropBox.style.display = 'block';
+        document.getElementById('mobileDisplayInfo').textContent = 'Drag to select which part of the image to display.';
+      } else {
+        cropBox.style.display = 'none';
+        if (mobileMode === 'originalRatio') {
+          document.getElementById('mobileDisplayInfo').textContent = 'Image will display at its original aspect ratio.';
+        } else {
+          document.getElementById('mobileDisplayInfo').textContent = 'Full width image will stretch to fit width while maintaining aspect ratio.';
+        }
+      }
+
       updateCropBoxPositions();
     }
 
@@ -3385,6 +3455,7 @@
     try {
       const configDoc = await getDoc(doc(db, 'site', 'config'));
       const banner = configDoc.data()?.bannerPhoto;
+      const mobileMode = document.querySelector('input[name="mobileDisplayMode"]:checked').value;
 
       await updateDoc(doc(db, 'site', 'config'), {
         bannerPhoto: {
@@ -3393,7 +3464,8 @@
           series,
           coser,
           description: description || '',
-          cropPosition: cropPos
+          cropPosition: cropPos,
+          mobileMode: mobileMode
         }
       });
 
