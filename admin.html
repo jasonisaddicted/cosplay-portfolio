@@ -240,30 +240,34 @@
 
         <!-- Crop Tool Section -->
         <div id="cropToolSection" style="display:none; margin-bottom:20px; padding:20px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin-top:0; margin-bottom:15px; color:#c8a46e;">📐 Crop Tool - Adjust Focus Area</h4>
-          <p style="font-size:0.85rem; color:#999; margin-bottom:15px;">Drag the crop box to select where to focus the image. Set separate crops for desktop and mobile.</p>
+          <h4 style="margin-top:0; margin-bottom:15px; color:#c8a46e;">📐 Crop Tool - Set Position & Size</h4>
 
-          <!-- Desktop Preview (16:9) -->
+          <!-- Desktop Controls -->
           <div style="margin-bottom:25px;">
-            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Desktop (16:9) — Drag box to move, drag edges to resize</label>
-            <div id="cropPreviewDesktop" style="position:relative; width:100%; aspect-ratio:16/9; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair;">
-              <img id="cropImageDesktop" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
-              <div id="cropBoxDesktop" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;">
-                <!-- Resize handles -->
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; left:-4px; cursor:nwse-resize;" data-resize="nw"></div>
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; right:-4px; cursor:nesw-resize;" data-resize="ne"></div>
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; left:-4px; cursor:nesw-resize;" data-resize="sw"></div>
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; right:-4px; cursor:nwse-resize;" data-resize="se"></div>
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Desktop (16:9)</label>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:12px;">
+              <div class="form-group">
+                <label style="font-size:0.85rem; color:#999;">Position X (%)</label>
+                <input type="range" id="desktopCropX" min="0" max="100" value="50" style="width:100%; cursor:pointer;">
+                <input type="number" id="desktopCropXInput" min="0" max="100" value="50" style="width:100%; padding:6px; background:#181818; border:1px solid #333; color:#fff; margin-top:4px; box-sizing:border-box;">
               </div>
+              <div class="form-group">
+                <label style="font-size:0.85rem; color:#999;">Position Y (%)</label>
+                <input type="range" id="desktopCropY" min="0" max="100" value="50" style="width:100%; cursor:pointer;">
+                <input type="number" id="desktopCropYInput" min="0" max="100" value="50" style="width:100%; padding:6px; background:#181818; border:1px solid #333; color:#fff; margin-top:4px; box-sizing:border-box;">
+              </div>
+            </div>
+            <div id="cropPreviewDesktop" style="position:relative; width:100%; aspect-ratio:16/9; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden;">
+              <img id="cropImageDesktop" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
             </div>
           </div>
 
-          <!-- Mobile Preview (Full Image) -->
+          <!-- Mobile Display Mode -->
           <div style="margin-bottom:20px;">
             <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile Display Mode</label>
-            <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+            <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:12px;">
               <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="mobileDisplayMode" value="fullWidth" style="margin-right:5px;"> Full Width (Edge-to-Edge)
+                <input type="radio" name="mobileDisplayMode" value="fullWidth" style="margin-right:5px;"> Full Width
               </label>
               <label style="display:flex; align-items:center; cursor:pointer;">
                 <input type="radio" name="mobileDisplayMode" value="originalRatio" style="margin-right:5px;"> Original Ratio
@@ -273,21 +277,22 @@
               </label>
             </div>
 
-            <div style="margin-bottom:15px; padding:12px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-              <p style="margin:0; font-size:0.85rem; color:#888;" id="mobileDisplayInfo">Full width image will stretch to fit width while maintaining aspect ratio.</p>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:12px;">
+              <div class="form-group">
+                <label style="font-size:0.85rem; color:#999;">Crop Position (%)</label>
+                <input type="range" id="mobileCropY" min="0" max="100" value="50" style="width:100%; cursor:pointer;">
+                <input type="number" id="mobileCropYInput" min="0" max="100" value="50" style="width:100%; padding:6px; background:#181818; border:1px solid #333; color:#fff; margin-top:4px; box-sizing:border-box;">
+              </div>
             </div>
 
-            <div id="cropPreviewMobile" style="position:relative; width:100%; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair; max-height:600px;">
-              <img id="cropImageMobile" src="" alt="" style="width:100%; height:auto; object-fit:contain; object-position:center; display:block;">
-              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;">
-              </div>
+            <div id="cropPreviewMobile" style="position:relative; width:100%; aspect-ratio:3/4; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; max-height:400px;">
+              <img id="cropImageMobile" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
             </div>
           </div>
 
-          <!-- Hidden inputs for crop coordinates -->
+          <!-- Hidden inputs -->
           <input type="hidden" id="cropDesktopX" value="50">
           <input type="hidden" id="cropDesktopY" value="50">
-          <input type="hidden" id="cropMobileX" value="50">
           <input type="hidden" id="cropMobileY" value="50">
 
           <!-- Crop Controls -->
@@ -3127,215 +3132,76 @@
   };
 
   window.setupCropBoxDragging = () => {
-    const desktopBox = document.getElementById('cropBoxDesktop');
-    const mobileBox = document.getElementById('cropBoxMobile');
-    const desktopPreview = document.getElementById('cropPreviewDesktop');
-    const mobilePreview = document.getElementById('cropPreviewMobile');
-
-    // Desktop crop box mousedown (for dragging)
-    desktopBox.addEventListener('mousedown', (e) => {
-      if (e.target.hasAttribute('data-resize')) {
-        cropState.isResizingDesktop = true;
-        cropState.resizeDir = e.target.getAttribute('data-resize');
-      } else {
-        cropState.isDraggingDesktop = true;
-      }
-      const boxRect = desktopBox.getBoundingClientRect();
-      // Calculate offset from center of box (since box uses transform: translate(-50%, -50%))
-      cropState.dragOffsetX = e.clientX - (boxRect.left + boxRect.width / 2);
-      cropState.dragOffsetY = e.clientY - (boxRect.top + boxRect.height / 2);
-      e.preventDefault();
+    // Desktop X input - sync range and number input
+    document.getElementById('desktopCropX').addEventListener('input', (e) => {
+      cropState.desktopX = parseInt(e.target.value);
+      document.getElementById('desktopCropXInput').value = cropState.desktopX;
+      updateCropBoxPositions();
+    });
+    document.getElementById('desktopCropXInput').addEventListener('input', (e) => {
+      let val = parseInt(e.target.value);
+      val = Math.max(0, Math.min(100, val));
+      cropState.desktopX = val;
+      document.getElementById('desktopCropX').value = val;
+      updateCropBoxPositions();
     });
 
-    // Mobile crop box mousedown (for vertical dragging only - no resizing)
-    mobileBox.addEventListener('mousedown', (e) => {
-      // Mobile only allows vertical dragging, no resizing
-      cropState.isDraggingMobile = true;
-      const mobilePreview = document.getElementById('cropPreviewMobile');
-      const previewRect = mobilePreview.getBoundingClientRect();
-      // Only track Y offset for vertical dragging
-      cropState.dragOffsetY = e.clientY - previewRect.top;
-      e.preventDefault();
+    // Desktop Y input - sync range and number input
+    document.getElementById('desktopCropY').addEventListener('input', (e) => {
+      cropState.desktopY = parseInt(e.target.value);
+      document.getElementById('desktopCropYInput').value = cropState.desktopY;
+      updateCropBoxPositions();
+    });
+    document.getElementById('desktopCropYInput').addEventListener('input', (e) => {
+      let val = parseInt(e.target.value);
+      val = Math.max(0, Math.min(100, val));
+      cropState.desktopY = val;
+      document.getElementById('desktopCropY').value = val;
+      updateCropBoxPositions();
     });
 
-    // Global mouse move
-    document.addEventListener('mousemove', (e) => {
-      // Desktop dragging
-      if (cropState.isDraggingDesktop) {
-        const rect = desktopPreview.getBoundingClientRect();
-        // Calculate center position (offset is from center)
-        let centerX = e.clientX - cropState.dragOffsetX - rect.left;
-        let centerY = e.clientY - cropState.dragOffsetY - rect.top;
-
-        centerX = Math.max(0, Math.min(centerX, rect.width));
-        centerY = Math.max(0, Math.min(centerY, rect.height));
-
-        cropState.desktopX = Math.round((centerX / rect.width) * 100);
-        cropState.desktopY = Math.round((centerY / rect.height) * 100);
-        updateCropBoxPositions();
-      }
-
-      // Desktop resizing
-      if (cropState.isResizingDesktop) {
-        const rect = desktopPreview.getBoundingClientRect();
-        const boxRect = desktopBox.getBoundingClientRect();
-        const deltaX = e.clientX - (boxRect.left + boxRect.width / 2);
-        const deltaY = e.clientY - (boxRect.top + boxRect.height / 2);
-
-        let newWidth = boxRect.width;
-        let newHeight = boxRect.height;
-        const aspectRatio = 16 / 9;
-
-        // Calculate new size based on which corner is dragged
-        if (cropState.resizeDir.includes('e')) {
-          newWidth = cropState.desktopWidth + deltaX * 2;
-        }
-        if (cropState.resizeDir.includes('w')) {
-          newWidth = cropState.desktopWidth - deltaX * 2;
-        }
-        if (cropState.resizeDir.includes('s')) {
-          newHeight = cropState.desktopHeight + deltaY * 2;
-        }
-        if (cropState.resizeDir.includes('n')) {
-          newHeight = cropState.desktopHeight - deltaY * 2;
-        }
-
-        // Maintain aspect ratio
-        const calcHeightFromWidth = newWidth / aspectRatio;
-        if (Math.abs(calcHeightFromWidth - newHeight) < Math.abs(newWidth / aspectRatio - newHeight)) {
-          newHeight = calcHeightFromWidth;
-        } else {
-          newWidth = newHeight * aspectRatio;
-        }
-
-        // Minimum size: 80px
-        newWidth = Math.max(80, Math.min(newWidth, rect.width));
-        newHeight = newWidth / aspectRatio;
-
-        cropState.desktopWidth = newWidth;
-        cropState.desktopHeight = newHeight;
-        updateCropBoxPositions();
-      }
-
-      // Mobile dragging (vertical only)
-      if (cropState.isDraggingMobile) {
-        const rect = mobilePreview.getBoundingClientRect();
-        // Mobile X is always full width (100%), only allow Y dragging
-        let centerY = e.clientY - cropState.dragOffsetY - rect.top;
-
-        centerY = Math.max(0, Math.min(centerY, rect.height));
-
-        cropState.mobileX = 100;  // Always full width
-        cropState.mobileY = Math.round((centerY / rect.height) * 100);
-        updateCropBoxPositions();
-      }
-
-      // Mobile resizing
-      if (cropState.isResizingMobile) {
-        const rect = mobilePreview.getBoundingClientRect();
-        const boxRect = mobileBox.getBoundingClientRect();
-        const deltaX = e.clientX - (boxRect.left + boxRect.width / 2);
-        const deltaY = e.clientY - (boxRect.top + boxRect.height / 2);
-
-        let newWidth = boxRect.width;
-        let newHeight = boxRect.height;
-        const aspectRatio = 3 / 4;
-
-        if (cropState.resizeDir.includes('e')) {
-          newWidth = cropState.mobileWidth + deltaX * 2;
-        }
-        if (cropState.resizeDir.includes('w')) {
-          newWidth = cropState.mobileWidth - deltaX * 2;
-        }
-        if (cropState.resizeDir.includes('s')) {
-          newHeight = cropState.mobileHeight + deltaY * 2;
-        }
-        if (cropState.resizeDir.includes('n')) {
-          newHeight = cropState.mobileHeight - deltaY * 2;
-        }
-
-        // Maintain aspect ratio
-        const calcHeightFromWidth = newWidth / aspectRatio;
-        if (Math.abs(calcHeightFromWidth - newHeight) < Math.abs(newWidth / aspectRatio - newHeight)) {
-          newHeight = calcHeightFromWidth;
-        } else {
-          newWidth = newHeight * aspectRatio;
-        }
-
-        // Minimum size: 80px
-        newHeight = Math.max(80, Math.min(newHeight, rect.height));
-        newWidth = newHeight * aspectRatio;
-
-        cropState.mobileWidth = newWidth;
-        cropState.mobileHeight = newHeight;
-        updateCropBoxPositions();
-      }
+    // Mobile Y input - sync range and number input
+    document.getElementById('mobileCropY').addEventListener('input', (e) => {
+      cropState.mobileY = parseInt(e.target.value);
+      document.getElementById('mobileCropYInput').value = cropState.mobileY;
+      updateCropBoxPositions();
     });
-
-    // Global mouse up
-    document.addEventListener('mouseup', () => {
-      cropState.isDraggingDesktop = false;
-      cropState.isDraggingMobile = false;
-      cropState.isResizingDesktop = false;
-      cropState.isResizingMobile = false;
-      cropState.resizeDir = null;
+    document.getElementById('mobileCropYInput').addEventListener('input', (e) => {
+      let val = parseInt(e.target.value);
+      val = Math.max(0, Math.min(100, val));
+      cropState.mobileY = val;
+      document.getElementById('mobileCropY').value = val;
+      updateCropBoxPositions();
     });
 
     // Mobile display mode selection
     document.querySelectorAll('input[name="mobileDisplayMode"]').forEach(radio => {
       radio.addEventListener('change', (e) => {
-        const mode = e.target.value;
-        const cropBox = document.getElementById('cropBoxMobile');
-        const infoText = document.getElementById('mobileDisplayInfo');
-
-        if (mode === 'fullWidth') {
-          cropBox.style.display = 'none';
-          infoText.textContent = 'Full width image will stretch to fit width while maintaining aspect ratio.';
-        } else if (mode === 'originalRatio') {
-          cropBox.style.display = 'none';
-          infoText.textContent = 'Image will display at its original aspect ratio.';
-        } else if (mode === 'crop') {
-          cropBox.style.display = 'block';
-          infoText.textContent = 'Drag to select which part of the image to display.';
-        }
+        cropState.mobileMode = e.target.value;
         updateCropBoxPositions();
       });
     });
   };
 
   window.updateCropBoxPositions = () => {
-    const desktopBox = document.getElementById('cropBoxDesktop');
-    const mobileBox = document.getElementById('cropBoxMobile');
     const desktopImg = document.getElementById('cropImageDesktop');
     const mobileImg = document.getElementById('cropImageMobile');
-    const mobilePreview = document.getElementById('cropPreviewMobile');
 
-    // Desktop - position box with center at crop point
-    desktopBox.style.width = cropState.desktopWidth + 'px';
-    desktopBox.style.height = cropState.desktopHeight + 'px';
-    desktopBox.style.left = cropState.desktopX + '%';
-    desktopBox.style.top = cropState.desktopY + '%';
-    desktopBox.style.transform = 'translate(-50%, -50%)';
+    // Update preview images with crop position
     desktopImg.style.objectPosition = cropState.desktopX + '% ' + cropState.desktopY + '%';
-
-    // Mobile - full width, height based on image aspect ratio, only Y positioning (vertical crop)
-    const mobilePreviewRect = mobilePreview.getBoundingClientRect();
-    const previewWidth = mobilePreviewRect.width;
-
-    // Mobile box uses full width of preview container
-    mobileBox.style.width = '100%';
-    mobileBox.style.height = '100%';
-    mobileBox.style.left = '50%';
-    mobileBox.style.top = cropState.mobileY + '%';
-    mobileBox.style.transform = 'translate(-50%, -50%)';
-
-    // Image uses full width, Y position for vertical crop
     mobileImg.style.objectPosition = '50% ' + cropState.mobileY + '%';
+
+    // Sync input fields
+    document.getElementById('desktopCropX').value = cropState.desktopX;
+    document.getElementById('desktopCropXInput').value = cropState.desktopX;
+    document.getElementById('desktopCropY').value = cropState.desktopY;
+    document.getElementById('desktopCropYInput').value = cropState.desktopY;
+    document.getElementById('mobileCropY').value = cropState.mobileY;
+    document.getElementById('mobileCropYInput').value = cropState.mobileY;
 
     // Update hidden inputs
     document.getElementById('cropDesktopX').value = cropState.desktopX;
     document.getElementById('cropDesktopY').value = cropState.desktopY;
-    document.getElementById('cropMobileX').value = 100;  // Mobile always full width
     document.getElementById('cropMobileY').value = cropState.mobileY;
   };
 
@@ -3468,6 +3334,11 @@
       alert('Error: ' + err.message);
     }
   };
+
+  // Load banner photo on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadBannerPhoto();
+  });
 
 </script>
 
