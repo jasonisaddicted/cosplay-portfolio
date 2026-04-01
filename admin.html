@@ -538,14 +538,6 @@
         <label>Cosplayer Handle (IG)</label>
         <input type="text" id="collabHandle" placeholder="e.g., @sakurahime_cos">
       </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Instagram Handle (Optional)</label>
-        <input type="text" id="collabInstagram" placeholder="e.g., @sakurahime_cos">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Bio (Optional)</label>
-        <textarea id="collabBio" placeholder="Short bio..."></textarea>
-      </div>
       <button id="saveCollabBtn" onclick="saveCollab()" style="max-width:400px; width:100%;">Add Collaborator</button>
       <div id="collabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
 
@@ -2287,8 +2279,6 @@
     const d = docSnap.data();
     document.getElementById('collabName').value = d.name;
     document.getElementById('collabHandle').value = d.handle;
-    document.getElementById('collabInstagram').value = d.instagram || '';
-    document.getElementById('collabBio').value = d.bio || '';
     document.getElementById('collabMsg').textContent = '';
     document.getElementById('saveCollabBtn').textContent = 'Update Collaborator';
     document.getElementById('saveCollabBtn').onclick = () => updateCollab(id);
@@ -2303,8 +2293,6 @@
   window.updateCollab = async (id) => {
     const name = document.getElementById('collabName').value;
     const handle = document.getElementById('collabHandle').value;
-    const instagram = document.getElementById('collabInstagram').value;
-    const bio = document.getElementById('collabBio').value;
 
     if (!name || !handle) {
       document.getElementById('collabMsg').textContent = 'Name and handle required';
@@ -2313,13 +2301,11 @@
     }
 
     try {
-      await updateDoc(doc(db, 'collaborators', id), { name, handle, instagram, bio });
+      await updateDoc(doc(db, 'collaborators', id), { name, handle });
       document.getElementById('collabMsg').textContent = '✓ Collaborator updated!';
       document.getElementById('collabMsg').className = 'success';
       document.getElementById('collabName').value = '';
       document.getElementById('collabHandle').value = '';
-      document.getElementById('collabInstagram').value = '';
-      document.getElementById('collabBio').value = '';
       document.getElementById('saveCollabBtn').textContent = 'Add Collaborator';
       document.getElementById('saveCollabBtn').onclick = saveCollab;
       loadCollabs();

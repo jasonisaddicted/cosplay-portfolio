@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Album — Cosplay Portfolio</title>
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body class="page-album">
 
@@ -53,6 +53,10 @@
     <button class="lightbox__close" aria-label="Close">
       <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
+    <button class="lightbox__back" aria-label="Back" style="display:none;">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      <span>Back</span>
+    </button>
     <button class="lightbox__nav lightbox__prev" aria-label="Previous">
       <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
     </button>
@@ -80,9 +84,9 @@
     </div>
   </div>
 
-  <script src="js/protect.js?v=5"></script>
-  <script type="module" src="js/firebase-init.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/protect.js?v=6"></script>
+  <script type="module" src="js/firebase-init.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
   <script>
     // Sync breadcrumb title after album loads
     document.addEventListener('DOMContentLoaded', () => {

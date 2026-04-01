@@ -93,6 +93,7 @@ const Lightbox = (() => {
   let photos = [];
   let current = 0;
   let panelTimers = [];
+  let backCallback = null;
 
   const lb = document.getElementById('lightbox');
   if (!lb) return {};
@@ -100,6 +101,7 @@ const Lightbox = (() => {
   const imgEl   = lb.querySelector('.lightbox__img');
   const capEl   = lb.querySelector('.lightbox__caption');
   const counter = lb.querySelector('.lightbox__counter');
+  const backBtn = lb.querySelector('.lightbox__back');
 
   const infoPanel = document.createElement('div');
   infoPanel.className = 'lightbox__info-panel';
@@ -303,6 +305,7 @@ const Lightbox = (() => {
             character: p.character || '',
             series: p.series || ''
           })));
+          Lightbox.setBack(() => Lightbox.close());
           Lightbox.open(pi);
         });
       });
@@ -317,6 +320,7 @@ const Lightbox = (() => {
             character: p.character || '',
             series: p.series || ''
           })));
+          Lightbox.setBack(() => Lightbox.close());
           Lightbox.open(0);
         });
       });
@@ -591,6 +595,7 @@ const Lightbox = (() => {
     if (counter) counter.textContent = `${current + 1} / ${photos.length}`;
     lb.classList.add('active');
     document.body.style.overflow = 'hidden';
+    if (backBtn && backCallback) backBtn.style.display = 'flex';
     buildInfoPanel(p);
   }
 
@@ -598,10 +603,21 @@ const Lightbox = (() => {
     lb.classList.remove('active', 'panel-open');
     document.body.style.overflow = '';
     imgEl.src = '';
+    if (backBtn) backBtn.style.display = 'none';
+    backCallback = null;
     clearPanelTimers();
   }
 
   lb.querySelector('.lightbox__close').addEventListener('click', hide);
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      if (backCallback) {
+        backCallback();
+        backCallback = null;
+        if (backBtn) backBtn.style.display = 'none';
+      }
+    });
+  }
   lb.querySelector('.lightbox__prev').addEventListener('click', () => show(current - 1));
   lb.querySelector('.lightbox__next').addEventListener('click', () => show(current + 1));
 
@@ -626,6 +642,8 @@ const Lightbox = (() => {
   return {
     init(photoArray) { photos = photoArray; },
     open(index)      { show(index); },
+    close()          { hide(); },
+    setBack(callback) { backCallback = callback; },
     openCharacter(character) { buildCharacterPanel(character); lb.style.display = 'flex'; },
     openCoser(handle) { buildCoserPanel(handle); lb.style.display = 'flex'; }
   };
@@ -1360,7 +1378,10 @@ function initAlbum() {
         const item = document.createElement('div');
         item.className = 'photo-grid__item';
         item.innerHTML = `<img src="${photo.src}" alt="${coser.name}" loading="lazy">`;
-        item.addEventListener('click', () => Lightbox.open(offset + pi));
+        item.addEventListener('click', () => {
+          Lightbox.setBack(() => Lightbox.close());
+          Lightbox.open(offset + pi);
+        });
         grid.appendChild(item);
       });
 
@@ -1391,7 +1412,10 @@ function initAlbum() {
         <img src="${photo.src}" alt="${photo.character || album.name}" loading="lazy">
         ${overlayHtml}
       `;
-      item.addEventListener('click', () => Lightbox.open(i));
+      item.addEventListener('click', () => {
+        Lightbox.setBack(() => Lightbox.close());
+        Lightbox.open(i);
+      });
       photoGrid.appendChild(item);
     });
 
@@ -1483,6 +1507,7 @@ function initCollabs() {
 
     entry.querySelectorAll('.collab-thumb').forEach(thumb => {
       thumb.addEventListener('click', () => {
+        Lightbox.setBack(() => Lightbox.close());
         Lightbox.open(parseInt(thumb.dataset.index));
       });
     });
