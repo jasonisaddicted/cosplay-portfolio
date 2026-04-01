@@ -1211,6 +1211,7 @@
     document.getElementById('photoEditHandle').parentElement.style.display = 'none';
     document.getElementById('photoEditCharacter').value = photo.character || '';
     document.getElementById('photoEditSeries').value = photo.series || '';
+    document.getElementById('photoEditCaption').value = photo.caption || '';
     document.getElementById('photoEditSourceType').value = photo.source?.type || '';
     document.getElementById('photoEditSourceId').value = photo.source?.id || '';
     document.getElementById('photoEditModal').style.display = 'flex';
@@ -2401,24 +2402,6 @@
       alert('Error: ' + err.message);
       input.value = original;
     }
-  };
-
-  window.editCollabPhoto = async (collabId, photoIndex) => {
-    window.currentPhotoType = 'collab';
-    window.currentCollabId = collabId;
-    window.currentCollabPhotoIndex = photoIndex;
-
-    const docSnap = await getDoc(doc(db, 'collaborators', collabId));
-    const collab = docSnap.data();
-    const photo = collab.photos[photoIndex];
-
-    document.getElementById('photoModalTitle').textContent = 'Edit Photo';
-    document.getElementById('photoEditHandle').value = '';
-    document.getElementById('photoEditHandle').style.display = 'none';
-    document.getElementById('photoEditHandle').parentElement.style.display = 'none';
-    document.getElementById('photoEditCharacter').value = photo.character || '';
-    document.getElementById('photoEditSeries').value = photo.series || '';
-    document.getElementById('photoEditModal').style.display = 'flex';
   };
 
   window.saveCollabPhotoEdit = async () => {
