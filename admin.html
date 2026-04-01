@@ -511,6 +511,18 @@
           <label>Cosplayer Handle (IG)</label>
           <input type="text" id="batchCollabHandle" placeholder="e.g., @sakurahime_cos">
         </div>
+        <div class="form-group">
+          <label>Character Name</label>
+          <input type="text" id="batchCollabCharacter" placeholder="Character name">
+        </div>
+        <div class="form-group">
+          <label>Series</label>
+          <input type="text" id="batchCollabSeries" placeholder="Series name">
+        </div>
+        <div class="form-group">
+          <label>Caption (Optional)</label>
+          <input type="text" id="batchCollabCaption" placeholder="Photo shoot details">
+        </div>
         <button onclick="saveBatchCollab()" style="width:100%;">Upload & Add Collab</button>
         <div id="batchCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
@@ -2152,6 +2164,9 @@
   window.saveBatchCollab = async () => {
     const files = document.getElementById('uploadCollabFiles').files;
     const handle = document.getElementById('batchCollabHandle').value;
+    const character = document.getElementById('batchCollabCharacter').value;
+    const series = document.getElementById('batchCollabSeries').value;
+    const caption = document.getElementById('batchCollabCaption').value || '';
 
     if (!files.length || !handle) {
       document.getElementById('batchCollabMsg').textContent = 'Please fill in all fields and select photos';
@@ -2176,7 +2191,7 @@
         const storageRef = ref(storage, `photos/collabs/${Date.now()}_${i}_${file.name}`);
         await uploadBytes(storageRef, file);
         const url = await getDownloadURL(storageRef);
-        photos.push({ src: url });
+        photos.push({ src: url, character, series, caption });
       }
 
       // Create collaborator first to get the ID
@@ -2201,6 +2216,9 @@
       document.getElementById('batchCollabMsg').className = 'success';
       document.getElementById('uploadCollabFiles').value = '';
       document.getElementById('batchCollabHandle').value = '';
+      document.getElementById('batchCollabCharacter').value = '';
+      document.getElementById('batchCollabSeries').value = '';
+      document.getElementById('batchCollabCaption').value = '';
       document.getElementById('uploadCollabBatchStatus').textContent = '';
       loadCollabs();
       setTimeout(() => { document.getElementById('batchCollabMsg').textContent = ''; }, 3000);
