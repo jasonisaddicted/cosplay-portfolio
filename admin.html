@@ -215,6 +215,10 @@
             <input type="text" id="bannerCoser" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff;">
           </div>
           <div class="form-group">
+            <label>Description (Optional)</label>
+            <textarea id="bannerDesc" placeholder="Add details about this photo: location, theme, composition, lighting notes, etc." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; box-sizing:border-box; min-height:80px;"></textarea>
+          </div>
+          <div class="form-group">
             <label>Crop Position</label>
             <div style="display:flex; gap:15px; flex-wrap:wrap;">
               <label style="display:flex; align-items:center; cursor:pointer;">
@@ -994,6 +998,7 @@
     const character = document.getElementById('bannerChar').value;
     const series = document.getElementById('bannerSeries').value;
     const coser = document.getElementById('bannerCoser').value;
+    const description = document.getElementById('bannerDesc').value.trim();
     const cropPos = document.querySelector('input[name="bannerCropPos"]:checked').value;
     const msg = document.getElementById('bannerMsg');
 
@@ -1020,6 +1025,7 @@
           character,
           series,
           coser: coser.replace('@', ''),
+          description: description || '',
           cropPosition: cropPos,
           cropDesktop: { x: cropDesktopX, y: cropDesktopY },
           cropMobile: { x: cropMobileX, y: cropMobileY },
@@ -1031,6 +1037,7 @@
       document.getElementById('bannerChar').value = '';
       document.getElementById('bannerSeries').value = '';
       document.getElementById('bannerCoser').value = '';
+      document.getElementById('bannerDesc').value = '';
       document.getElementById('bannerSrc').value = '';
       document.querySelector('input[name="bannerCropPos"][value="center"]').checked = true;
       loadBannerPhoto();
@@ -3118,8 +3125,9 @@
         cropState.isDraggingDesktop = true;
       }
       const boxRect = desktopBox.getBoundingClientRect();
-      cropState.dragOffsetX = e.clientX - boxRect.left;
-      cropState.dragOffsetY = e.clientY - boxRect.top;
+      // Calculate offset from center of box (since box uses transform: translate(-50%, -50%))
+      cropState.dragOffsetX = e.clientX - (boxRect.left + boxRect.width / 2);
+      cropState.dragOffsetY = e.clientY - (boxRect.top + boxRect.height / 2);
       e.preventDefault();
     });
 
@@ -3132,8 +3140,9 @@
         cropState.isDraggingMobile = true;
       }
       const boxRect = mobileBox.getBoundingClientRect();
-      cropState.dragOffsetX = e.clientX - boxRect.left;
-      cropState.dragOffsetY = e.clientY - boxRect.top;
+      // Calculate offset from center of box (since box uses transform: translate(-50%, -50%))
+      cropState.dragOffsetX = e.clientX - (boxRect.left + boxRect.width / 2);
+      cropState.dragOffsetY = e.clientY - (boxRect.top + boxRect.height / 2);
       e.preventDefault();
     });
 
@@ -3142,14 +3151,15 @@
       // Desktop dragging
       if (cropState.isDraggingDesktop) {
         const rect = desktopPreview.getBoundingClientRect();
-        let x = e.clientX - rect.left - cropState.dragOffsetX;
-        let y = e.clientY - rect.top - cropState.dragOffsetY;
+        // Calculate center position (offset is from center)
+        let centerX = e.clientX - cropState.dragOffsetX - rect.left;
+        let centerY = e.clientY - cropState.dragOffsetY - rect.top;
 
-        x = Math.max(0, Math.min(x, rect.width));
-        y = Math.max(0, Math.min(y, rect.height));
+        centerX = Math.max(0, Math.min(centerX, rect.width));
+        centerY = Math.max(0, Math.min(centerY, rect.height));
 
-        cropState.desktopX = Math.round((x / rect.width) * 100);
-        cropState.desktopY = Math.round((y / rect.height) * 100);
+        cropState.desktopX = Math.round((centerX / rect.width) * 100);
+        cropState.desktopY = Math.round((centerY / rect.height) * 100);
         updateCropBoxPositions();
       }
 
@@ -3198,14 +3208,15 @@
       // Mobile dragging
       if (cropState.isDraggingMobile) {
         const rect = mobilePreview.getBoundingClientRect();
-        let x = e.clientX - rect.left - cropState.dragOffsetX;
-        let y = e.clientY - rect.top - cropState.dragOffsetY;
+        // Calculate center position (offset is from center)
+        let centerX = e.clientX - cropState.dragOffsetX - rect.left;
+        let centerY = e.clientY - cropState.dragOffsetY - rect.top;
 
-        x = Math.max(0, Math.min(x, rect.width));
-        y = Math.max(0, Math.min(y, rect.height));
+        centerX = Math.max(0, Math.min(centerX, rect.width));
+        centerY = Math.max(0, Math.min(centerY, rect.height));
 
-        cropState.mobileX = Math.round((x / rect.width) * 100);
-        cropState.mobileY = Math.round((y / rect.height) * 100);
+        cropState.mobileX = Math.round((centerX / rect.width) * 100);
+        cropState.mobileY = Math.round((centerY / rect.height) * 100);
         updateCropBoxPositions();
       }
 
@@ -3329,6 +3340,7 @@
     document.getElementById('editBannerChar').value = banner.character || '';
     document.getElementById('editBannerSeries').value = banner.series || '';
     document.getElementById('editBannerCoser').value = banner.coser || '';
+    document.getElementById('editBannerDesc').value = banner.description || '';
 
     const cropMap = { 'top': 'top', 'center': 'center', 'bottom': 'bottom' };
     const cropPos = banner.cropPosition || 'center';
@@ -3346,6 +3358,7 @@
     const character = document.getElementById('editBannerChar').value.trim();
     const series = document.getElementById('editBannerSeries').value.trim();
     const coser = document.getElementById('editBannerCoser').value.trim().replace('@', '');
+    const description = document.getElementById('editBannerDesc').value.trim();
     const cropPos = document.querySelector('input[name="editBannerCropPos"]:checked').value;
 
     if (!character || !series || !coser) {
@@ -3363,6 +3376,7 @@
           character,
           series,
           coser,
+          description: description || '',
           cropPosition: cropPos
         }
       });
@@ -3395,6 +3409,11 @@
       <div class="form-group">
         <label>Cosplayer Handle *</label>
         <input type="text" id="editBannerCoser" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div class="form-group">
+        <label>Description (Optional)</label>
+        <textarea id="editBannerDesc" placeholder="Add details about this photo: location, theme, composition, lighting notes, etc." style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box; min-height:80px;"></textarea>
       </div>
 
       <div class="form-group">

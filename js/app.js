@@ -1387,6 +1387,15 @@ function buildBannerPanelContent(banner) {
     </div>
   `;
 
+  // Description section
+  if (banner.description) {
+    html += `
+      <div class="info-panel__section">
+        <p style="color:#ccc; font-size:0.95rem; line-height:1.6;">${banner.description}</p>
+      </div>
+    `;
+  }
+
   // Projects section with filter tabs
   if (albums.length > 0) {
     html += buildAlbumsSection(albums, coser);
