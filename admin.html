@@ -3216,8 +3216,11 @@
     }
 
     const firstPhoto = coserPhotos[0];
+    const handleInput = document.getElementById('editCoserHandle');
+    handleInput.value = coser;
+    handleInput.setAttribute('data-original', coser);
+
     document.getElementById('editCoserEventId').value = eventId;
-    document.getElementById('editCoserHandle').value = coser;
     document.getElementById('editCoserCharacter').value = firstPhoto.character || '';
     document.getElementById('editCoserSeries').value = firstPhoto.series || '';
     document.getElementById('coserEditPhotoCount').textContent = coserPhotos.length;
@@ -3231,8 +3234,8 @@
 
   window.saveCoserEditDetails = async () => {
     const eventId = document.getElementById('editCoserEventId').value;
-    const oldHandle = document.getElementById('editCoserHandle').value;
-    const newHandle = document.getElementById('editCoserHandle').value.replace('@', '');
+    const oldHandle = document.getElementById('editCoserHandle').getAttribute('data-original');
+    const newHandle = document.getElementById('editCoserHandle').value.trim().replace('@', '');
     const character = document.getElementById('editCoserCharacter').value.trim();
     const series = document.getElementById('editCoserSeries').value.trim();
 
@@ -3260,7 +3263,8 @@
       });
 
       await updateDoc(doc(db, 'events', eventId), { photos: updatedPhotos });
-      alert('✓ Updated ' + photos.filter(p => p.coser === oldHandle).length + ' photos!');
+      const affectedCount = photos.filter(p => p.coser === oldHandle).length;
+      alert('✓ Updated ' + affectedCount + ' photos!');
       closeCoserEditModal();
       await displayEventPhotos(eventId);
     } catch (err) {
@@ -3339,8 +3343,8 @@
 
       <div class="form-group">
         <label>Instagram Handle (Cosplayer) *</label>
-        <input type="text" id="editCoserHandle" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;" disabled>
-        <p style="font-size:0.75rem; color:#666; margin-top:5px;">Cannot change handle; create new photos with different handle instead</p>
+        <input type="text" id="editCoserHandle" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+        <p style="font-size:0.75rem; color:#aaa; margin-top:5px;">Change handle to update all photos at once</p>
       </div>
 
       <div class="form-group">
