@@ -875,8 +875,11 @@ window.openCollabPanel = (collab) => {
         </div>
 
         <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Cosplayer</div>
-        <div style="font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 16px;">
-          ${collab.instagram ? `<a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none;">@${collab.handle.replace('@', '')}</a>` : `@${collab.handle.replace('@', '')}`}
+        <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;">
+          ${collab.instagram ? `<a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; cursor: pointer;">${collab.name}</a>` : collab.name}
+        </div>
+        <div style="font-size: 0.9rem; color: var(--accent); margin-bottom: 16px;">
+          ${collab.instagram ? `<a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; cursor: pointer;">@${collab.handle.replace('@', '')}</a>` : `@${collab.handle.replace('@', '')}`}
         </div>
 
         ${photo.character ? `
