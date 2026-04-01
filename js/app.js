@@ -1329,6 +1329,10 @@ function initAlbum() {
 
   if (!album) { titleEl.textContent = 'Album not found'; return; }
 
+  // Clear previous content
+  photoGrid.innerHTML = '';
+  photoGrid.className = 'photo-grid';
+
   if (breadEl) {
     breadEl.href        = type === 'studio' ? 'studio.html' : 'events.html';
     breadEl.textContent = type === 'studio' ? 'Studio' : 'Events';
