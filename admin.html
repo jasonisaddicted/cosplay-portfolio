@@ -816,10 +816,11 @@
               <div class="item-title">${d.character} — ${d.series}</div>
               <div style="font-size:0.8rem; color:#666;">${d.credit}</div>
             </div>
-            <div style="display:flex; gap:8px; align-items:center;">
-              <div style="display:flex; align-items:center; gap:5px;">
+            <div style="display:flex; gap:6px; align-items:center;">
+              <div style="display:flex; align-items:center; gap:4px;">
                 <label style="font-size:0.75rem; color:#999;">POS:</label>
-                <input type="number" value="${d.order || 0}" onchange="updateFeaturedOrder('${doc.id}', this.value)" style="width:50px; padding:4px; background:#181818; border:1px solid #333; color:#fff; font-size:0.85rem;" />
+                <input type="number" id="pos-${doc.id}" value="${d.order || 0}" style="width:45px; padding:4px; background:#181818; border:1px solid #333; color:#fff; font-size:0.85rem;" />
+                <button onclick="updateFeaturedOrder('${doc.id}', document.getElementById('pos-${doc.id}').value)" style="padding:4px 8px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-size:0.75rem; font-weight:bold;">Apply</button>
               </div>
               <button onclick="deleteFeatured('${doc.id}')" style="padding:6px 12px; background:#c74545; border:none; color:#fff; cursor:pointer; font-size:0.8rem;">Delete</button>
             </div>
@@ -843,13 +844,20 @@
     items.forEach(item => {
       item.addEventListener('dragstart', (e) => {
         draggedFeaturedItem = item;
-        item.style.opacity = '0.5';
+        item.style.opacity = '0.6';
+        item.style.background = 'rgba(200, 164, 110, 0.15)';
         e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', item.innerHTML);
       });
 
       item.addEventListener('dragend', (e) => {
         item.style.opacity = '1';
+        item.style.background = '';
         draggedFeaturedItem = null;
+        // Clear drag-over styles from all items
+        items.forEach(i => {
+          i.style.borderTop = '';
+        });
       });
 
       item.addEventListener('dragover', (e) => {
@@ -860,9 +868,16 @@
           const rect = item.getBoundingClientRect();
           const midpoint = rect.top + rect.height / 2;
 
+          // Remove visual indicator from all items
+          items.forEach(i => i.style.borderTop = '');
+
           if (e.clientY < midpoint) {
+            item.style.borderTop = '3px solid #c8a46e';
             item.parentNode.insertBefore(draggedFeaturedItem, item);
           } else {
+            if (item.nextSibling) {
+              item.nextSibling.style.borderTop = '3px solid #c8a46e';
+            }
             item.parentNode.insertBefore(draggedFeaturedItem, item.nextSibling);
           }
         }
@@ -870,9 +885,16 @@
 
       item.addEventListener('drop', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (draggedFeaturedItem) {
+          console.log('Drop complete, saving order...');
           saveFeaturedOrder();
         }
+      });
+
+      // Prevent default drag behavior
+      item.addEventListener('dragenter', (e) => {
+        e.preventDefault();
       });
     });
   };
@@ -881,15 +903,20 @@
     const items = document.querySelectorAll('#featuredList [data-featured-id]');
 
     try {
+      const updates = [];
       for (let i = 0; i < items.length; i++) {
         const id = items[i].getAttribute('data-featured-id');
-        await updateDoc(doc(db, 'featured', id), {
-          order: i
-        });
+        updates.push(
+          updateDoc(doc(db, 'featured', id), { order: i })
+        );
       }
+      await Promise.all(updates);
       console.log('✓ Featured order saved');
+      // Refresh to show updated positions
+      loadFeatured();
     } catch (err) {
       console.error('Error saving order:', err);
+      alert('Error saving order: ' + err.message);
     }
   };
 
@@ -898,9 +925,11 @@
       await updateDoc(doc(db, 'featured', id), {
         order: parseInt(newOrder) || 0
       });
+      console.log('✓ Position updated for ' + id);
       loadFeatured();
     } catch (err) {
       console.error('Error updating order:', err);
+      alert('Error updating position: ' + err.message);
     }
   };
 
