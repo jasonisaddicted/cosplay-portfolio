@@ -782,11 +782,12 @@ window.openCollabPanel = (collab) => {
   // Show main collab panel
   const showMainPanel = () => {
     // Build panel content using unified info-panel structure
+    const coverImage = collab.cover || allPhotos[0]?.src || '';
     const html = `
       <div class="info-panel__section">
         <span class="info-panel__section-label">Cosplayer</span>
         <div style="width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 16px;">
-          <img src="${collab.cover}" alt="${collab.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+          <img src="${coverImage}" alt="${collab.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
         </div>
         <div style="font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 8px;">${collab.name}</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">${collab.handle}</div>
