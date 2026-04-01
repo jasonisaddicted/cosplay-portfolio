@@ -711,6 +711,35 @@ window.openCollabPanel = (collab) => {
 
   if (!panel || !contentEl) return;
 
+  // Helper: Find character albums
+  const findCharacterAlbums = (character) => {
+    const results = [];
+    if (!character || typeof CONFIG === 'undefined') return results;
+    (CONFIG.events || []).forEach(album => {
+      const cp = (album.photos || []).filter(p => p.character === character);
+      if (cp.length) results.push({ id: album.id, type: 'events', name: album.name, photos: cp });
+    });
+    (CONFIG.studio || []).forEach(album => {
+      const allPhotos = [];
+      (album.cosplayers || []).forEach(coser => {
+        const cp = (coser.photos || []).filter(p => p.character === character);
+        if (cp.length) allPhotos.push(...cp);
+      });
+      if (allPhotos.length) results.push({ id: album.id, type: 'studio', name: album.name, photos: allPhotos });
+    });
+    (CONFIG.collaborators || []).forEach(c => {
+      const cp = (c.photos || []).filter(p => p.character === character);
+      if (cp.length) results.push({
+        id: c.name.replace(/\s+/g, '-').toLowerCase(),
+        type: 'collab',
+        name: c.name,
+        photos: cp
+      });
+    });
+    return results;
+  };
+
+
   // Collect all photos from collab
   const allPhotos = collab.photos || [];
 
@@ -750,65 +779,71 @@ window.openCollabPanel = (collab) => {
     `;
   };
 
-  // Build panel content using unified info-panel structure
-  const html = `
-    <div class="info-panel__section">
-      <span class="info-panel__section-label">Cosplayer</span>
-      <div style="width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 16px;">
-        <img src="${collab.cover}" alt="${collab.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
-      </div>
-      <div style="font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 8px;">${collab.name}</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">${collab.handle}</div>
-      ${collab.instagram ? `
-        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-            <circle cx="17.5" cy="6.5" r="1.5"></circle>
-          </svg>
-          <a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; font-size: 0.85rem;">${collab.instagram}</a>
+  // Show main collab panel
+  const showMainPanel = () => {
+    // Build panel content using unified info-panel structure
+    const html = `
+      <div class="info-panel__section">
+        <span class="info-panel__section-label">Cosplayer</span>
+        <div style="width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 16px;">
+          <img src="${collab.cover}" alt="${collab.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
         </div>
-      ` : ''}
-      ${collab.bio ? `<div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-top: 12px;">${collab.bio}</div>` : ''}
-    </div>
-
-    <div class="info-panel__section">
-      <span class="info-panel__section-label">Projects & Appearances</span>
-      <div class="info-panel__filter-tabs" style="margin-bottom: 16px;">
-        <button class="info-panel__filter-tab active" data-filter="all">All (${allPhotos.length})</button>
-        <button class="info-panel__filter-tab" data-filter="events">Events (${eventPhotos.length})</button>
-        <button class="info-panel__filter-tab" data-filter="studio">Studio (${studioPhotos.length})</button>
+        <div style="font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 8px;">${collab.name}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">${collab.handle}</div>
+        ${collab.instagram ? `
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <circle cx="17.5" cy="6.5" r="1.5"></circle>
+            </svg>
+            <a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; font-size: 0.85rem;">${collab.instagram}</a>
+          </div>
+        ` : ''}
+        ${collab.bio ? `<div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-top: 12px;">${collab.bio}</div>` : ''}
       </div>
 
-      <div class="info-panel__album-list" data-filter="all" style="display: block;">
-        ${buildPhotoGrid(allPhotos)}
+      <div class="info-panel__section">
+        <span class="info-panel__section-label">Projects & Appearances</span>
+        <div class="info-panel__filter-tabs" style="margin-bottom: 16px;">
+          <button class="info-panel__filter-tab active" data-filter="all">All (${allPhotos.length})</button>
+          <button class="info-panel__filter-tab" data-filter="events">Events (${eventPhotos.length})</button>
+          <button class="info-panel__filter-tab" data-filter="studio">Studio (${studioPhotos.length})</button>
+        </div>
+
+        <div class="info-panel__album-list" data-filter="all" style="display: block;">
+          ${buildPhotoGrid(allPhotos)}
+        </div>
+        <div class="info-panel__album-list" data-filter="events" style="display: none;">
+          ${buildPhotoGrid(eventPhotos)}
+        </div>
+        <div class="info-panel__album-list" data-filter="studio" style="display: none;">
+          ${buildPhotoGrid(studioPhotos)}
+        </div>
       </div>
-      <div class="info-panel__album-list" data-filter="events" style="display: none;">
-        ${buildPhotoGrid(eventPhotos)}
-      </div>
-      <div class="info-panel__album-list" data-filter="studio" style="display: none;">
-        ${buildPhotoGrid(studioPhotos)}
-      </div>
-    </div>
-  `;
+    `;
 
-  contentEl.innerHTML = html;
+    contentEl.innerHTML = html;
 
-  // Tab switching using filter system
-  contentEl.querySelectorAll('.info-panel__filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const filter = tab.dataset.filter;
+    // Tab switching using filter system
+    contentEl.querySelectorAll('.info-panel__filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const filter = tab.dataset.filter;
 
-      // Update active tab button
-      contentEl.querySelectorAll('.info-panel__filter-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
+        // Update active tab button
+        contentEl.querySelectorAll('.info-panel__filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
 
-      // Update visible album list
-      contentEl.querySelectorAll('.info-panel__album-list').forEach(list => {
-        list.style.display = list.dataset.filter === filter ? 'block' : 'none';
+        // Update visible album list
+        contentEl.querySelectorAll('.info-panel__album-list').forEach(list => {
+          list.style.display = list.dataset.filter === filter ? 'block' : 'none';
+        });
       });
     });
-  });
+
+    // Add click handlers to photo items
+    attachPhotoHandlers();
+  };
 
   // Photo detail modal handler
   const showCollabPhotoDetail = (photo) => {
@@ -841,7 +876,7 @@ window.openCollabPanel = (collab) => {
 
         ${photo.character ? `
           <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Character</div>
-          <div style="font-size: 0.95rem; color: var(--text); margin-bottom: 16px;">${photo.character}</div>
+          <div class="collab-character-name" data-character="${photo.character}" style="cursor: pointer; color: #c8a46e; text-decoration: underline; font-size: 0.95rem; margin-bottom: 16px;">${photo.character}</div>
         ` : ''}
 
         ${photo.series ? `
@@ -862,6 +897,15 @@ window.openCollabPanel = (collab) => {
 
     document.body.appendChild(modal);
 
+    // Make character name clickable
+    const charNameEl = modal.querySelector('.collab-character-name');
+    if (charNameEl) {
+      charNameEl.addEventListener('click', () => {
+        modal.remove();
+        showCharacterDetail(charNameEl.dataset.character);
+      });
+    }
+
     // Close on background click
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.remove();
@@ -874,23 +918,88 @@ window.openCollabPanel = (collab) => {
     document.addEventListener('keydown', closeOnEscape);
   };
 
-  // Add click handlers to all photos
-  contentEl.querySelectorAll('.collab-photo-item').forEach((item, idx) => {
-    const photoIndex = parseInt(item.dataset.photoIndex);
-    const currentFilter = contentEl.querySelector('.info-panel__filter-tab.active').dataset.filter;
+  // Attach photo handlers
+  const attachPhotoHandlers = () => {
+    contentEl.querySelectorAll('.collab-photo-item').forEach((item, idx) => {
+      const photoIndex = parseInt(item.dataset.photoIndex);
+      const currentFilter = contentEl.querySelector('.info-panel__filter-tab.active')?.dataset.filter || 'all';
 
-    let photo;
-    if (currentFilter === 'all') photo = allPhotos[photoIndex];
-    else if (currentFilter === 'events') photo = eventPhotos[photoIndex];
-    else if (currentFilter === 'studio') photo = studioPhotos[photoIndex];
+      let photo;
+      if (currentFilter === 'all') photo = allPhotos[photoIndex];
+      else if (currentFilter === 'events') photo = eventPhotos[photoIndex];
+      else if (currentFilter === 'studio') photo = studioPhotos[photoIndex];
 
-    if (photo) {
-      item.addEventListener('click', () => showCollabPhotoDetail(photo));
-    }
-  });
+      if (photo) {
+        item.addEventListener('click', () => showCollabPhotoDetail(photo));
+      }
+    });
+  };
 
-  // Open panel
+  // Define showCharacterDetail with back button and filter tabs
+  const showCharacterDetail = (character) => {
+    const characterAlbums = findCharacterAlbums(character);
+
+    const charContent = `
+      <div style="padding: 20px 0;">
+        <button class="collab-back-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.75rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2;" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+
+        <div style="margin-bottom: 24px;">
+          <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;">CHARACTER</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: var(--white); margin-bottom: 8px;">${character}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Appears in ${characterAlbums.length} project${characterAlbums.length !== 1 ? 's' : ''}</div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;">PROJECTS & APPEARANCES</div>
+          <div class="info-panel__filter-tabs" style="margin-bottom: 16px;">
+            ${characterAlbums.length > 0 ? `
+              <button class="info-panel__filter-tab active" data-filter="all">All (${characterAlbums.length})</button>
+              ${characterAlbums.some(a => a.type === 'events') ? `<button class="info-panel__filter-tab" data-filter="events">Events</button>` : ''}
+              ${characterAlbums.some(a => a.type === 'studio') ? `<button class="info-panel__filter-tab" data-filter="studio">Studio</button>` : ''}
+              ${characterAlbums.some(a => a.type === 'collab') ? `<button class="info-panel__filter-tab" data-filter="collab">Collab</button>` : ''}
+            ` : ''}
+          </div>
+
+          <div class="info-panel__album-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px;">
+            ${characterAlbums.map(a => `
+              <div class="info-panel__album-card" data-type="${a.type}" style="cursor: pointer; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card);">
+                <img src="${a.photos[0].src}" alt="${a.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); padding: 8px; color: white; font-size: 0.75rem;">
+                  ${a.name}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    contentEl.innerHTML = charContent;
+
+    // Back button click
+    contentEl.querySelector('.collab-back-btn').addEventListener('click', () => {
+      showMainPanel();
+    });
+
+    // Re-attach filter tab logic
+    contentEl.querySelectorAll('.info-panel__filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        contentEl.querySelectorAll('.info-panel__filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const filter = tab.dataset.filter;
+        contentEl.querySelectorAll('.info-panel__album-card').forEach(card => {
+          card.style.display = (filter === 'all' || card.dataset.type === filter) ? '' : 'none';
+        });
+      });
+    });
+  };
+
+  // Open panel and show main view
   panel.style.display = 'flex';
+  showMainPanel();
 
   // Close button
   const closeBtn = panel.querySelector('.info-panel__close-btn');
