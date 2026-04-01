@@ -1067,10 +1067,12 @@ ul { list-style: none; }
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  visibility: hidden;
 }
 .lightbox.active {
   opacity: 1;
   pointer-events: all;
+  visibility: visible;
 }
 .lightbox__inner {
   position: relative;
