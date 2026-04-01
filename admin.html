@@ -819,7 +819,7 @@
             <div style="display:flex; gap:6px; align-items:center;">
               <div style="display:flex; align-items:center; gap:4px;">
                 <label style="font-size:0.75rem; color:#999;">POS:</label>
-                <input type="number" id="pos-${doc.id}" value="${d.order || 0}" style="width:45px; padding:4px; background:#181818; border:1px solid #333; color:#fff; font-size:0.85rem;" />
+                <input type="number" id="pos-${doc.id}" value="${d.order || 0}" onfocus="this.select()" style="width:45px; padding:4px; background:#181818; border:1px solid #333; color:#fff; font-size:0.85rem;" />
                 <button onclick="updateFeaturedOrder('${doc.id}', document.getElementById('pos-${doc.id}').value)" style="padding:4px 8px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-size:0.75rem; font-weight:bold;">Apply</button>
               </div>
               <button onclick="deleteFeatured('${doc.id}')" style="padding:6px 12px; background:#c74545; border:none; color:#fff; cursor:pointer; font-size:0.8rem;">Delete</button>
@@ -907,7 +907,7 @@
       for (let i = 0; i < items.length; i++) {
         const id = items[i].getAttribute('data-featured-id');
         updates.push(
-          updateDoc(doc(db, 'featured', id), { order: i })
+          updateDoc(doc(db, 'featured', id), { order: i + 1 })
         );
       }
       await Promise.all(updates);
