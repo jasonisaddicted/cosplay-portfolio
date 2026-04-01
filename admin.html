@@ -108,6 +108,20 @@
       padding: 20px;
       margin-bottom: 15px;
       border-radius: 2px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .item[draggable="true"] {
+      cursor: grab;
+    }
+    .item[draggable="true"]:active {
+      cursor: grabbing;
+      opacity: 0.7;
+    }
+    .item[draggable="true"]:hover {
+      border-color: #c8a46e;
+      background: #1a1a1a;
+      box-shadow: 0 0 10px rgba(200, 164, 110, 0.2);
     }
     .item-header {
       display: flex;
@@ -795,8 +809,9 @@
     const html = snap.docs.map((doc, idx) => {
       const d = doc.data();
       return `
-        <div class="item" style="position:relative;">
-          <div class="item-header">
+        <div class="item" style="position:relative;" draggable="true" data-featured-id="${doc.id}" data-featured-order="${d.order || 0}">
+          <div style="position:absolute; left:8px; top:50%; transform:translateY(-50%); cursor:grab; color:#666; font-size:1.2rem; user-select:none;">⋮⋮</div>
+          <div class="item-header" style="margin-left:24px;">
             <div style="flex:1;">
               <div class="item-title">${d.character} — ${d.series}</div>
               <div style="font-size:0.8rem; color:#666;">${d.credit}</div>
@@ -813,7 +828,69 @@
         </div>
       `;
     }).join('');
-    document.getElementById('featuredList').innerHTML = html || '<p style="color:#666;">No featured picks yet</p>';
+    const listDiv = document.getElementById('featuredList');
+    listDiv.innerHTML = html || '<p style="color:#666;">No featured picks yet</p>';
+
+    // Add drag event listeners
+    initFeaturedDragDrop();
+  };
+
+  let draggedFeaturedItem = null;
+
+  window.initFeaturedDragDrop = () => {
+    const items = document.querySelectorAll('#featuredList [data-featured-id]');
+
+    items.forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        draggedFeaturedItem = item;
+        item.style.opacity = '0.5';
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      item.addEventListener('dragend', (e) => {
+        item.style.opacity = '1';
+        draggedFeaturedItem = null;
+      });
+
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        if (draggedFeaturedItem && draggedFeaturedItem !== item) {
+          const rect = item.getBoundingClientRect();
+          const midpoint = rect.top + rect.height / 2;
+
+          if (e.clientY < midpoint) {
+            item.parentNode.insertBefore(draggedFeaturedItem, item);
+          } else {
+            item.parentNode.insertBefore(draggedFeaturedItem, item.nextSibling);
+          }
+        }
+      });
+
+      item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedFeaturedItem) {
+          saveFeaturedOrder();
+        }
+      });
+    });
+  };
+
+  window.saveFeaturedOrder = async () => {
+    const items = document.querySelectorAll('#featuredList [data-featured-id]');
+
+    try {
+      for (let i = 0; i < items.length; i++) {
+        const id = items[i].getAttribute('data-featured-id');
+        await updateDoc(doc(db, 'featured', id), {
+          order: i
+        });
+      }
+      console.log('✓ Featured order saved');
+    } catch (err) {
+      console.error('Error saving order:', err);
+    }
   };
 
   window.updateFeaturedOrder = async (id, newOrder) => {
