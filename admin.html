@@ -999,7 +999,10 @@
               <div style="font-weight:bold; margin-bottom:5px;">${banner.character}</div>
               <div style="font-size:0.9rem; color:#aaa; margin-bottom:8px;">${banner.series}</div>
               <div style="font-size:0.85rem; color:#888; margin-bottom:12px;">@${banner.coser}</div>
-              <button onclick="deleteBannerPhoto()" style="padding:6px 12px; background:#c74545; color:#fff; border:none; cursor:pointer; font-size:0.85rem; font-weight:bold;">Delete Banner</button>
+              <div style="display:flex; gap:8px; margin-top:12px;">
+                <button onclick="openBannerEditModal()" style="padding:6px 12px; background:#4CAF50; color:#fff; border:none; cursor:pointer; font-size:0.85rem; font-weight:bold;">Edit</button>
+                <button onclick="deleteBannerPhoto()" style="padding:6px 12px; background:#c74545; color:#fff; border:none; cursor:pointer; font-size:0.85rem; font-weight:bold;">Delete</button>
+              </div>
             </div>
           </div>
         `;
@@ -2986,7 +2989,110 @@
       document.getElementById('uploadCollabFiles').files = e.dataTransfer.files;
     }
   });
+
+  // ─ Banner Photo Edit Modal ─
+  window.openBannerEditModal = async () => {
+    const configDoc = await getDoc(doc(db, 'site', 'config'));
+    const banner = configDoc.data()?.bannerPhoto;
+
+    if (!banner) {
+      alert('No banner photo to edit');
+      return;
+    }
+
+    // Populate modal with current data
+    document.getElementById('editBannerChar').value = banner.character || '';
+    document.getElementById('editBannerSeries').value = banner.series || '';
+    document.getElementById('editBannerCoser').value = banner.coser || '';
+
+    const cropMap = { 'top': 'top', 'center': 'center', 'bottom': 'bottom' };
+    const cropPos = banner.cropPosition || 'center';
+    document.querySelector(`input[name="editBannerCropPos"][value="${cropPos}"]`).checked = true;
+
+    // Show modal
+    document.getElementById('bannerEditModal').style.display = 'flex';
+  };
+
+  window.closeBannerEditModal = () => {
+    document.getElementById('bannerEditModal').style.display = 'none';
+  };
+
+  window.saveBannerEdit = async () => {
+    const character = document.getElementById('editBannerChar').value.trim();
+    const series = document.getElementById('editBannerSeries').value.trim();
+    const coser = document.getElementById('editBannerCoser').value.trim().replace('@', '');
+    const cropPos = document.querySelector('input[name="editBannerCropPos"]:checked').value;
+
+    if (!character || !series || !coser) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const configDoc = await getDoc(doc(db, 'site', 'config'));
+      const banner = configDoc.data()?.bannerPhoto;
+
+      await updateDoc(doc(db, 'site', 'config'), {
+        bannerPhoto: {
+          ...banner,
+          character,
+          series,
+          coser,
+          cropPosition: cropPos
+        }
+      });
+
+      alert('✓ Banner updated!');
+      closeBannerEditModal();
+      loadBannerPhoto();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
 </script>
+
+  <!-- Banner Photo Edit Modal -->
+  <div id="bannerEditModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#181818; border:1px solid #2e2e2e; padding:30px; max-width:500px; width:90%; border-radius:4px; max-height:90vh; overflow-y:auto;">
+      <h2 style="margin-top:0; margin-bottom:20px; color:#c8a46e;">Edit Banner Photo</h2>
+
+      <div class="form-group">
+        <label>Character Name *</label>
+        <input type="text" id="editBannerChar" placeholder="e.g., Hu Tao" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div class="form-group">
+        <label>Series *</label>
+        <input type="text" id="editBannerSeries" placeholder="e.g., Genshin Impact" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div class="form-group">
+        <label>Cosplayer Handle *</label>
+        <input type="text" id="editBannerCoser" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div class="form-group">
+        <label>Crop Position</label>
+        <div style="display:flex; gap:15px;">
+          <label style="display:flex; align-items:center; cursor:pointer;">
+            <input type="radio" name="editBannerCropPos" value="top" style="margin-right:5px;"> Top
+          </label>
+          <label style="display:flex; align-items:center; cursor:pointer;">
+            <input type="radio" name="editBannerCropPos" value="center" checked style="margin-right:5px;"> Center
+          </label>
+          <label style="display:flex; align-items:center; cursor:pointer;">
+            <input type="radio" name="editBannerCropPos" value="bottom" style="margin-right:5px;"> Bottom
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button onclick="saveBannerEdit()" style="flex:1; padding:10px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.95rem;">Save Changes</button>
+        <button onclick="closeBannerEditModal()" style="flex:1; padding:10px; background:#555; color:#fff; border:none; cursor:pointer; font-size:0.95rem;">Cancel</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
