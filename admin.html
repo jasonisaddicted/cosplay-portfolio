@@ -794,17 +794,18 @@
     const snap = await getDocs(q);
     const html = snap.docs.map((doc, idx) => {
       const d = doc.data();
-      const isBanner = (d.order === 0);
       return `
         <div class="item" style="position:relative;">
-          ${isBanner ? '<div style="position:absolute; top:10px; left:10px; background:#c8a46e; color:#000; padding:4px 8px; font-size:0.7rem; font-weight:bold;">BANNER</div>' : ''}
           <div class="item-header">
-            <div>
+            <div style="flex:1;">
               <div class="item-title">${d.character} — ${d.series}</div>
               <div style="font-size:0.8rem; color:#666;">${d.credit}</div>
             </div>
-            <div class="item-actions">
-              ${isBanner ? `<button disabled style="padding:6px 12px; background:#999; border:none; color:#fff; cursor:default; font-size:0.8rem; margin-right:5px;">Banner Set</button>` : `<button onclick="setFeaturedBanner('${doc.id}')" style="padding:6px 12px; background:#4CAF50; border:none; color:#fff; cursor:pointer; font-size:0.8rem; margin-right:5px; font-weight:bold;">Set Banner</button>`}
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div style="display:flex; align-items:center; gap:5px;">
+                <label style="font-size:0.75rem; color:#999;">POS:</label>
+                <input type="number" value="${d.order || 0}" onchange="updateFeaturedOrder('${doc.id}', this.value)" style="width:50px; padding:4px; background:#181818; border:1px solid #333; color:#fff; font-size:0.85rem;" />
+              </div>
               <button onclick="deleteFeatured('${doc.id}')" style="padding:6px 12px; background:#c74545; border:none; color:#fff; cursor:pointer; font-size:0.8rem;">Delete</button>
             </div>
           </div>
@@ -815,37 +816,22 @@
     document.getElementById('featuredList').innerHTML = html || '<p style="color:#666;">No featured picks yet</p>';
   };
 
+  window.updateFeaturedOrder = async (id, newOrder) => {
+    try {
+      await updateDoc(doc(db, 'featured', id), {
+        order: parseInt(newOrder) || 0
+      });
+      loadFeatured();
+    } catch (err) {
+      console.error('Error updating order:', err);
+    }
+  };
+
   window.deleteFeatured = async (id) => {
     if (confirm('Delete this featured pick?')) {
       await deleteDoc(doc(db, 'featured', id));
       loadFeatured();
     }
-  };
-
-  window.setFeaturedBanner = async (id) => {
-    // Reorder: get all featured, move this one to position 0
-    const q = query(collection(db, 'featured'), orderBy('order'));
-    const snap = await getDocs(q);
-    const docs = snap.docs;
-
-    // Find the target document
-    const targetDoc = docs.find(d => d.id === id);
-    if (!targetDoc) return;
-
-    // Get current order of target
-    const currentOrder = targetDoc.data().order;
-    if (currentOrder === 0) return; // Already banner
-
-    // Update all documents: shift up those with order < currentOrder, set target to 0
-    for (const doc of docs) {
-      const order = doc.data().order;
-      if (doc.id === id) {
-        await updateDoc(doc.ref, { order: 0 });
-      } else if (order < currentOrder) {
-        await updateDoc(doc.ref, { order: order + 1 });
-      }
-    }
-    loadFeatured();
   };
 
   // ─ Banner Photo Management ─
