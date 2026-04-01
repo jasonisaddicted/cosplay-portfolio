@@ -263,13 +263,13 @@
             <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile Display Mode</label>
             <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
               <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="mobileDisplayMode" value="fullWidth" checked style="margin-right:5px;"> Full Width (Edge-to-Edge)
+                <input type="radio" name="mobileDisplayMode" value="fullWidth" style="margin-right:5px;"> Full Width (Edge-to-Edge)
               </label>
               <label style="display:flex; align-items:center; cursor:pointer;">
                 <input type="radio" name="mobileDisplayMode" value="originalRatio" style="margin-right:5px;"> Original Ratio
               </label>
               <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="mobileDisplayMode" value="crop" style="margin-right:5px;"> Crop
+                <input type="radio" name="mobileDisplayMode" value="crop" checked style="margin-right:5px;"> Crop
               </label>
             </div>
 
@@ -279,7 +279,7 @@
 
             <div id="cropPreviewMobile" style="position:relative; width:100%; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair; max-height:600px;">
               <img id="cropImageMobile" src="" alt="" style="width:100%; height:auto; object-fit:contain; object-position:center; display:block;">
-              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box; display:none;">
+              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;">
               </div>
             </div>
           </div>
@@ -3098,7 +3098,7 @@
     mobileY: 50,
     mobileWidth: null,    // Full width - will be set by updateCropBoxPositions
     mobileHeight: null,   // Height based on image aspect ratio
-    mobileMode: 'fullWidth',  // 'fullWidth', 'originalRatio', or 'crop'
+    mobileMode: 'crop',  // 'fullWidth', 'originalRatio', or 'crop'
     isDraggingDesktop: false,
     isDraggingMobile: false,
     isResizingDesktop: false,
@@ -3170,13 +3170,8 @@
         centerX = Math.max(0, Math.min(centerX, rect.width));
         centerY = Math.max(0, Math.min(centerY, rect.height));
 
-        // Apply drag sensitivity damping to the result
-        let newX = Math.round((centerX / rect.width) * 100);
-        let newY = Math.round((centerY / rect.height) * 100);
-
-        // Damp movement to reduce sensitivity
-        cropState.desktopX = Math.round(cropState.desktopX + (newX - cropState.desktopX) * DRAG_SENSITIVITY);
-        cropState.desktopY = Math.round(cropState.desktopY + (newY - cropState.desktopY) * DRAG_SENSITIVITY);
+        cropState.desktopX = Math.round((centerX / rect.width) * 100);
+        cropState.desktopY = Math.round((centerY / rect.height) * 100);
         updateCropBoxPositions();
       }
 
@@ -3230,11 +3225,8 @@
 
         centerY = Math.max(0, Math.min(centerY, rect.height));
 
-        let newY = Math.round((centerY / rect.height) * 100);
-
         cropState.mobileX = 100;  // Always full width
-        // Damp movement to reduce sensitivity
-        cropState.mobileY = Math.round(cropState.mobileY + (newY - cropState.mobileY) * DRAG_SENSITIVITY);
+        cropState.mobileY = Math.round((centerY / rect.height) * 100);
         updateCropBoxPositions();
       }
 
@@ -3361,7 +3353,7 @@
       mobileY: 50,
       mobileWidth: null,
       mobileHeight: null,
-      mobileMode: 'fullWidth',
+      mobileMode: 'crop',
       isDraggingDesktop: false,
       isDraggingMobile: false,
       isResizingDesktop: false,
@@ -3370,9 +3362,9 @@
       dragOffsetY: 0,
       resizeDir: null
     };
-    document.querySelector('input[name="mobileDisplayMode"][value="fullWidth"]').checked = true;
-    document.getElementById('mobileDisplayInfo').textContent = 'Full width image will stretch to fit width while maintaining aspect ratio.';
-    document.getElementById('cropBoxMobile').style.display = 'none';
+    document.querySelector('input[name="mobileDisplayMode"][value="crop"]').checked = true;
+    document.getElementById('mobileDisplayInfo').textContent = 'Drag to select which part of the image to display.';
+    document.getElementById('cropBoxMobile').style.display = 'block';
     updateCropBoxPositions();
   };
 
