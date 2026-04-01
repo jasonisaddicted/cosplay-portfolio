@@ -453,7 +453,7 @@
         <!-- Cosplayers Order Panel -->
         <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
           <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleCoserOrderPanel(this)">
-            📋 Arrange Cosplayer Order (Click to expand/collapse)
+            📋 Arrange & Edit Cosplayer Details (Click to expand/collapse)
           </h4>
           <div id="coserOrderList" style="display:none; padding:10px;">
             <!-- Populated by JavaScript -->
@@ -3087,10 +3087,16 @@
     let html = '<div style="padding:10px; background:#181818; border-radius:3px;">';
     cosers.forEach((coser, idx) => {
       html += `
-        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserDrop(event, '${eventId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser="${coser}" data-event-id="${eventId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; user-select:none;">
-          <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
-          <span style="flex:1; color:#fff; font-size:0.9rem;">${coser}</span>
-          <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
+        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserDrop(event, '${eventId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser="${coser}" data-event-id="${eventId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none;">
+          <div style="display:flex; align-items:center; flex:1;">
+            <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
+            <span style="flex:1; color:#fff; font-size:0.9rem;">${coser}</span>
+            <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button onclick="openCoserEditModal('${eventId}', '${coser}')" style="padding:5px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
+            <button onclick="deleteAllCoserPhotos('${eventId}', '${coser}')" style="padding:5px 10px; font-size:0.75rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete All</button>
+          </div>
         </div>`;
     });
     html += '</div>';
@@ -3197,6 +3203,93 @@
     }
   };
 
+  // ── Cosplayer Details Edit ────────────────────────────────
+  window.openCoserEditModal = async (eventId, coser) => {
+    // Load current cosplayer details from first photo
+    const docSnap = await getDoc(doc(db, 'events', eventId));
+    const event = docSnap.data();
+    const coserPhotos = event.photos.filter(p => p.coser === coser);
+
+    if (coserPhotos.length === 0) {
+      alert('No photos found for this cosplayer');
+      return;
+    }
+
+    const firstPhoto = coserPhotos[0];
+    document.getElementById('editCoserEventId').value = eventId;
+    document.getElementById('editCoserHandle').value = coser;
+    document.getElementById('editCoserCharacter').value = firstPhoto.character || '';
+    document.getElementById('editCoserSeries').value = firstPhoto.series || '';
+    document.getElementById('coserEditPhotoCount').textContent = coserPhotos.length;
+
+    document.getElementById('coserEditModal').style.display = 'flex';
+  };
+
+  window.closeCoserEditModal = () => {
+    document.getElementById('coserEditModal').style.display = 'none';
+  };
+
+  window.saveCoserEditDetails = async () => {
+    const eventId = document.getElementById('editCoserEventId').value;
+    const oldHandle = document.getElementById('editCoserHandle').value;
+    const newHandle = document.getElementById('editCoserHandle').value.replace('@', '');
+    const character = document.getElementById('editCoserCharacter').value.trim();
+    const series = document.getElementById('editCoserSeries').value.trim();
+
+    if (!newHandle || !character || !series) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const photos = [...event.photos];
+
+      // Update all photos of this cosplayer
+      const updatedPhotos = photos.map(p => {
+        if (p.coser === oldHandle) {
+          return {
+            ...p,
+            coser: newHandle,
+            character,
+            series
+          };
+        }
+        return p;
+      });
+
+      await updateDoc(doc(db, 'events', eventId), { photos: updatedPhotos });
+      alert('✓ Updated ' + photos.filter(p => p.coser === oldHandle).length + ' photos!');
+      closeCoserEditModal();
+      await displayEventPhotos(eventId);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
+  window.deleteAllCoserPhotos = async (eventId, coser) => {
+    if (!confirm(`Delete ALL photos of cosplayer "${coser}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const photos = [...event.photos];
+
+      // Remove all photos of this cosplayer
+      const filteredPhotos = photos.filter(p => p.coser !== coser);
+      const deletedCount = photos.length - filteredPhotos.length;
+
+      await updateDoc(doc(db, 'events', eventId), { photos: filteredPhotos });
+      alert('✓ Deleted ' + deletedCount + ' photos!');
+      await displayEventPhotos(eventId);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
   // Load banner photo on page load
   document.addEventListener('DOMContentLoaded', () => {
     loadBannerPhoto();
@@ -3232,6 +3325,37 @@
       <div style="display:flex; gap:10px; margin-top:20px;">
         <button onclick="saveBannerEdit()" style="flex:1; padding:10px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.95rem;">Save Changes</button>
         <button onclick="closeBannerEditModal()" style="flex:1; padding:10px; background:#555; color:#fff; border:none; cursor:pointer; font-size:0.95rem;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cosplayer Edit Modal -->
+  <div id="coserEditModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#181818; border:1px solid #2e2e2e; padding:30px; max-width:500px; width:90%; border-radius:4px; max-height:90vh; overflow-y:auto;">
+      <h2 style="margin-top:0; margin-bottom:10px; color:#c8a46e;">Edit Cosplayer Details</h2>
+      <p style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">Apply changes to <span id="coserEditPhotoCount">0</span> photos</p>
+
+      <input type="hidden" id="editCoserEventId">
+
+      <div class="form-group">
+        <label>Instagram Handle (Cosplayer) *</label>
+        <input type="text" id="editCoserHandle" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;" disabled>
+        <p style="font-size:0.75rem; color:#666; margin-top:5px;">Cannot change handle; create new photos with different handle instead</p>
+      </div>
+
+      <div class="form-group">
+        <label>Character Name *</label>
+        <input type="text" id="editCoserCharacter" placeholder="e.g., Hu Tao" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div class="form-group">
+        <label>Series *</label>
+        <input type="text" id="editCoserSeries" placeholder="e.g., Genshin Impact" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button onclick="saveCoserEditDetails()" style="flex:1; padding:10px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.95rem;">Apply to All Photos</button>
+        <button onclick="closeCoserEditModal()" style="flex:1; padding:10px; background:#555; color:#fff; border:none; cursor:pointer; font-size:0.95rem;">Cancel</button>
       </div>
     </div>
   </div>
