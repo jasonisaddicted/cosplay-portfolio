@@ -258,17 +258,12 @@
             </div>
           </div>
 
-          <!-- Mobile Preview (3:4) -->
-          <div style="margin-bottom:20px; max-width:240px;">
-            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile (3:4) — Drag box to move, drag edges to resize</label>
+          <!-- Mobile Preview (Full Width) -->
+          <div style="margin-bottom:20px;">
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile (Full Width) — Drag vertically to adjust crop</label>
             <div id="cropPreviewMobile" style="position:relative; width:100%; aspect-ratio:3/4; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair;">
               <img id="cropImageMobile" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
               <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;">
-                <!-- Resize handles -->
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; left:-4px; cursor:nwse-resize;" data-resize="nw"></div>
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; top:-4px; right:-4px; cursor:nesw-resize;" data-resize="ne"></div>
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; left:-4px; cursor:nesw-resize;" data-resize="sw"></div>
-                <div style="position:absolute; width:8px; height:8px; background:#c8a46e; bottom:-4px; right:-4px; cursor:nwse-resize;" data-resize="se"></div>
               </div>
             </div>
           </div>
@@ -3074,15 +3069,17 @@
   });
 
   // ─ Banner Photo Crop Tool ─
+  const DRAG_SENSITIVITY = 0.4;  // Damping factor for drag sensitivity (0-1, lower = less sensitive)
+
   let cropState = {
     desktopX: 50,
     desktopY: 50,
     desktopWidth: 160,    // in pixels
     desktopHeight: 90,
-    mobileX: 50,
+    mobileX: 100,         // Mobile uses full width, X always 100
     mobileY: 50,
-    mobileWidth: 120,     // in pixels
-    mobileHeight: 160,
+    mobileWidth: null,    // Full width - will be set by updateCropBoxPositions
+    mobileHeight: null,   // Height based on image aspect ratio
     isDraggingDesktop: false,
     isDraggingMobile: false,
     isResizingDesktop: false,
@@ -3131,18 +3128,14 @@
       e.preventDefault();
     });
 
-    // Mobile crop box mousedown (for dragging/resizing)
+    // Mobile crop box mousedown (for vertical dragging only - no resizing)
     mobileBox.addEventListener('mousedown', (e) => {
-      if (e.target.hasAttribute('data-resize')) {
-        cropState.isResizingMobile = true;
-        cropState.resizeDir = e.target.getAttribute('data-resize');
-      } else {
-        cropState.isDraggingMobile = true;
-      }
-      const boxRect = mobileBox.getBoundingClientRect();
-      // Calculate offset from center of box (since box uses transform: translate(-50%, -50%))
-      cropState.dragOffsetX = e.clientX - (boxRect.left + boxRect.width / 2);
-      cropState.dragOffsetY = e.clientY - (boxRect.top + boxRect.height / 2);
+      // Mobile only allows vertical dragging, no resizing
+      cropState.isDraggingMobile = true;
+      const mobilePreview = document.getElementById('cropPreviewMobile');
+      const previewRect = mobilePreview.getBoundingClientRect();
+      // Only track Y offset for vertical dragging
+      cropState.dragOffsetY = e.clientY - previewRect.top;
       e.preventDefault();
     });
 
@@ -3155,11 +3148,12 @@
         let centerX = e.clientX - cropState.dragOffsetX - rect.left;
         let centerY = e.clientY - cropState.dragOffsetY - rect.top;
 
+        // Apply drag sensitivity damping
         centerX = Math.max(0, Math.min(centerX, rect.width));
         centerY = Math.max(0, Math.min(centerY, rect.height));
 
-        cropState.desktopX = Math.round((centerX / rect.width) * 100);
-        cropState.desktopY = Math.round((centerY / rect.height) * 100);
+        cropState.desktopX = Math.round((centerX / rect.width) * 100 * DRAG_SENSITIVITY) / DRAG_SENSITIVITY;
+        cropState.desktopY = Math.round((centerY / rect.height) * 100 * DRAG_SENSITIVITY) / DRAG_SENSITIVITY;
         updateCropBoxPositions();
       }
 
@@ -3205,18 +3199,17 @@
         updateCropBoxPositions();
       }
 
-      // Mobile dragging
+      // Mobile dragging (vertical only - mobile always uses full width)
       if (cropState.isDraggingMobile) {
         const rect = mobilePreview.getBoundingClientRect();
-        // Calculate center position (offset is from center)
-        let centerX = e.clientX - cropState.dragOffsetX - rect.left;
+        // Mobile X is always full width (100%), only allow Y dragging
         let centerY = e.clientY - cropState.dragOffsetY - rect.top;
 
-        centerX = Math.max(0, Math.min(centerX, rect.width));
+        // Apply drag sensitivity damping
         centerY = Math.max(0, Math.min(centerY, rect.height));
 
-        cropState.mobileX = Math.round((centerX / rect.width) * 100);
-        cropState.mobileY = Math.round((centerY / rect.height) * 100);
+        cropState.mobileX = 100;  // Always full width
+        cropState.mobileY = Math.round((centerY / rect.height) * 100 * DRAG_SENSITIVITY) / DRAG_SENSITIVITY;
         updateCropBoxPositions();
       }
 
@@ -3277,6 +3270,7 @@
     const mobileBox = document.getElementById('cropBoxMobile');
     const desktopImg = document.getElementById('cropImageDesktop');
     const mobileImg = document.getElementById('cropImageMobile');
+    const mobilePreview = document.getElementById('cropPreviewMobile');
 
     // Desktop - position box with center at crop point
     desktopBox.style.width = cropState.desktopWidth + 'px';
@@ -3286,18 +3280,24 @@
     desktopBox.style.transform = 'translate(-50%, -50%)';
     desktopImg.style.objectPosition = cropState.desktopX + '% ' + cropState.desktopY + '%';
 
-    // Mobile - position box with center at crop point
-    mobileBox.style.width = cropState.mobileWidth + 'px';
-    mobileBox.style.height = cropState.mobileHeight + 'px';
-    mobileBox.style.left = cropState.mobileX + '%';
+    // Mobile - full width, height based on image aspect ratio, only Y positioning (vertical crop)
+    const mobilePreviewRect = mobilePreview.getBoundingClientRect();
+    const previewWidth = mobilePreviewRect.width;
+
+    // Mobile box uses full width of preview container
+    mobileBox.style.width = '100%';
+    mobileBox.style.height = '100%';
+    mobileBox.style.left = '50%';
     mobileBox.style.top = cropState.mobileY + '%';
     mobileBox.style.transform = 'translate(-50%, -50%)';
-    mobileImg.style.objectPosition = cropState.mobileX + '% ' + cropState.mobileY + '%';
+
+    // Image uses full width, Y position for vertical crop
+    mobileImg.style.objectPosition = '50% ' + cropState.mobileY + '%';
 
     // Update hidden inputs
     document.getElementById('cropDesktopX').value = cropState.desktopX;
     document.getElementById('cropDesktopY').value = cropState.desktopY;
-    document.getElementById('cropMobileX').value = cropState.mobileX;
+    document.getElementById('cropMobileX').value = 100;  // Mobile always full width
     document.getElementById('cropMobileY').value = cropState.mobileY;
   };
 
@@ -3311,10 +3311,10 @@
       desktopY: 50,
       desktopWidth: 160,
       desktopHeight: 90,
-      mobileX: 50,
+      mobileX: 100,         // Mobile full width
       mobileY: 50,
-      mobileWidth: 120,
-      mobileHeight: 160,
+      mobileWidth: null,
+      mobileHeight: null,
       isDraggingDesktop: false,
       isDraggingMobile: false,
       isResizingDesktop: false,
