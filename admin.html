@@ -175,6 +175,59 @@
     <div id="featured" class="content active">
       <h2 style="margin-bottom:20px;">Featured Picks</h2>
 
+      <!-- Banner Photo Management -->
+      <div style="background:#1a1a1a; border:2px solid #c8a46e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px; color:#c8a46e;">🖼️ Banner Photo (Hero)</h3>
+
+        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px;">
+          <div class="form-group">
+            <label>Photo (Upload)</label>
+            <input type="file" id="bannerFile" accept="image/*" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff;">
+          </div>
+          <div class="form-group">
+            <label>Photo URL (or use uploaded)</label>
+            <input type="text" id="bannerSrc" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff;">
+          </div>
+          <div class="form-group">
+            <label>Character Name *</label>
+            <input type="text" id="bannerChar" placeholder="e.g., Hu Tao" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff;">
+          </div>
+          <div class="form-group">
+            <label>Series *</label>
+            <input type="text" id="bannerSeries" placeholder="e.g., Genshin Impact" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff;">
+          </div>
+          <div class="form-group">
+            <label>Cosplayer Handle *</label>
+            <input type="text" id="bannerCoser" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff;">
+          </div>
+          <div class="form-group">
+            <label>Crop Position</label>
+            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="radio" name="bannerCropPos" value="top" style="margin-right:5px;"> Top
+              </label>
+              <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="radio" name="bannerCropPos" value="center" checked style="margin-right:5px;"> Center
+              </label>
+              <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="radio" name="bannerCropPos" value="bottom" style="margin-right:5px;"> Bottom
+              </label>
+            </div>
+          </div>
+          <button onclick="saveBannerPhoto()" style="padding:10px 20px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.9rem;">
+            Save Banner Photo
+          </button>
+          <div id="bannerMsg" style="margin-top:10px; font-size:0.9rem;"></div>
+        </div>
+
+        <h4 style="margin-bottom:10px;">Current Banner Photo</h4>
+        <div id="bannerDisplay" style="text-align:center; padding:20px; border:1px solid #333; background:#0d0d0d; min-height:100px; display:flex; align-items:center; justify-content:center;">
+          <p style="color:#666;">No banner photo set</p>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
         <h3 style="margin-bottom:15px;">Batch Upload Photos</h3>
         <div class="form-group">
@@ -687,6 +740,7 @@
 
     // Load featured photos when featured tab is opened
     if (tab === 'featured') {
+      loadBannerPhoto();
       loadFeatured();
       loadAlbumPhotos('events');
     }
@@ -793,6 +847,119 @@
     }
     loadFeatured();
   };
+
+  // ─ Banner Photo Management ─
+  window.saveBannerPhoto = async () => {
+    const src = document.getElementById('bannerSrc').value;
+    const character = document.getElementById('bannerChar').value;
+    const series = document.getElementById('bannerSeries').value;
+    const coser = document.getElementById('bannerCoser').value;
+    const cropPos = document.querySelector('input[name="bannerCropPos"]:checked').value;
+    const msg = document.getElementById('bannerMsg');
+
+    if (!character || !series || !coser) {
+      msg.textContent = '✗ Please fill in all required fields';
+      msg.style.color = '#ff6b6b';
+      return;
+    }
+
+    msg.textContent = 'Saving...';
+    msg.style.color = '#aaa';
+
+    try {
+      const siteConfig = doc(db, 'site', 'config');
+      await updateDoc(siteConfig, {
+        bannerPhoto: {
+          src: src || '',
+          character,
+          series,
+          coser: coser.replace('@', ''),
+          cropPosition: cropPos,
+          updatedAt: new Date()
+        }
+      });
+      msg.textContent = '✓ Banner photo saved!';
+      msg.style.color = '#4CAF50';
+      document.getElementById('bannerChar').value = '';
+      document.getElementById('bannerSeries').value = '';
+      document.getElementById('bannerCoser').value = '';
+      document.getElementById('bannerSrc').value = '';
+      document.querySelector('input[name="bannerCropPos"][value="center"]').checked = true;
+      loadBannerPhoto();
+      setTimeout(() => { msg.textContent = ''; }, 3000);
+    } catch (err) {
+      msg.textContent = `✗ Error: ${err.message}`;
+      msg.style.color = '#ff6b6b';
+    }
+  };
+
+  window.loadBannerPhoto = async () => {
+    try {
+      const configDoc = await getDoc(doc(db, 'site', 'config'));
+      const banner = configDoc.data()?.bannerPhoto;
+      const display = document.getElementById('bannerDisplay');
+
+      if (banner && banner.src) {
+        display.innerHTML = `
+          <div style="position:relative; max-width:100%;">
+            <img src="${banner.src}" alt="${banner.character}" style="max-width:300px; max-height:400px; object-fit:cover; border:1px solid #444;">
+            <div style="margin-top:15px; padding:15px; background:#181818; border:1px solid #333; text-align:left;">
+              <div style="font-weight:bold; margin-bottom:5px;">${banner.character}</div>
+              <div style="font-size:0.9rem; color:#aaa; margin-bottom:8px;">${banner.series}</div>
+              <div style="font-size:0.85rem; color:#888; margin-bottom:12px;">@${banner.coser}</div>
+              <button onclick="deleteBannerPhoto()" style="padding:6px 12px; background:#c74545; color:#fff; border:none; cursor:pointer; font-size:0.85rem; font-weight:bold;">Delete Banner</button>
+            </div>
+          </div>
+        `;
+      } else {
+        display.innerHTML = '<p style="color:#666;">No banner photo set</p>';
+      }
+    } catch (err) {
+      console.error('Error loading banner:', err);
+      document.getElementById('bannerDisplay').innerHTML = '<p style="color:#666;">No banner photo set</p>';
+    }
+  };
+
+  window.deleteBannerPhoto = async () => {
+    if (!confirm('Delete this banner photo?')) return;
+
+    try {
+      const siteConfig = doc(db, 'site', 'config');
+      await updateDoc(siteConfig, {
+        bannerPhoto: null
+      });
+      loadBannerPhoto();
+      const msg = document.getElementById('bannerMsg');
+      msg.textContent = '✓ Banner deleted';
+      msg.style.color = '#4CAF50';
+      setTimeout(() => { msg.textContent = ''; }, 2000);
+    } catch (err) {
+      console.error('Error deleting banner:', err);
+    }
+  };
+
+  // Banner file upload handler
+  document.getElementById('bannerFile')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const msg = document.getElementById('bannerMsg');
+    msg.textContent = 'Uploading...';
+    msg.style.color = '#aaa';
+
+    try {
+      const storageRef = ref(storage, `photos/banner/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      document.getElementById('bannerSrc').value = url;
+      msg.textContent = '✓ Photo uploaded!';
+      msg.style.color = '#4CAF50';
+      setTimeout(() => { msg.textContent = ''; }, 2000);
+    } catch (err) {
+      msg.textContent = `✗ Upload failed: ${err.message}`;
+      msg.style.color = '#ff6b6b';
+    }
+  });
 
   // ─ Album Photo Browser ─
   let currentAlbumTab = 'events';

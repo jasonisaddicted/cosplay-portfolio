@@ -24,8 +24,8 @@
     </ul>
   </nav>
 
-  <!-- Hero -->
-  <section class="hero" id="hero" title="View full size">
+  <!-- Hero (Banner) -->
+  <section class="hero" id="hero" title="View full size" style="cursor: pointer;">
     <img class="hero__img" src="" alt="">
     <div class="hero__overlay"></div>
     <div class="hero__content">
@@ -35,6 +35,15 @@
       <p class="hero__credit"></p>
     </div>
   </section>
+
+  <!-- Banner Info Panel (Pop-out Card) -->
+  <div class="banner-panel" id="bannerPanel">
+    <div class="banner-panel__overlay"></div>
+    <div class="banner-panel__card">
+      <button class="banner-panel__close" aria-label="Close">&times;</button>
+      <div class="banner-panel__content" id="bannerPanelContent"></div>
+    </div>
+  </div>
 
   <!-- Featured Shots Section -->
   <div class="featured-section">

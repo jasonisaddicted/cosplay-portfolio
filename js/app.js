@@ -1145,17 +1145,17 @@ function initHome() {
   console.log('🏠 page-home class found, initializing...');
 
   const cfg = CONFIG;
-  const [hero, ...picks] = cfg.featured;
 
-  // Hero
-  if (hero) {
+  // Banner Photo (new system - separate from featured)
+  const banner = cfg.bannerPhoto;
+  if (banner && banner.src) {
     const heroSection = document.getElementById('hero');
     const heroImg = heroSection.querySelector('.hero__img');
-    heroImg.src     = hero.src;
-    heroImg.alt     = hero.character || '';
+    heroImg.src = banner.src;
+    heroImg.alt = banner.character || '';
 
     // Apply crop position for portrait images
-    const cropPos = hero.cropPosition || 'center';
+    const cropPos = banner.cropPosition || 'center';
     const cropMap = {
       'top': 'center top',
       'center': 'center center',
@@ -1163,18 +1163,20 @@ function initHome() {
     };
     heroImg.style.objectPosition = cropMap[cropPos] || 'center center';
 
-    heroSection.querySelector('.hero__character').textContent = hero.character || '';
-    heroSection.querySelector('.hero__series').textContent   = hero.series    || '';
-    if (hero.credit) {
-      heroSection.querySelector('.hero__credit').textContent = hero.credit;
-    }
+    heroSection.querySelector('.hero__character').textContent = banner.character || '';
+    heroSection.querySelector('.hero__series').textContent = banner.series || '';
+    heroSection.querySelector('.hero__credit').textContent = banner.coser ? `@${banner.coser}` : '';
     const heroLabel = document.querySelector('.hero-label-text');
-    if (heroLabel) heroLabel.textContent = cfg.heroLabel || '';
-    heroSection.addEventListener('click', () => Lightbox.open(0));
+    if (heroLabel) heroLabel.textContent = 'THIS MONTH';
+
+    // Click to open banner panel
+    heroSection.addEventListener('click', () => {
+      openBannerPanel(banner);
+    });
   }
 
-  // Featured section — show up to 9 picks (featured[0..8])
-  const allFeatured = cfg.featured;
+  // Featured section — show all featured picks (not used for hero anymore)
+  const allFeatured = cfg.featured || [];
   const maxPicks = 9;
   const featuredPhotos = allFeatured.slice(0, maxPicks);
 
@@ -1208,6 +1210,170 @@ function initHome() {
     character: p.character || '',
     series:    p.series    || ''
   })));
+}
+
+// ── Banner Panel Functions ───────────────────────────────────
+function buildAlbumsSection(albums, coserHandle) {
+  if (!albums || albums.length === 0) return '';
+
+  const igHandle = coserHandle ? (coserHandle.startsWith('@') ? coserHandle : '@' + coserHandle) : '';
+  const isMobile = window.innerWidth <= 767;
+
+  const hasEvents = albums.some(a => a.type === 'events');
+  const hasStudio = albums.some(a => a.type === 'studio');
+  const hasCollab = albums.some(a => a.type === 'collab');
+
+  const tabsHtml = `
+    <div class="info-panel__filter-tabs">
+      <button class="info-panel__filter-tab active" data-filter="all">All</button>
+      ${hasEvents ? '<button class="info-panel__filter-tab" data-filter="events">Events</button>' : ''}
+      ${hasStudio ? '<button class="info-panel__filter-tab" data-filter="studio">Studio</button>' : ''}
+      ${hasCollab ? '<button class="info-panel__filter-tab" data-filter="collab">Collab</button>' : ''}
+    </div>`;
+
+  let albumsHtml = '';
+  if (isMobile) {
+    // Mobile: accordion list
+    const accordions = albums.map((a, i) => `
+      <div class="info-panel__accordion" data-ai="${i}" data-type="${a.type}">
+        <div class="info-panel__accordion-header">
+          <div class="info-panel__accordion-thumb">
+            <img src="${a.photos[0].src}" alt="${a.name}">
+          </div>
+          <div class="info-panel__accordion-meta">
+            <div class="info-panel__album-name">${a.name}</div>
+            <div class="info-panel__album-count">${a.photos.length} photo${a.photos.length !== 1 ? 's' : ''} together</div>
+          </div>
+          <svg class="info-panel__accordion-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </div>
+        <div class="info-panel__accordion-photos">
+          ${a.photos.map((p, pi) =>
+            `<div class="info-panel__acc-photo" data-ai="${i}" data-pi="${pi}">
+               <img src="${p.src}" alt="">
+             </div>`
+          ).join('')}
+        </div>
+      </div>`).join('');
+
+    albumsHtml = `
+      <div class="info-panel__section">
+        <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
+        <div style="font-size:0.8rem; color:#999; margin-bottom:12px;">See all of ${igHandle || 'this cosplayer'}'s work</div>
+        ${tabsHtml}
+        <div class="info-panel__album-list">${accordions}</div>
+      </div>`;
+  } else {
+    // Desktop: portrait cards
+    const cards = albums.map((a, i) => `
+      <div class="info-panel__album-card" data-ai="${i}" data-type="${a.type}">
+        <div class="info-panel__album-img-wrap">
+          <img class="info-panel__album-img" src="${a.photos[0].src}" alt="${a.name}">
+        </div>
+        <div class="info-panel__album-name">${a.name}</div>
+        <div class="info-panel__album-count">${a.photos.length} photo${a.photos.length !== 1 ? 's' : ''} together</div>
+      </div>`).join('');
+
+    albumsHtml = `
+      <div class="info-panel__section">
+        <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
+        <div style="font-size:0.8rem; color:#999; margin-bottom:12px;">See all of ${igHandle || 'this cosplayer'}'s work</div>
+        ${tabsHtml}
+        <div class="info-panel__album-list">${cards}</div>
+      </div>`;
+  }
+
+  // Add filter tab functionality
+  const html = albumsHtml + `
+    <script>
+      const filterTabs = document.querySelectorAll('.info-panel__filter-tabs button');
+      filterTabs.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const filter = this.getAttribute('data-filter');
+          filterTabs.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+
+          const items = document.querySelectorAll('[data-type]');
+          items.forEach(item => {
+            if (filter === 'all' || item.getAttribute('data-type') === filter) {
+              item.style.display = '';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+    </script>
+  `;
+
+  return albumsHtml;
+}
+
+function openBannerPanel(banner) {
+  if (!banner.coser) return; // Can't show panel without cosplayer handle
+
+  const panelDiv = document.getElementById('bannerPanel');
+  const contentDiv = document.getElementById('bannerPanelContent');
+
+  // Build panel content
+  const html = buildBannerPanelContent(banner);
+  contentDiv.innerHTML = html;
+  panelDiv.classList.add('active');
+
+  // Close handlers
+  const closeBtn = panelDiv.querySelector('.banner-panel__close');
+  const overlay = panelDiv.querySelector('.banner-panel__overlay');
+
+  const closePanel = () => {
+    panelDiv.classList.remove('active');
+  };
+
+  closeBtn.addEventListener('click', closePanel);
+  overlay.addEventListener('click', closePanel);
+
+  // Escape key
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      closePanel();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+}
+
+function buildBannerPanelContent(banner) {
+  const coser = banner.coser;
+  const albums = findCoserAlbums(coser);
+
+  let html = `
+    <div class="info-panel__section">
+      <span class="info-panel__section-label">COSPLAYER</span>
+  `;
+
+  // Instagram link
+  if (coser) {
+    html += `<a class="info-panel__ig-row" href="https://instagram.com/${coser}" target="_blank" style="margin-bottom:8px;">
+      <svg class="info-panel__ig-icon" viewBox="0 0 24 24" style="width:16px; height:16px; margin-right:6px;">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/>
+      </svg>
+      <span class="info-panel__ig-handle">@${coser}</span>
+    </a>`;
+  }
+
+  html += `
+    <div class="info-panel__character">${banner.character}</div>
+    <div class="info-panel__series">${banner.series}</div>
+    <div class="info-panel__project-count">Appears in ${albums.length} project${albums.length !== 1 ? 's' : ''}</div>
+    </div>
+  `;
+
+  // Projects section with filter tabs
+  if (albums.length > 0) {
+    html += buildAlbumsSection(albums, coser);
+  }
+
+  return html;
 }
 
 // ── Page: Events ─────────────────────────────────────────────
