@@ -643,70 +643,59 @@ window.openCharacterModal = (character) => {
 
 // Open featured panel with photo details
 window.openFeaturedPanel = (photo) => {
-  const isMobile = window.innerWidth <= 768;
-  const panelId = isMobile ? 'featured-panel-mobile' : 'featured-panel-desktop';
-  const contentId = isMobile ? 'featured-panel-content-mobile' : 'featured-panel-content-desktop';
+  // Show detailed modal instead of side panel
+  const existingModal = document.querySelector('.featured-photo-detail-modal');
+  if (existingModal) existingModal.remove();
 
-  const panel = document.getElementById(panelId);
-  const contentEl = document.getElementById(contentId);
+  const modal = document.createElement('div');
+  modal.className = 'featured-photo-detail-modal';
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8); z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  `;
 
-  // Build panel content (info-panel structure)
-  const html = `
-    <div class="info-panel__section">
-      <span class="info-panel__section-label">Photo</span>
-      <div style="width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 16px;">
-        <img src="${photo.src}" alt="${photo.character || ''}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+  modal.innerHTML = `
+    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; padding: 20px;">
+      <button onclick="this.closest('.featured-photo-detail-modal').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer;">×</button>
+
+      <div style="aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 20px; border-radius: 2px;">
+        <img src="${photo.src}" alt="${photo.character || ''}" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
-    </div>
-    <div class="info-panel__section">
-      <span class="info-panel__section-label">Details</span>
+
       ${photo.character ? `
-        <div class="info-panel__section" style="padding-bottom: 12px;">
-          <div style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px;">Character</div>
-          <div style="font-size: 0.9rem; color: var(--text);">${photo.character}</div>
-        </div>
+        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Character</div>
+        <div style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 16px;">${photo.character}</div>
       ` : ''}
+
       ${photo.series ? `
-        <div class="info-panel__section" style="padding-bottom: 12px;">
-          <div style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px;">Series</div>
-          <div style="font-size: 0.9rem; color: var(--text); cursor: pointer;" onclick="openCharacterModal('${photo.series}')">${photo.series}</div>
-        </div>
+        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Series</div>
+        <div style="font-size: 0.95rem; color: var(--text); margin-bottom: 16px;">${photo.series}</div>
       ` : ''}
+
       ${photo.credit ? `
-        <div class="info-panel__section" style="padding-bottom: 12px;">
-          <div style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px;">Cosplayer</div>
-          <div style="font-size: 0.9rem; color: var(--text); cursor: pointer;" onclick="openCosplayerModal('${photo.credit}')">${photo.credit}</div>
-        </div>
+        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Cosplayer</div>
+        <div style="font-size: 0.95rem; color: var(--text); margin-bottom: 16px;">${photo.credit}</div>
+      ` : ''}
+
+      ${photo.caption ? `
+        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Caption</div>
+        <div style="font-size: 0.9rem; color: var(--text-muted);">${photo.caption}</div>
       ` : ''}
     </div>
   `;
 
-  contentEl.innerHTML = html;
+  document.body.appendChild(modal);
 
-  // Open panel
-  panel.style.display = 'flex';
-
-  // Close button
-  const closeBtn = panel.querySelector('.info-panel__close-btn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      panel.style.display = 'none';
-    });
-  }
-
-  // Back button (mobile)
-  const backBtn = panel.querySelector('.info-panel__back-btn');
-  if (backBtn) {
-    backBtn.addEventListener('click', () => {
-      panel.style.display = 'none';
-    });
-  }
+  // Close on background click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
 
   // Close on escape
   const closeOnEscape = (e) => {
-    if (e.key === 'Escape' && panel.style.display !== 'none') {
-      panel.style.display = 'none';
-    }
+    if (e.key === 'Escape') modal.remove();
   };
   document.addEventListener('keydown', closeOnEscape);
 };
@@ -753,7 +742,7 @@ window.openCollabPanel = (collab) => {
     return `
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; padding: 16px;">
         ${photos.map((p, idx) => `
-          <div style="aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); cursor: pointer;" title="${p.character || 'Photo'}">
+          <div class="collab-photo-item" data-photo-index="${idx}" style="aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); cursor: pointer;" title="${p.character || 'Photo'}">
             <img src="${p.src}" alt="${p.character || ''}" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         `).join('')}
@@ -819,6 +808,85 @@ window.openCollabPanel = (collab) => {
         list.style.display = list.dataset.filter === filter ? 'block' : 'none';
       });
     });
+  });
+
+  // Photo detail modal handler
+  const showCollabPhotoDetail = (photo) => {
+    const existingModal = document.querySelector('.collab-photo-detail-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'collab-photo-detail-modal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8); z-index: 2000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    `;
+
+    const gankUrl = collab.gankUrl ? `<a href="${collab.gankUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 12px; padding: 8px 16px; background: #c8a46e; color: #000; text-decoration: none; font-weight: 600; border-radius: 3px;">Support on Gank</a>` : '';
+
+    modal.innerHTML = `
+      <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; padding: 20px;">
+        <button onclick="this.closest('.collab-photo-detail-modal').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer;">×</button>
+
+        <div style="aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 20px; border-radius: 2px;">
+          <img src="${photo.src}" alt="${photo.character || ''}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+
+        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Cosplayer</div>
+        <div style="font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 16px;">
+          ${collab.instagram ? `<a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none;">@${collab.handle.replace('@', '')}</a>` : `@${collab.handle.replace('@', '')}`}
+        </div>
+
+        ${photo.character ? `
+          <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Character</div>
+          <div style="font-size: 0.95rem; color: var(--text); margin-bottom: 16px;">${photo.character}</div>
+        ` : ''}
+
+        ${photo.series ? `
+          <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Series</div>
+          <div style="font-size: 0.95rem; color: var(--text); margin-bottom: 16px;">${photo.series}</div>
+        ` : ''}
+
+        ${photo.caption ? `
+          <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Caption</div>
+          <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">${photo.caption}</div>
+        ` : ''}
+
+        <div style="text-align: center;">
+          ${gankUrl}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    // Close on escape
+    const closeOnEscape = (e) => {
+      if (e.key === 'Escape') modal.remove();
+    };
+    document.addEventListener('keydown', closeOnEscape);
+  };
+
+  // Add click handlers to all photos
+  contentEl.querySelectorAll('.collab-photo-item').forEach((item, idx) => {
+    const photoIndex = parseInt(item.dataset.photoIndex);
+    const currentFilter = contentEl.querySelector('.info-panel__filter-tab.active').dataset.filter;
+
+    let photo;
+    if (currentFilter === 'all') photo = allPhotos[photoIndex];
+    else if (currentFilter === 'events') photo = eventPhotos[photoIndex];
+    else if (currentFilter === 'studio') photo = studioPhotos[photoIndex];
+
+    if (photo) {
+      item.addEventListener('click', () => showCollabPhotoDetail(photo));
+    }
   });
 
   // Open panel
