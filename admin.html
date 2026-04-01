@@ -1059,9 +1059,9 @@
           cropState.desktopY = banner.cropDesktop.y || 50;
         }
         if (banner.cropMobile) {
-          cropState.mobileX = banner.cropMobile.x || 50;
           cropState.mobileY = banner.cropMobile.y || 50;
         }
+        cropState.mobileX = 100;  // Mobile always full width
         updateCropBoxPositions();
 
         display.innerHTML = `
@@ -3069,7 +3069,7 @@
   });
 
   // ─ Banner Photo Crop Tool ─
-  const DRAG_SENSITIVITY = 0.4;  // Damping factor for drag sensitivity (0-1, lower = less sensitive)
+  const DRAG_SENSITIVITY = 0.08;  // Damping factor for drag sensitivity (0-1, lower = less sensitive)
 
   let cropState = {
     desktopX: 50,
@@ -3345,6 +3345,22 @@
     const cropMap = { 'top': 'top', 'center': 'center', 'bottom': 'bottom' };
     const cropPos = banner.cropPosition || 'center';
     document.querySelector(`input[name="editBannerCropPos"][value="${cropPos}"]`).checked = true;
+
+    // Initialize crop tool with current banner image and load crop values
+    if (banner.src) {
+      initCropTool(banner.src);
+
+      // Load existing crop values
+      if (banner.cropDesktop) {
+        cropState.desktopX = banner.cropDesktop.x || 50;
+        cropState.desktopY = banner.cropDesktop.y || 50;
+      }
+      if (banner.cropMobile) {
+        cropState.mobileY = banner.cropMobile.y || 50;
+      }
+      cropState.mobileX = 100;  // Mobile always full width
+      updateCropBoxPositions();
+    }
 
     // Show modal
     document.getElementById('bannerEditModal').style.display = 'flex';
