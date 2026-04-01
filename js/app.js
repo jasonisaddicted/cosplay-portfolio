@@ -783,6 +783,7 @@ window.openCollabPanel = (collab) => {
   const showMainPanel = () => {
     // Build panel content using unified info-panel structure
     const coverImage = collab.cover || allPhotos[0]?.src || '';
+    const firstPhoto = allPhotos[0];
     const html = `
       <div class="info-panel__section">
         <span class="info-panel__section-label">Cosplayer</span>
@@ -801,6 +802,9 @@ window.openCollabPanel = (collab) => {
             <a href="https://instagram.com/${collab.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; font-size: 0.85rem;">${collab.instagram}</a>
           </div>
         ` : ''}
+        ${firstPhoto?.character ? `<div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; margin-top: 12px;">Character</div><div style="cursor: pointer; color: #c8a46e; text-decoration: underline; font-size: 0.95rem; margin-bottom: 8px;" class="collab-character-name" data-character="${firstPhoto.character}">${firstPhoto.character}</div>` : ''}
+        ${firstPhoto?.series ? `<div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Series</div><div style="font-size: 0.95rem; color: var(--text); margin-bottom: 8px;">${firstPhoto.series}</div>` : ''}
+        ${firstPhoto?.caption ? `<div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Caption</div><div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">${firstPhoto.caption}</div>` : ''}
         ${collab.bio ? `<div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-top: 12px;">${collab.bio}</div>` : ''}
       </div>
 
