@@ -606,9 +606,6 @@ const Lightbox = (() => {
     if (backBtn) backBtn.style.display = 'none';
     backCallback = null;
     clearPanelTimers();
-    infoPanel.innerHTML = '';
-    photos = [];
-    current = 0;
   }
 
   lb.querySelector('.lightbox__close').addEventListener('click', hide);
@@ -625,11 +622,7 @@ const Lightbox = (() => {
   lb.querySelector('.lightbox__next').addEventListener('click', () => show(current + 1));
 
   lb.addEventListener('click', e => {
-    if (e.target === lb || e.target === lb.querySelector('.lightbox__inner')) {
-      e.preventDefault();
-      e.stopPropagation();
-      hide();
-    }
+    if (e.target === lb || e.target === lb.querySelector('.lightbox__inner')) hide();
   });
 
   document.addEventListener('keydown', e => {
