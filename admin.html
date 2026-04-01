@@ -218,88 +218,10 @@
             <label>Description (Optional)</label>
             <textarea id="bannerDesc" placeholder="Add details about this photo: location, theme, composition, lighting notes, etc." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; box-sizing:border-box; min-height:80px;"></textarea>
           </div>
-          <div class="form-group">
-            <label>Crop Position</label>
-            <div style="display:flex; gap:15px; flex-wrap:wrap;">
-              <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="bannerCropPos" value="top" style="margin-right:5px;"> Top
-              </label>
-              <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="bannerCropPos" value="center" checked style="margin-right:5px;"> Center
-              </label>
-              <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="bannerCropPos" value="bottom" style="margin-right:5px;"> Bottom
-              </label>
-            </div>
-          </div>
           <button onclick="saveBannerPhoto()" style="padding:10px 20px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.9rem;">
             Save Banner Photo
           </button>
           <div id="bannerMsg" style="margin-top:10px; font-size:0.9rem;"></div>
-        </div>
-
-        <!-- Crop Tool Section -->
-        <div id="cropToolSection" style="display:none; margin-bottom:20px; padding:20px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin-top:0; margin-bottom:15px; color:#c8a46e;">📐 Crop Tool - Set Position & Size</h4>
-
-          <!-- Desktop Controls -->
-          <div style="margin-bottom:25px;">
-            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Desktop (16:9)</label>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:12px;">
-              <div class="form-group">
-                <label style="font-size:0.85rem; color:#999;">Position X (%)</label>
-                <input type="range" id="desktopCropX" min="0" max="100" value="50" style="width:100%; cursor:pointer;">
-                <input type="number" id="desktopCropXInput" min="0" max="100" value="50" style="width:100%; padding:6px; background:#181818; border:1px solid #333; color:#fff; margin-top:4px; box-sizing:border-box;">
-              </div>
-              <div class="form-group">
-                <label style="font-size:0.85rem; color:#999;">Position Y (%)</label>
-                <input type="range" id="desktopCropY" min="0" max="100" value="50" style="width:100%; cursor:pointer;">
-                <input type="number" id="desktopCropYInput" min="0" max="100" value="50" style="width:100%; padding:6px; background:#181818; border:1px solid #333; color:#fff; margin-top:4px; box-sizing:border-box;">
-              </div>
-            </div>
-            <div id="cropPreviewDesktop" style="position:relative; width:100%; aspect-ratio:16/9; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden;">
-              <img id="cropImageDesktop" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
-            </div>
-          </div>
-
-          <!-- Mobile Display Mode -->
-          <div style="margin-bottom:20px;">
-            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile Display Mode</label>
-            <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:12px;">
-              <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="mobileDisplayMode" value="fullWidth" style="margin-right:5px;"> Full Width
-              </label>
-              <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="mobileDisplayMode" value="originalRatio" style="margin-right:5px;"> Original Ratio
-              </label>
-              <label style="display:flex; align-items:center; cursor:pointer;">
-                <input type="radio" name="mobileDisplayMode" value="crop" checked style="margin-right:5px;"> Crop
-              </label>
-            </div>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:12px;">
-              <div class="form-group">
-                <label style="font-size:0.85rem; color:#999;">Crop Position (%)</label>
-                <input type="range" id="mobileCropY" min="0" max="100" value="50" style="width:100%; cursor:pointer;">
-                <input type="number" id="mobileCropYInput" min="0" max="100" value="50" style="width:100%; padding:6px; background:#181818; border:1px solid #333; color:#fff; margin-top:4px; box-sizing:border-box;">
-              </div>
-            </div>
-
-            <div id="cropPreviewMobile" style="position:relative; width:100%; aspect-ratio:3/4; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; max-height:400px;">
-              <img id="cropImageMobile" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
-            </div>
-          </div>
-
-          <!-- Hidden inputs -->
-          <input type="hidden" id="cropDesktopX" value="50">
-          <input type="hidden" id="cropDesktopY" value="50">
-          <input type="hidden" id="cropMobileY" value="50">
-
-          <!-- Crop Controls -->
-          <div style="display:flex; gap:10px; margin-top:15px;">
-            <button onclick="applyCropTool()" style="flex:1; padding:10px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.9rem; border-radius:3px;">Apply Crop</button>
-            <button onclick="resetCropTool()" style="flex:1; padding:10px; background:#555; color:#fff; border:none; cursor:pointer; font-size:0.9rem; border-radius:3px;">Reset</button>
-          </div>
         </div>
 
         <h4 style="margin-bottom:10px;">Current Banner Photo</h4>
@@ -1015,7 +937,6 @@
     const series = document.getElementById('bannerSeries').value;
     const coser = document.getElementById('bannerCoser').value;
     const description = document.getElementById('bannerDesc').value.trim();
-    const cropPos = document.querySelector('input[name="bannerCropPos"]:checked').value;
     const msg = document.getElementById('bannerMsg');
 
     if (!character || !series || !coser) {
@@ -1028,13 +949,6 @@
     msg.style.color = '#aaa';
 
     try {
-      // Get crop coordinates
-      const cropDesktopX = parseInt(document.getElementById('cropDesktopX').value) || 50;
-      const cropDesktopY = parseInt(document.getElementById('cropDesktopY').value) || 50;
-      const cropMobileX = parseInt(document.getElementById('cropMobileX').value) || 50;
-      const cropMobileY = parseInt(document.getElementById('cropMobileY').value) || 50;
-
-      const mobileMode = document.querySelector('input[name="mobileDisplayMode"]:checked').value;
       const siteConfig = doc(db, 'site', 'config');
       await updateDoc(siteConfig, {
         bannerPhoto: {
@@ -1043,10 +957,6 @@
           series,
           coser: coser.replace('@', ''),
           description: description || '',
-          cropPosition: cropPos,
-          cropDesktop: { x: cropDesktopX, y: cropDesktopY },
-          cropMobile: { x: cropMobileX, y: cropMobileY },
-          mobileMode: mobileMode,
           updatedAt: new Date()
         }
       });
@@ -1057,7 +967,6 @@
       document.getElementById('bannerCoser').value = '';
       document.getElementById('bannerDesc').value = '';
       document.getElementById('bannerSrc').value = '';
-      document.querySelector('input[name="bannerCropPos"][value="center"]').checked = true;
       loadBannerPhoto();
       setTimeout(() => { msg.textContent = ''; }, 3000);
     } catch (err) {
@@ -1073,19 +982,6 @@
       const display = document.getElementById('bannerDisplay');
 
       if (banner && banner.src) {
-        // Initialize crop tool and load existing crop values
-        initCropTool(banner.src);
-
-        // Load existing crop values if they exist
-        if (banner.cropDesktop) {
-          cropState.desktopX = banner.cropDesktop.x || 50;
-          cropState.desktopY = banner.cropDesktop.y || 50;
-        }
-        if (banner.cropMobile) {
-          cropState.mobileY = banner.cropMobile.y || 50;
-        }
-        cropState.mobileX = 100;  // Mobile always full width
-        updateCropBoxPositions();
 
         display.innerHTML = `
           <div style="position:relative; max-width:100%;">
@@ -1144,13 +1040,9 @@
       const url = await getDownloadURL(storageRef);
       document.getElementById('bannerSrc').value = url;
 
-      // Show crop tool for the uploaded image
-      initCropTool(url);
-      resetCropTool();
-
-      msg.textContent = '✓ Photo uploaded!';
+      msg.textContent = '✓ Photo uploaded! Now fill in the details and click Save Banner Photo';
       msg.style.color = '#4CAF50';
-      setTimeout(() => { msg.textContent = ''; }, 2000);
+      setTimeout(() => { msg.textContent = ''; }, 3000);
     } catch (err) {
       msg.textContent = `✗ Upload failed: ${err.message}`;
       msg.style.color = '#ff6b6b';
@@ -3091,148 +2983,6 @@
     }
   });
 
-  // ─ Banner Photo Crop Tool ─
-  const DRAG_SENSITIVITY = 0.01;  // Damping factor for drag sensitivity (0-1, lower = less sensitive)
-
-  let cropState = {
-    desktopX: 50,
-    desktopY: 50,
-    desktopWidth: 160,    // in pixels
-    desktopHeight: 90,
-    mobileX: 100,         // Mobile uses full width, X always 100
-    mobileY: 50,
-    mobileWidth: null,    // Full width - will be set by updateCropBoxPositions
-    mobileHeight: null,   // Height based on image aspect ratio
-    mobileMode: 'crop',  // 'fullWidth', 'originalRatio', or 'crop'
-    isDraggingDesktop: false,
-    isDraggingMobile: false,
-    isResizingDesktop: false,
-    isResizingMobile: false,
-    dragOffsetX: 0,
-    dragOffsetY: 0,
-    resizeDir: null
-  };
-
-  window.initCropTool = (imageSrc) => {
-    const cropSection = document.getElementById('cropToolSection');
-    const cropImageDesktop = document.getElementById('cropImageDesktop');
-    const cropImageMobile = document.getElementById('cropImageMobile');
-
-    if (!imageSrc) {
-      cropSection.style.display = 'none';
-      return;
-    }
-
-    cropImageDesktop.src = imageSrc;
-    cropImageMobile.src = imageSrc;
-    cropSection.style.display = 'block';
-
-    setupCropBoxDragging();
-    updateCropBoxPositions();
-  };
-
-  window.setupCropBoxDragging = () => {
-    // Desktop X input - sync range and number input
-    document.getElementById('desktopCropX').addEventListener('input', (e) => {
-      cropState.desktopX = parseInt(e.target.value);
-      document.getElementById('desktopCropXInput').value = cropState.desktopX;
-      updateCropBoxPositions();
-    });
-    document.getElementById('desktopCropXInput').addEventListener('input', (e) => {
-      let val = parseInt(e.target.value);
-      val = Math.max(0, Math.min(100, val));
-      cropState.desktopX = val;
-      document.getElementById('desktopCropX').value = val;
-      updateCropBoxPositions();
-    });
-
-    // Desktop Y input - sync range and number input
-    document.getElementById('desktopCropY').addEventListener('input', (e) => {
-      cropState.desktopY = parseInt(e.target.value);
-      document.getElementById('desktopCropYInput').value = cropState.desktopY;
-      updateCropBoxPositions();
-    });
-    document.getElementById('desktopCropYInput').addEventListener('input', (e) => {
-      let val = parseInt(e.target.value);
-      val = Math.max(0, Math.min(100, val));
-      cropState.desktopY = val;
-      document.getElementById('desktopCropY').value = val;
-      updateCropBoxPositions();
-    });
-
-    // Mobile Y input - sync range and number input
-    document.getElementById('mobileCropY').addEventListener('input', (e) => {
-      cropState.mobileY = parseInt(e.target.value);
-      document.getElementById('mobileCropYInput').value = cropState.mobileY;
-      updateCropBoxPositions();
-    });
-    document.getElementById('mobileCropYInput').addEventListener('input', (e) => {
-      let val = parseInt(e.target.value);
-      val = Math.max(0, Math.min(100, val));
-      cropState.mobileY = val;
-      document.getElementById('mobileCropY').value = val;
-      updateCropBoxPositions();
-    });
-
-    // Mobile display mode selection
-    document.querySelectorAll('input[name="mobileDisplayMode"]').forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        cropState.mobileMode = e.target.value;
-        updateCropBoxPositions();
-      });
-    });
-  };
-
-  window.updateCropBoxPositions = () => {
-    const desktopImg = document.getElementById('cropImageDesktop');
-    const mobileImg = document.getElementById('cropImageMobile');
-
-    // Update preview images with crop position
-    desktopImg.style.objectPosition = cropState.desktopX + '% ' + cropState.desktopY + '%';
-    mobileImg.style.objectPosition = '50% ' + cropState.mobileY + '%';
-
-    // Sync input fields
-    document.getElementById('desktopCropX').value = cropState.desktopX;
-    document.getElementById('desktopCropXInput').value = cropState.desktopX;
-    document.getElementById('desktopCropY').value = cropState.desktopY;
-    document.getElementById('desktopCropYInput').value = cropState.desktopY;
-    document.getElementById('mobileCropY').value = cropState.mobileY;
-    document.getElementById('mobileCropYInput').value = cropState.mobileY;
-
-    // Update hidden inputs
-    document.getElementById('cropDesktopX').value = cropState.desktopX;
-    document.getElementById('cropDesktopY').value = cropState.desktopY;
-    document.getElementById('cropMobileY').value = cropState.mobileY;
-  };
-
-  window.applyCropTool = () => {
-    saveBannerPhoto();
-  };
-
-  window.resetCropTool = () => {
-    cropState = {
-      desktopX: 50,
-      desktopY: 50,
-      desktopWidth: 160,
-      desktopHeight: 90,
-      mobileX: 100,         // Mobile full width
-      mobileY: 50,
-      mobileWidth: null,
-      mobileHeight: null,
-      mobileMode: 'crop',
-      isDraggingDesktop: false,
-      isDraggingMobile: false,
-      isResizingDesktop: false,
-      isResizingMobile: false,
-      dragOffsetX: 0,
-      dragOffsetY: 0,
-      resizeDir: null
-    };
-    document.querySelector('input[name="mobileDisplayMode"][value="crop"]').checked = true;
-    document.getElementById('mobileDisplayInfo').textContent = 'Drag to select which part of the image to display.';
-    document.getElementById('cropBoxMobile').style.display = 'block';
-    updateCropBoxPositions();
-  };
 
   // ─ Banner Photo Edit Modal ─
   window.openBannerEditModal = async () => {
@@ -3250,46 +3000,6 @@
     document.getElementById('editBannerCoser').value = banner.coser || '';
     document.getElementById('editBannerDesc').value = banner.description || '';
 
-    const cropMap = { 'top': 'top', 'center': 'center', 'bottom': 'bottom' };
-    const cropPos = banner.cropPosition || 'center';
-    document.querySelector(`input[name="editBannerCropPos"][value="${cropPos}"]`).checked = true;
-
-    // Initialize crop tool with current banner image and load crop values
-    if (banner.src) {
-      initCropTool(banner.src);
-
-      // Load existing crop values
-      if (banner.cropDesktop) {
-        cropState.desktopX = banner.cropDesktop.x || 50;
-        cropState.desktopY = banner.cropDesktop.y || 50;
-      }
-      if (banner.cropMobile) {
-        cropState.mobileY = banner.cropMobile.y || 50;
-      }
-      cropState.mobileX = 100;  // Mobile always full width
-
-      // Load mobile display mode
-      const mobileMode = banner.mobileMode || 'fullWidth';
-      cropState.mobileMode = mobileMode;
-      document.querySelector(`input[name="mobileDisplayMode"][value="${mobileMode}"]`).checked = true;
-
-      // Update crop box visibility based on mode
-      const cropBox = document.getElementById('cropBoxMobile');
-      if (mobileMode === 'crop') {
-        cropBox.style.display = 'block';
-        document.getElementById('mobileDisplayInfo').textContent = 'Drag to select which part of the image to display.';
-      } else {
-        cropBox.style.display = 'none';
-        if (mobileMode === 'originalRatio') {
-          document.getElementById('mobileDisplayInfo').textContent = 'Image will display at its original aspect ratio.';
-        } else {
-          document.getElementById('mobileDisplayInfo').textContent = 'Full width image will stretch to fit width while maintaining aspect ratio.';
-        }
-      }
-
-      updateCropBoxPositions();
-    }
-
     // Show modal
     document.getElementById('bannerEditModal').style.display = 'flex';
   };
@@ -3303,7 +3013,6 @@
     const series = document.getElementById('editBannerSeries').value.trim();
     const coser = document.getElementById('editBannerCoser').value.trim().replace('@', '');
     const description = document.getElementById('editBannerDesc').value.trim();
-    const cropPos = document.querySelector('input[name="editBannerCropPos"]:checked').value;
 
     if (!character || !series || !coser) {
       alert('Please fill in all required fields');
@@ -3313,7 +3022,6 @@
     try {
       const configDoc = await getDoc(doc(db, 'site', 'config'));
       const banner = configDoc.data()?.bannerPhoto;
-      const mobileMode = document.querySelector('input[name="mobileDisplayMode"]:checked').value;
 
       await updateDoc(doc(db, 'site', 'config'), {
         bannerPhoto: {
@@ -3321,9 +3029,7 @@
           character,
           series,
           coser,
-          description: description || '',
-          cropPosition: cropPos,
-          mobileMode: mobileMode
+          description: description || ''
         }
       });
 
@@ -3365,21 +3071,6 @@
       <div class="form-group">
         <label>Description (Optional)</label>
         <textarea id="editBannerDesc" placeholder="Add details about this photo: location, theme, composition, lighting notes, etc." style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box; min-height:80px;"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Crop Position</label>
-        <div style="display:flex; gap:15px;">
-          <label style="display:flex; align-items:center; cursor:pointer;">
-            <input type="radio" name="editBannerCropPos" value="top" style="margin-right:5px;"> Top
-          </label>
-          <label style="display:flex; align-items:center; cursor:pointer;">
-            <input type="radio" name="editBannerCropPos" value="center" checked style="margin-right:5px;"> Center
-          </label>
-          <label style="display:flex; align-items:center; cursor:pointer;">
-            <input type="radio" name="editBannerCropPos" value="bottom" style="margin-right:5px;"> Bottom
-          </label>
-        </div>
       </div>
 
       <div style="display:flex; gap:10px; margin-top:20px;">
