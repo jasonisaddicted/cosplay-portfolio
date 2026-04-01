@@ -1067,7 +1067,6 @@ ul { list-style: none; }
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
-  overflow: hidden;
 }
 .lightbox.active {
   opacity: 1;
@@ -1344,7 +1343,6 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
     bottom: auto !important; left: auto !important;
     width: 100% !important;
     height: auto !important;
-    max-height: 50vh;
     transform: none !important;
     border-left: none;
     border-top: none;
