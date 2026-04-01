@@ -154,7 +154,7 @@ ul { list-style: none; }
 .hero {
   position: relative;
   width: 100%;
-  aspect-ratio: 4/3;  /* Desktop: landscape */
+  aspect-ratio: 16/9;  /* Desktop: landscape */
   min-height: 480px;
   max-height: 700px;
   overflow: hidden;

@@ -234,6 +234,42 @@
           <div id="bannerMsg" style="margin-top:10px; font-size:0.9rem;"></div>
         </div>
 
+        <!-- Crop Tool Section -->
+        <div id="cropToolSection" style="display:none; margin-bottom:20px; padding:20px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
+          <h4 style="margin-top:0; margin-bottom:15px; color:#c8a46e;">📐 Crop Tool - Adjust Focus Area</h4>
+          <p style="font-size:0.85rem; color:#999; margin-bottom:15px;">Drag the crop box to select where to focus the image. Set separate crops for desktop and mobile.</p>
+
+          <!-- Desktop Preview (16:9) -->
+          <div style="margin-bottom:25px;">
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Desktop (16:9)</label>
+            <div id="cropPreviewDesktop" style="position:relative; width:100%; aspect-ratio:16/9; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair;">
+              <img id="cropImageDesktop" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
+              <div id="cropBoxDesktop" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;"></div>
+            </div>
+          </div>
+
+          <!-- Mobile Preview (3:4) -->
+          <div style="margin-bottom:20px; max-width:240px;">
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem; font-weight:bold; text-transform:uppercase;">Mobile (3:4)</label>
+            <div id="cropPreviewMobile" style="position:relative; width:100%; aspect-ratio:3/4; background:#1a1a1a; border:2px solid #444; border-radius:4px; overflow:hidden; cursor:crosshair;">
+              <img id="cropImageMobile" src="" alt="" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
+              <div id="cropBoxMobile" style="position:absolute; border:2px dashed #c8a46e; background:rgba(200,164,110,0.1); cursor:move; pointer-events:all; box-sizing:border-box;"></div>
+            </div>
+          </div>
+
+          <!-- Hidden inputs for crop coordinates -->
+          <input type="hidden" id="cropDesktopX" value="50">
+          <input type="hidden" id="cropDesktopY" value="50">
+          <input type="hidden" id="cropMobileX" value="50">
+          <input type="hidden" id="cropMobileY" value="50">
+
+          <!-- Crop Controls -->
+          <div style="display:flex; gap:10px; margin-top:15px;">
+            <button onclick="applyCropTool()" style="flex:1; padding:10px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.9rem; border-radius:3px;">Apply Crop</button>
+            <button onclick="resetCropTool()" style="flex:1; padding:10px; background:#555; color:#fff; border:none; cursor:pointer; font-size:0.9rem; border-radius:3px;">Reset</button>
+          </div>
+        </div>
+
         <h4 style="margin-bottom:10px;">Current Banner Photo</h4>
         <div id="bannerDisplay" style="text-align:center; padding:20px; border:1px solid #333; background:#0d0d0d; min-height:100px; display:flex; align-items:center; justify-content:center;">
           <p style="color:#666;">No banner photo set</p>
@@ -959,6 +995,12 @@
     msg.style.color = '#aaa';
 
     try {
+      // Get crop coordinates
+      const cropDesktopX = parseInt(document.getElementById('cropDesktopX').value) || 50;
+      const cropDesktopY = parseInt(document.getElementById('cropDesktopY').value) || 50;
+      const cropMobileX = parseInt(document.getElementById('cropMobileX').value) || 50;
+      const cropMobileY = parseInt(document.getElementById('cropMobileY').value) || 50;
+
       const siteConfig = doc(db, 'site', 'config');
       await updateDoc(siteConfig, {
         bannerPhoto: {
@@ -967,6 +1009,8 @@
           series,
           coser: coser.replace('@', ''),
           cropPosition: cropPos,
+          cropDesktop: { x: cropDesktopX, y: cropDesktopY },
+          cropMobile: { x: cropMobileX, y: cropMobileY },
           updatedAt: new Date()
         }
       });
@@ -992,6 +1036,20 @@
       const display = document.getElementById('bannerDisplay');
 
       if (banner && banner.src) {
+        // Initialize crop tool and load existing crop values
+        initCropTool(banner.src);
+
+        // Load existing crop values if they exist
+        if (banner.cropDesktop) {
+          cropState.desktopX = banner.cropDesktop.x || 50;
+          cropState.desktopY = banner.cropDesktop.y || 50;
+        }
+        if (banner.cropMobile) {
+          cropState.mobileX = banner.cropMobile.x || 50;
+          cropState.mobileY = banner.cropMobile.y || 50;
+        }
+        updateCropBoxPositions();
+
         display.innerHTML = `
           <div style="position:relative; max-width:100%;">
             <img src="${banner.src}" alt="${banner.character}" style="max-width:300px; max-height:400px; object-fit:cover; border:1px solid #444;">
@@ -1007,6 +1065,7 @@
           </div>
         `;
       } else {
+        document.getElementById('cropToolSection').style.display = 'none';
         display.innerHTML = '<p style="color:#666;">No banner photo set</p>';
       }
     } catch (err) {
@@ -1047,6 +1106,11 @@
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       document.getElementById('bannerSrc').value = url;
+
+      // Show crop tool for the uploaded image
+      initCropTool(url);
+      resetCropTool();
+
       msg.textContent = '✓ Photo uploaded!';
       msg.style.color = '#4CAF50';
       setTimeout(() => { msg.textContent = ''; }, 2000);
@@ -2989,6 +3053,166 @@
       document.getElementById('uploadCollabFiles').files = e.dataTransfer.files;
     }
   });
+
+  // ─ Banner Photo Crop Tool ─
+  let cropState = {
+    desktopX: 50,
+    desktopY: 50,
+    mobileX: 50,
+    mobileY: 50,
+    isDraggingDesktop: false,
+    isDraggingMobile: false,
+    dragOffsetX: 0,
+    dragOffsetY: 0
+  };
+
+  window.initCropTool = (imageSrc) => {
+    const cropSection = document.getElementById('cropToolSection');
+    const cropImageDesktop = document.getElementById('cropImageDesktop');
+    const cropImageMobile = document.getElementById('cropImageMobile');
+
+    if (!imageSrc) {
+      cropSection.style.display = 'none';
+      return;
+    }
+
+    cropImageDesktop.src = imageSrc;
+    cropImageMobile.src = imageSrc;
+    cropSection.style.display = 'block';
+
+    setupCropBoxDragging();
+    updateCropBoxPositions();
+  };
+
+  window.setupCropBoxDragging = () => {
+    const desktopBox = document.getElementById('cropBoxDesktop');
+    const mobileBox = document.getElementById('cropBoxMobile');
+    const desktopPreview = document.getElementById('cropPreviewDesktop');
+    const mobilePreview = document.getElementById('cropPreviewMobile');
+
+    // Remove old listeners to prevent duplicates
+    desktopBox.removeEventListener('mousedown', desktopMouseDown);
+    mobileBox.removeEventListener('mousedown', mobileMouseDown);
+    document.removeEventListener('mousemove', documentMouseMove);
+    document.removeEventListener('mouseup', documentMouseUp);
+
+    // Desktop crop box
+    const desktopMouseDown = (e) => {
+      cropState.isDraggingDesktop = true;
+      const rect = desktopPreview.getBoundingClientRect();
+      const boxRect = desktopBox.getBoundingClientRect();
+      cropState.dragOffsetX = e.clientX - boxRect.left;
+      cropState.dragOffsetY = e.clientY - boxRect.top;
+      e.preventDefault();
+    };
+
+    // Mobile crop box
+    const mobileMouseDown = (e) => {
+      cropState.isDraggingMobile = true;
+      const rect = mobilePreview.getBoundingClientRect();
+      const boxRect = mobileBox.getBoundingClientRect();
+      cropState.dragOffsetX = e.clientX - boxRect.left;
+      cropState.dragOffsetY = e.clientY - boxRect.top;
+      e.preventDefault();
+    };
+
+    // Global mouse move
+    const documentMouseMove = (e) => {
+      if (cropState.isDraggingDesktop) {
+        const rect = desktopPreview.getBoundingClientRect();
+        const boxWidth = desktopBox.offsetWidth;
+        const boxHeight = desktopBox.offsetHeight;
+
+        let left = e.clientX - rect.left - cropState.dragOffsetX;
+        let top = e.clientY - rect.top - cropState.dragOffsetY;
+
+        left = Math.max(0, Math.min(left, rect.width - boxWidth));
+        top = Math.max(0, Math.min(top, rect.height - boxHeight));
+
+        cropState.desktopX = Math.round((left + boxWidth / 2) / rect.width * 100);
+        cropState.desktopY = Math.round((top + boxHeight / 2) / rect.height * 100);
+
+        updateCropBoxPositions();
+      }
+
+      if (cropState.isDraggingMobile) {
+        const rect = mobilePreview.getBoundingClientRect();
+        const boxWidth = mobileBox.offsetWidth;
+        const boxHeight = mobileBox.offsetHeight;
+
+        let left = e.clientX - rect.left - cropState.dragOffsetX;
+        let top = e.clientY - rect.top - cropState.dragOffsetY;
+
+        left = Math.max(0, Math.min(left, rect.width - boxWidth));
+        top = Math.max(0, Math.min(top, rect.height - boxHeight));
+
+        cropState.mobileX = Math.round((left + boxWidth / 2) / rect.width * 100);
+        cropState.mobileY = Math.round((top + boxHeight / 2) / rect.height * 100);
+
+        updateCropBoxPositions();
+      }
+    };
+
+    // Global mouse up
+    const documentMouseUp = () => {
+      cropState.isDraggingDesktop = false;
+      cropState.isDraggingMobile = false;
+    };
+
+    desktopBox.addEventListener('mousedown', desktopMouseDown);
+    mobileBox.addEventListener('mousedown', mobileMouseDown);
+    document.addEventListener('mousemove', documentMouseMove);
+    document.addEventListener('mouseup', documentMouseUp);
+  };
+
+  window.updateCropBoxPositions = () => {
+    const desktopBox = document.getElementById('cropBoxDesktop');
+    const mobileBox = document.getElementById('cropBoxMobile');
+    const desktopImg = document.getElementById('cropImageDesktop');
+    const mobileImg = document.getElementById('cropImageMobile');
+
+    const desktopBoxWidth = 160;
+    const desktopBoxHeight = 90;
+
+    // Desktop
+    desktopBox.style.width = desktopBoxWidth + 'px';
+    desktopBox.style.height = desktopBoxHeight + 'px';
+    desktopBox.style.left = (cropState.desktopX - desktopBoxWidth / 2) + '%';
+    desktopBox.style.top = (cropState.desktopY - desktopBoxHeight / 2) + '%';
+    desktopImg.style.objectPosition = cropState.desktopX + '% ' + cropState.desktopY + '%';
+
+    const mobileBoxWidth = 120;
+    const mobileBoxHeight = 160;
+    mobileBox.style.width = mobileBoxWidth + 'px';
+    mobileBox.style.height = mobileBoxHeight + 'px';
+    mobileBox.style.left = (cropState.mobileX - mobileBoxWidth / 2) + '%';
+    mobileBox.style.top = (cropState.mobileY - mobileBoxHeight / 2) + '%';
+    mobileImg.style.objectPosition = cropState.mobileX + '% ' + cropState.mobileY + '%';
+
+    // Update hidden inputs
+    document.getElementById('cropDesktopX').value = cropState.desktopX;
+    document.getElementById('cropDesktopY').value = cropState.desktopY;
+    document.getElementById('cropMobileX').value = cropState.mobileX;
+    document.getElementById('cropMobileY').value = cropState.mobileY;
+  };
+
+  window.applyCropTool = () => {
+    saveBannerPhoto();
+  };
+
+  window.resetCropTool = () => {
+    cropState = {
+      desktopX: 50,
+      desktopY: 50,
+      mobileX: 50,
+      mobileY: 50,
+      isDraggingDesktop: false,
+      isDraggingMobile: false,
+      dragOffsetX: 0,
+      dragOffsetY: 0
+    };
+    updateCropBoxPositions();
+  };
 
   // ─ Banner Photo Edit Modal ─
   window.openBannerEditModal = async () => {

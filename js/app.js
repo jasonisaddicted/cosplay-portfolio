@@ -1154,14 +1154,33 @@ function initHome() {
     heroImg.src = banner.src;
     heroImg.alt = banner.character || '';
 
-    // Apply crop position for portrait images
-    const cropPos = banner.cropPosition || 'center';
-    const cropMap = {
-      'top': 'center top',
-      'center': 'center center',
-      'bottom': 'center bottom'
-    };
-    heroImg.style.objectPosition = cropMap[cropPos] || 'center center';
+    // Apply crop position - use new percentage coordinates if available
+    let objectPosX = '50';
+    let objectPosY = '50';
+
+    // Detect if mobile or desktop
+    const isMobile = window.innerWidth <= 767;
+
+    if (banner.cropMobile && isMobile) {
+      objectPosX = banner.cropMobile.x || 50;
+      objectPosY = banner.cropMobile.y || 50;
+    } else if (banner.cropDesktop && !isMobile) {
+      objectPosX = banner.cropDesktop.x || 50;
+      objectPosY = banner.cropDesktop.y || 50;
+    } else {
+      // Fallback to old crop position system for backward compatibility
+      const cropPos = banner.cropPosition || 'center';
+      const cropMap = {
+        'top': { x: '50', y: '30' },
+        'center': { x: '50', y: '50' },
+        'bottom': { x: '50', y: '70' }
+      };
+      const fallback = cropMap[cropPos] || { x: '50', y: '50' };
+      objectPosX = fallback.x;
+      objectPosY = fallback.y;
+    }
+
+    heroImg.style.objectPosition = objectPosX + '% ' + objectPosY + '%';
 
     heroSection.querySelector('.hero__character').textContent = banner.character || '';
     heroSection.querySelector('.hero__series').textContent = banner.series || '';
@@ -1685,6 +1704,41 @@ function initCollabs() {
     list.appendChild(entry);
   });
 }
+
+// ── Responsive Crop Adjustment ─────────────────────────────────
+// Re-apply crop when window is resized (for responsive desktop/mobile switch)
+window.addEventListener('resize', () => {
+  const banner = CONFIG.bannerPhoto;
+  if (banner && banner.src) {
+    const heroImg = document.querySelector('.hero__img');
+    if (!heroImg) return;
+
+    const isMobile = window.innerWidth <= 767;
+    let objectPosX = '50';
+    let objectPosY = '50';
+
+    if (banner.cropMobile && isMobile) {
+      objectPosX = banner.cropMobile.x || 50;
+      objectPosY = banner.cropMobile.y || 50;
+    } else if (banner.cropDesktop && !isMobile) {
+      objectPosX = banner.cropDesktop.x || 50;
+      objectPosY = banner.cropDesktop.y || 50;
+    } else {
+      // Fallback to old crop position system
+      const cropPos = banner.cropPosition || 'center';
+      const cropMap = {
+        'top': { x: '50', y: '30' },
+        'center': { x: '50', y: '50' },
+        'bottom': { x: '50', y: '70' }
+      };
+      const fallback = cropMap[cropPos] || { x: '50', y: '50' };
+      objectPosX = fallback.x;
+      objectPosY = fallback.y;
+    }
+
+    heroImg.style.objectPosition = objectPosX + '% ' + objectPosY + '%';
+  }
+});
 
 // ── Init ─────────────────────────────────────────────────────
 // Wait for Firebase to load, then initialize
