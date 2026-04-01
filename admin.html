@@ -3090,79 +3090,66 @@
     const desktopPreview = document.getElementById('cropPreviewDesktop');
     const mobilePreview = document.getElementById('cropPreviewMobile');
 
-    // Remove old listeners to prevent duplicates
-    desktopBox.removeEventListener('mousedown', desktopMouseDown);
-    mobileBox.removeEventListener('mousedown', mobileMouseDown);
-    document.removeEventListener('mousemove', documentMouseMove);
-    document.removeEventListener('mouseup', documentMouseUp);
-
-    // Desktop crop box
-    const desktopMouseDown = (e) => {
+    // Desktop crop box mousedown
+    desktopBox.addEventListener('mousedown', (e) => {
       cropState.isDraggingDesktop = true;
-      const rect = desktopPreview.getBoundingClientRect();
       const boxRect = desktopBox.getBoundingClientRect();
       cropState.dragOffsetX = e.clientX - boxRect.left;
       cropState.dragOffsetY = e.clientY - boxRect.top;
       e.preventDefault();
-    };
+    });
 
-    // Mobile crop box
-    const mobileMouseDown = (e) => {
+    // Mobile crop box mousedown
+    mobileBox.addEventListener('mousedown', (e) => {
       cropState.isDraggingMobile = true;
-      const rect = mobilePreview.getBoundingClientRect();
       const boxRect = mobileBox.getBoundingClientRect();
       cropState.dragOffsetX = e.clientX - boxRect.left;
       cropState.dragOffsetY = e.clientY - boxRect.top;
       e.preventDefault();
-    };
+    });
 
     // Global mouse move
-    const documentMouseMove = (e) => {
+    document.addEventListener('mousemove', (e) => {
       if (cropState.isDraggingDesktop) {
         const rect = desktopPreview.getBoundingClientRect();
-        const boxWidth = desktopBox.offsetWidth;
-        const boxHeight = desktopBox.offsetHeight;
 
-        let left = e.clientX - rect.left - cropState.dragOffsetX;
-        let top = e.clientY - rect.top - cropState.dragOffsetY;
+        let x = e.clientX - rect.left - cropState.dragOffsetX;
+        let y = e.clientY - rect.top - cropState.dragOffsetY;
 
-        left = Math.max(0, Math.min(left, rect.width - boxWidth));
-        top = Math.max(0, Math.min(top, rect.height - boxHeight));
+        // Constrain to bounds (0 to container size)
+        x = Math.max(0, Math.min(x, rect.width));
+        y = Math.max(0, Math.min(y, rect.height));
 
-        cropState.desktopX = Math.round((left + boxWidth / 2) / rect.width * 100);
-        cropState.desktopY = Math.round((top + boxHeight / 2) / rect.height * 100);
+        // Convert to percentage
+        cropState.desktopX = Math.round((x / rect.width) * 100);
+        cropState.desktopY = Math.round((y / rect.height) * 100);
 
         updateCropBoxPositions();
       }
 
       if (cropState.isDraggingMobile) {
         const rect = mobilePreview.getBoundingClientRect();
-        const boxWidth = mobileBox.offsetWidth;
-        const boxHeight = mobileBox.offsetHeight;
 
-        let left = e.clientX - rect.left - cropState.dragOffsetX;
-        let top = e.clientY - rect.top - cropState.dragOffsetY;
+        let x = e.clientX - rect.left - cropState.dragOffsetX;
+        let y = e.clientY - rect.top - cropState.dragOffsetY;
 
-        left = Math.max(0, Math.min(left, rect.width - boxWidth));
-        top = Math.max(0, Math.min(top, rect.height - boxHeight));
+        // Constrain to bounds (0 to container size)
+        x = Math.max(0, Math.min(x, rect.width));
+        y = Math.max(0, Math.min(y, rect.height));
 
-        cropState.mobileX = Math.round((left + boxWidth / 2) / rect.width * 100);
-        cropState.mobileY = Math.round((top + boxHeight / 2) / rect.height * 100);
+        // Convert to percentage
+        cropState.mobileX = Math.round((x / rect.width) * 100);
+        cropState.mobileY = Math.round((y / rect.height) * 100);
 
         updateCropBoxPositions();
       }
-    };
+    });
 
     // Global mouse up
-    const documentMouseUp = () => {
+    document.addEventListener('mouseup', () => {
       cropState.isDraggingDesktop = false;
       cropState.isDraggingMobile = false;
-    };
-
-    desktopBox.addEventListener('mousedown', desktopMouseDown);
-    mobileBox.addEventListener('mousedown', mobileMouseDown);
-    document.addEventListener('mousemove', documentMouseMove);
-    document.addEventListener('mouseup', documentMouseUp);
+    });
   };
 
   window.updateCropBoxPositions = () => {
@@ -3174,19 +3161,22 @@
     const desktopBoxWidth = 160;
     const desktopBoxHeight = 90;
 
-    // Desktop
+    // Desktop - position box with center at crop point
     desktopBox.style.width = desktopBoxWidth + 'px';
     desktopBox.style.height = desktopBoxHeight + 'px';
-    desktopBox.style.left = (cropState.desktopX - desktopBoxWidth / 2) + '%';
-    desktopBox.style.top = (cropState.desktopY - desktopBoxHeight / 2) + '%';
+    desktopBox.style.left = cropState.desktopX + '%';
+    desktopBox.style.top = cropState.desktopY + '%';
+    desktopBox.style.transform = 'translate(-50%, -50%)';
     desktopImg.style.objectPosition = cropState.desktopX + '% ' + cropState.desktopY + '%';
 
     const mobileBoxWidth = 120;
     const mobileBoxHeight = 160;
+    // Mobile - position box with center at crop point
     mobileBox.style.width = mobileBoxWidth + 'px';
     mobileBox.style.height = mobileBoxHeight + 'px';
-    mobileBox.style.left = (cropState.mobileX - mobileBoxWidth / 2) + '%';
-    mobileBox.style.top = (cropState.mobileY - mobileBoxHeight / 2) + '%';
+    mobileBox.style.left = cropState.mobileX + '%';
+    mobileBox.style.top = cropState.mobileY + '%';
+    mobileBox.style.transform = 'translate(-50%, -50%)';
     mobileImg.style.objectPosition = cropState.mobileX + '% ' + cropState.mobileY + '%';
 
     // Update hidden inputs
