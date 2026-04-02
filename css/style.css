@@ -1236,13 +1236,13 @@ ul { list-style: none; }
               padding-bottom 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .lightbox__img-wrap {
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 99vw;
+  max-height: 99vh;
   position: relative;
 }
 .lightbox__img-wrap img {
-  max-width: 90vw;
-  max-height: 88vh;
+  max-width: 99vw;
+  max-height: 97vh;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -1254,7 +1254,7 @@ ul { list-style: none; }
 .lightbox__info-panel {
   position: absolute;
   top: 0; right: 0; bottom: 0;
-  width: 320px;
+  width: 352px;
   background: rgba(14, 14, 14, 0.98);
   border-left: 1px solid var(--border);
   transform: translateX(110%);
@@ -1270,15 +1270,14 @@ ul { list-style: none; }
 }
 /* Shift image area left to make room for panel */
 .lightbox.panel-open .lightbox__inner {
-  padding-right: 320px;
+  padding-right: 352px;
 }
 .lightbox.panel-open .lightbox__img-wrap,
 .lightbox.panel-open .lightbox__img-wrap img {
-  max-width: calc(100vw - 360px);
+  max-width: calc(100vw - 392px);
 }
-/* Move close button + next arrow away from panel */
-.lightbox.panel-open .lightbox__close,
-.lightbox.panel-open .lightbox__next { right: 340px; }
+/* Move next arrow away from panel */
+.lightbox.panel-open .lightbox__next { right: 372px; }
 
 /* ── Panel internals ───────────────────────────────────────── */
 .info-panel__scroll {
@@ -1526,10 +1525,9 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
   .lightbox__nav { display: none; }
 
   /* Reset desktop overrides */
-  .lightbox.panel-open .lightbox__close,
   .lightbox.panel-open .lightbox__next { right: 20px; }
   .lightbox.panel-open .lightbox__img-wrap,
-  .lightbox.panel-open .lightbox__img-wrap img { max-width: 90vw; }
+  .lightbox.panel-open .lightbox__img-wrap img { max-width: 99vw; }
 
   /* Panel scroll: straight vertical column */
   .info-panel__scroll {
@@ -1613,22 +1611,6 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
   font-size: 0.7rem;
   color: var(--text-muted);
   letter-spacing: 0.06em;
-}
-.lightbox__close {
-  position: fixed;
-  top: 24px; right: 28px;
-  width: 40px; height: 40px;
-  background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.2);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0.7;
-  transition: opacity var(--transition), background var(--transition);
-}
-.lightbox__close:hover { opacity: 1; background: rgba(255,255,255,0.1); }
-.lightbox__close svg {
-  width: 18px; height: 18px;
-  fill: none; stroke: white; stroke-width: 2;
 }
 .lightbox__back {
   position: fixed;

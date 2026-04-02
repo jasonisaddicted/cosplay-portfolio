@@ -615,7 +615,6 @@ const Lightbox = (() => {
     clearPanelTimers();
   }
 
-  lb.querySelector('.lightbox__close').addEventListener('click', hide);
   if (backBtn) {
     backBtn.addEventListener('click', () => {
       if (backCallback) {
