@@ -599,11 +599,12 @@ const Lightbox = (() => {
     if (backBtn && backCallback) backBtn.style.display = 'flex';
     buildInfoPanel(p);
 
-    // Mark lightbox as open (don't modify history - let it stay intact)
+    // Mark lightbox as open and push state so browser back button closes it
     historyState = { lightbox: true };
+    window.history.pushState({ lightbox: true }, '', window.location.href);
   }
 
-  function hide() {
+  function hide(fromPopstate = false) {
     lb.classList.remove('active', 'panel-open');
     document.body.style.overflow = '';
     imgEl.src = '';
@@ -640,14 +641,12 @@ const Lightbox = (() => {
   // Handle system back button closing lightbox
   window.addEventListener('popstate', (e) => {
     if (lb.classList.contains('active')) {
-      // Close lightbox without navigating away
+      // Close lightbox when back button is pressed
       if (backCallback) {
         backCallback();
       } else {
         hide();
       }
-      // Push current page back to history so next back goes to previous page
-      window.history.pushState(null, '', window.location.href);
     }
   });
 
