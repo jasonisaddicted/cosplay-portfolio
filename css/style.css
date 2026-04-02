@@ -2075,8 +2075,8 @@ footer {
   .nav__links a:hover {
     background: rgba(200, 164, 110, 0.08);
   }
-  /* Mobile/Tablet banner: 3:4 aspect ratio (portrait) */
-  .hero { aspect-ratio: 3/4; max-height: none; }
+  /* Mobile/Tablet banner: 4:3 aspect ratio (landscape) */
+  .hero { aspect-ratio: 4/3; max-height: none; }
   .hero__content { left: 24px; bottom: 36px; }
   .section-header { padding: 40px 20px 24px; flex-wrap: wrap; }
   .picks-grid { display: none; }
