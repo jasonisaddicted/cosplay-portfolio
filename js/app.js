@@ -1360,7 +1360,15 @@ function buildBannerPanelContent(banner) {
   const coser = banner.coser;
   const albums = findCoserAlbums(coser);
 
+  // Banner image at top
   let html = `
+    <div style="width:100%; margin-bottom:20px;">
+      <img src="${banner.src}" alt="${banner.character || 'Banner'}" style="width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; display:block; border-radius:4px;">
+    </div>
+  `;
+
+  // Cosplayer info section
+  html += `
     <div class="info-panel__section">
       <span class="info-panel__section-label">COSPLAYER</span>
   `;
@@ -1396,6 +1404,13 @@ function buildBannerPanelContent(banner) {
   // Projects section with filter tabs
   if (albums.length > 0) {
     html += buildAlbumsSection(albums, coser);
+  } else {
+    // Show message if no projects found
+    html += `
+      <div class="info-panel__section">
+        <p style="color:#888; font-size:0.9rem;">No projects found yet.</p>
+      </div>
+    `;
   }
 
   return html;
