@@ -77,6 +77,7 @@ ul { list-style: none; }
   width: 1200px;
   height: 100%;
   pointer-events: none;
+  display: none;
 }
 .nav__brand,
 .nav__hamburger,
