@@ -344,9 +344,10 @@ ul { list-style: none; }
 /* ── Featured Section ──────────────────────────────────────── */
 .featured-section {
   position: relative;
-  padding: 0 0 80px;
+  padding: 0 40px 80px;
   margin: 0 auto;
   max-width: 42vw;
+  box-sizing: border-box;
 }
 
 /* Featured Banner */
@@ -426,7 +427,7 @@ ul { list-style: none; }
 
 /* Featured Grid */
 .featured-grid-wrapper {
-  padding: 0 40px 80px;
+  padding: 0 0 80px;
 }
 @media (max-width: 768px) {
   .featured-grid-wrapper {
@@ -1965,6 +1966,9 @@ footer {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
+  max-width: 42vw;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 .footer__brand {
   font-size: 0.75rem;
