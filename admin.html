@@ -474,6 +474,24 @@
         <div id="batchMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
+      <div class="form-group" style="max-width:400px;">
+        <label>Session Name</label>
+        <input type="text" id="studioName" placeholder="e.g., Studio Session 2025">
+      </div>
+      <div class="form-group" style="max-width:400px;">
+        <label>Date</label>
+        <input type="text" id="studioDate" placeholder="e.g., January 2025">
+      </div>
+      <div class="form-group" style="max-width:400px;">
+        <label>Description</label>
+        <textarea id="studioDesc" placeholder="Session description..."></textarea>
+      </div>
+      <button id="saveStudioBtn" onclick="saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
+      <div id="studioMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+
       <!-- Studio Photo Management Section -->
       <div id="studioPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
         <!-- Cosplayers Order Panel -->
