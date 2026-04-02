@@ -2572,27 +2572,35 @@
   };
 
   window.displayStudioAlbumOrderPanel = async () => {
-    const snap = await getDocs(query(collection(db, 'studio'), orderBy('order', 'asc')));
-    const albums = snap.docs.map((doc, idx) => ({ id: doc.id, order: idx + 1, ...doc.data() }));
+    try {
+      const snap = await getDocs(collection(db, 'studio'));
+      let albums = snap.docs.map((doc, idx) => ({ id: doc.id, order: doc.data().order || idx + 1, ...doc.data() }));
 
-    if (albums.length === 0) {
-      document.getElementById('studioAlbumGrid').innerHTML = '<p style="color:#666;">No studio albums yet</p>';
-      return;
+      // Sort by order field
+      albums = albums.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      if (albums.length === 0) {
+        document.getElementById('studioAlbumGrid').innerHTML = '<p style="color:#666;">No studio albums yet</p>';
+        return;
+      }
+
+      let html = '';
+      albums.forEach((album, idx) => {
+        const cover = album.cosplayers?.[0]?.photos?.[0]?.src || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect fill="%23333" width="150" height="150"/%3E%3C/svg%3E';
+        html += `
+          <div draggable="true" ondragstart="window.dragStudioAlbumStart(event)" ondragover="window.dragStudioAlbumOver(event)" ondrop="window.dragStudioAlbumDrop(event, '${album.id}', ${idx})" ondragend="window.dragStudioAlbumEnd(event)" data-studio-album-id="${album.id}" data-album-index="${idx}" style="padding:10px; background:#0d0d0d; border:2px solid #333; border-radius:3px; cursor:grab; opacity:1; transition:all 0.2s; display:flex; flex-direction:column; text-align:center;">
+            <img src="${cover}" style="width:100%; height:120px; object-fit:cover; margin-bottom:8px; border-radius:2px;" alt="${album.name}" />
+            <div style="color:#fff; font-size:0.85rem; font-weight:bold; margin-bottom:4px; word-break:break-word;">${album.name}</div>
+            <div style="color:#666; font-size:0.75rem; margin-bottom:4px;">${album.date || 'N/A'}</div>
+            <div style="color:#999; font-size:0.7rem;">Position: #${idx + 1}</div>
+          </div>`;
+      });
+
+      document.getElementById('studioAlbumGrid').innerHTML = html;
+    } catch (err) {
+      console.error('Error displaying studio albums:', err);
+      document.getElementById('studioAlbumGrid').innerHTML = '<p style="color:#666;">Error loading albums</p>';
     }
-
-    let html = '';
-    albums.forEach((album, idx) => {
-      const cover = album.cosplayers?.[0]?.photos?.[0]?.src || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect fill="%23333" width="150" height="150"/%3E%3C/svg%3E';
-      html += `
-        <div draggable="true" ondragstart="window.dragStudioAlbumStart(event)" ondragover="window.dragStudioAlbumOver(event)" ondrop="window.dragStudioAlbumDrop(event, '${album.id}', ${idx})" ondragend="window.dragStudioAlbumEnd(event)" data-studio-album-id="${album.id}" data-album-index="${idx}" style="padding:10px; background:#0d0d0d; border:2px solid #333; border-radius:3px; cursor:grab; opacity:1; transition:all 0.2s; display:flex; flex-direction:column; text-align:center;">
-          <img src="${cover}" style="width:100%; height:120px; object-fit:cover; margin-bottom:8px; border-radius:2px;" alt="${album.name}" />
-          <div style="color:#fff; font-size:0.85rem; font-weight:bold; margin-bottom:4px; word-break:break-word;">${album.name}</div>
-          <div style="color:#666; font-size:0.75rem; margin-bottom:4px;">${album.date || 'N/A'}</div>
-          <div style="color:#999; font-size:0.7rem;">Position: #${idx + 1}</div>
-        </div>`;
-    });
-
-    document.getElementById('studioAlbumGrid').innerHTML = html;
   };
 
   let draggedStudioAlbum = null;
