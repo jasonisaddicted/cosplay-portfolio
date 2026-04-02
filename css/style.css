@@ -64,7 +64,7 @@ ul { list-style: none; }
   justify-content: center;
   background: transparent;
   transition: background var(--transition), border-bottom var(--transition);
-  max-width: 28vw;
+  max-width: 31vw;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -183,7 +183,7 @@ ul { list-style: none; }
   min-height: 250px;
   overflow: hidden;
   cursor: pointer;
-  max-width: 28vw;
+  max-width: 31vw;
   margin: var(--nav-height) auto 0;
 }
 .hero__img {
@@ -312,7 +312,7 @@ ul { list-style: none; }
   display: flex;
   align-items: baseline;
   gap: 20px;
-  max-width: 28vw;
+  max-width: 31vw;
   margin: 0 auto;
 }
 .section-header__label {
@@ -341,7 +341,7 @@ ul { list-style: none; }
   position: relative;
   padding: 0 0 80px;
   margin: 0 auto;
-  max-width: 28vw;
+  max-width: 31vw;
 }
 
 /* Featured Banner */
@@ -1961,7 +1961,7 @@ footer {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  max-width: 28vw;
+  max-width: 31vw;
   margin: 0 auto;
 }
 .footer__brand {
