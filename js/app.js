@@ -1186,8 +1186,7 @@ function initHome() {
 
   // Featured section — show all featured picks (not used for hero anymore)
   const allFeatured = cfg.featured || [];
-  const maxPicks = 9;
-  const featuredPhotos = allFeatured.slice(0, maxPicks);
+  const featuredPhotos = allFeatured;
 
   // Featured Grid
   const gridContainer = document.getElementById('featured-grid');
@@ -1208,7 +1207,7 @@ function initHome() {
     });
   }
 
-  const pickCount = Math.min(featuredPhotos.length, maxPicks);
+  const pickCount = featuredPhotos.length;
   document.querySelector('.section-header__count').textContent =
     `${pickCount} photo${pickCount !== 1 ? 's' : ''}`;
 
