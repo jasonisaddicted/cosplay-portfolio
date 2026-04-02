@@ -351,6 +351,16 @@
       <h3 style="margin-bottom:15px;">Current Featured Picks</h3>
       <div class="items-list" id="featuredList"></div>
 
+      <!-- Featured Photos Row Reordering Panel -->
+      <div style="margin-top:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
+        <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleFeaturedRowPanel(this)">
+          📋 Arrange Photos by Row (Click to expand/collapse)
+        </h4>
+        <div id="featuredRowPanel" style="display:none; padding:15px; background:#181818; border-radius:3px;">
+          <!-- Rows with draggable photos will be rendered here -->
+        </div>
+      </div>
+
       <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
       <h3 style="margin-bottom:15px;">Select Photos from Albums</h3>
 
@@ -777,6 +787,7 @@
       document.getElementById('authScreen').classList.remove('active');
       document.getElementById('mainContent').style.display = 'block';
       loadFeatured();
+      displayFeaturedRowPanel();
       loadEvents();
       loadStudio();
       loadCollabs();
@@ -801,6 +812,7 @@
     if (tab === 'featured') {
       loadBannerPhoto();
       loadFeatured();
+      displayFeaturedRowPanel();
       loadAlbumPhotos('events');
     }
   };
@@ -982,6 +994,218 @@
     if (confirm('Delete this featured pick?')) {
       await deleteDoc(doc(db, 'featured', id));
       loadFeatured();
+    }
+  };
+
+  // ─ Featured Photos Row Reordering ─
+  let draggedFeaturedRow = null;
+  let draggedFeaturedPhoto = null;
+
+  window.toggleFeaturedRowPanel = (header) => {
+    const panel = document.getElementById('featuredRowPanel');
+    if (panel.style.display === 'none') {
+      panel.style.display = 'block';
+      displayFeaturedRowPanel();
+    } else {
+      panel.style.display = 'none';
+    }
+  };
+
+  window.displayFeaturedRowPanel = async () => {
+    const container = document.getElementById('featuredRowPanel');
+    if (!container) return;
+
+    try {
+      const q = query(collection(db, 'featured'), orderBy('order'));
+      const snap = await getDocs(q);
+      const photos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      if (photos.length === 0) {
+        container.innerHTML = '<p style="color:#666;">No featured photos yet</p>';
+        return;
+      }
+
+      const photosPerRow = 3;
+      let html = '';
+
+      // Group photos into rows
+      for (let rowIndex = 0; rowIndex < Math.ceil(photos.length / photosPerRow); rowIndex++) {
+        const rowPhotos = photos.slice(rowIndex * photosPerRow, (rowIndex + 1) * photosPerRow);
+
+        html += `<div class="featured-row" draggable="true" data-row-index="${rowIndex}"
+                 ondragstart="dragFeaturedRowStart(event)"
+                 ondragover="dragFeaturedRowOver(event)"
+                 ondrop="dragFeaturedRowDrop(event, ${rowIndex})"
+                 ondragend="dragFeaturedRowEnd(event)"
+                 style="padding:15px; margin-bottom:15px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">`;
+
+        rowPhotos.forEach((photo, photoIndexInRow) => {
+          const globalPhotoIndex = rowIndex * photosPerRow + photoIndexInRow;
+          html += `<div class="featured-photo-item" draggable="true"
+                   data-photo-index="${globalPhotoIndex}"
+                   data-row-index="${rowIndex}"
+                   ondragstart="dragFeaturedPhotoStart(event)"
+                   ondragover="dragFeaturedPhotoOver(event)"
+                   ondrop="dragFeaturedPhotoDrop(event, ${rowIndex}, ${photoIndexInRow})"
+                   ondragend="dragFeaturedPhotoEnd(event)"
+                   style="padding:10px; background:#181818; border:1px solid #444; border-radius:2px; cursor:grab; text-align:center;">
+            <img src="${photo.src}" alt="${photo.character}" style="width:100%; height:120px; object-fit:cover; border-radius:2px; margin-bottom:8px;">
+            <div style="color:#ccc; font-size:0.8rem; line-height:1.3;">
+              <div style="font-weight:bold; color:#c8a46e; word-break:break-word;">${photo.character || 'Unknown'}</div>
+              <div style="word-break:break-word; font-size:0.75rem;">${photo.series || ''}</div>
+              <div style="color:#888; font-size:0.7rem;">@${photo.credit || ''}</div>
+            </div>
+          </div>`;
+        });
+
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+    } catch (err) {
+      console.error('Error displaying featured row panel:', err);
+      container.innerHTML = '<p style="color:#f00;">Error loading photos</p>';
+    }
+  };
+
+  window.dragFeaturedRowStart = (e) => {
+    draggedFeaturedRow = e.target.closest('.featured-row');
+    if (draggedFeaturedRow) {
+      draggedFeaturedRow.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  window.dragFeaturedRowOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const row = e.target.closest('.featured-row');
+    if (row && row !== draggedFeaturedRow) {
+      row.style.borderTop = '3px solid #c8a46e';
+    }
+  };
+
+  window.dragFeaturedRowDrop = (e, targetRowIndex) => {
+    e.preventDefault();
+    if (!draggedFeaturedRow) return;
+
+    const fromRowIndex = parseInt(draggedFeaturedRow.dataset.rowIndex);
+    const container = document.getElementById('featuredRowPanel');
+    const allRows = Array.from(container.querySelectorAll('.featured-row'));
+
+    if (fromRowIndex !== targetRowIndex && fromRowIndex >= 0 && targetRowIndex >= 0 && allRows.length > 0) {
+      const allPhotos = Array.from(container.querySelectorAll('[data-photo-index]'));
+      const photoOrder = allPhotos.map(el => parseInt(el.dataset.photoIndex));
+
+      // Swap rows (insert before)
+      const photosPerRow = 3;
+      const fromStart = Math.min(fromRowIndex * photosPerRow, photoOrder.length);
+      const fromEnd = Math.min(fromStart + photosPerRow, photoOrder.length);
+      const fromRowPhotos = photoOrder.splice(fromStart, fromEnd - fromStart);
+      const insertIndex = Math.min(targetRowIndex * photosPerRow, photoOrder.length);
+      photoOrder.splice(insertIndex, 0, ...fromRowPhotos);
+
+      // Save new order to Firebase
+      saveFeaturedPhotoOrder(photoOrder);
+    }
+
+    if (draggedFeaturedRow) {
+      draggedFeaturedRow.style.opacity = '1';
+    }
+    draggedFeaturedRow = null;
+  };
+
+  window.dragFeaturedRowEnd = (e) => {
+    if (draggedFeaturedRow) {
+      draggedFeaturedRow.style.opacity = '1';
+    }
+    document.querySelectorAll('.featured-row').forEach(row => {
+      row.style.borderTop = '1px solid #333';
+    });
+  };
+
+  window.dragFeaturedPhotoStart = (e) => {
+    draggedFeaturedPhoto = e.target.closest('.featured-photo-item');
+    if (draggedFeaturedPhoto) {
+      draggedFeaturedPhoto.style.opacity = '0.5';
+      draggedFeaturedPhoto.style.borderStyle = 'dashed';
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  window.dragFeaturedPhotoOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const photo = e.target.closest('.featured-photo-item');
+    if (photo && photo !== draggedFeaturedPhoto) {
+      photo.style.borderColor = '#c8a46e';
+      photo.style.borderWidth = '2px';
+    }
+  };
+
+  window.dragFeaturedPhotoDrop = (e, rowIndex, photoIndexInRow) => {
+    e.preventDefault();
+    if (!draggedFeaturedPhoto) return;
+
+    const container = document.getElementById('featuredRowPanel');
+    const allPhotos = Array.from(container.querySelectorAll('[data-photo-index]'));
+    const photosPerRow = 3;
+
+    const fromIndex = allPhotos.indexOf(draggedFeaturedPhoto);
+    const toIndex = (rowIndex * photosPerRow) + photoIndexInRow;
+
+    if (fromIndex !== toIndex && fromIndex >= 0 && toIndex >= 0) {
+      const photoOrder = allPhotos.map(el => parseInt(el.dataset.photoIndex));
+      const [movedPhoto] = photoOrder.splice(fromIndex, 1);
+      photoOrder.splice(toIndex, 0, movedPhoto);
+
+      // Save new order to Firebase
+      saveFeaturedPhotoOrder(photoOrder);
+    }
+
+    if (draggedFeaturedPhoto) {
+      draggedFeaturedPhoto.style.opacity = '1';
+      draggedFeaturedPhoto.style.borderStyle = 'solid';
+    }
+    draggedFeaturedPhoto = null;
+  };
+
+  window.dragFeaturedPhotoEnd = (e) => {
+    if (draggedFeaturedPhoto) {
+      draggedFeaturedPhoto.style.opacity = '1';
+      draggedFeaturedPhoto.style.borderStyle = 'solid';
+    }
+    document.querySelectorAll('.featured-photo-item').forEach(photo => {
+      photo.style.borderColor = '#444';
+      photo.style.borderWidth = '1px';
+    });
+  };
+
+  window.saveFeaturedPhotoOrder = async (photoOrder) => {
+    try {
+      // Get all featured photos from Firebase in order
+      const q = query(collection(db, 'featured'), orderBy('order'));
+      const snap = await getDocs(q);
+      const allPhotos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Update order field for each photo based on new photoOrder
+      const reorderedPromises = photoOrder.map((photoIndex, newPosition) => {
+        if (photoIndex >= 0 && photoIndex < allPhotos.length) {
+          const photoId = allPhotos[photoIndex].id;
+          return updateDoc(doc(db, 'featured', photoId), { order: newPosition + 1 });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(reorderedPromises);
+      console.log('✓ Featured photos reordered');
+
+      // Refresh display
+      await loadFeatured();
+      await displayFeaturedRowPanel();
+    } catch (err) {
+      console.error('Error saving featured order:', err);
+      alert('Error: ' + err.message);
     }
   };
 
