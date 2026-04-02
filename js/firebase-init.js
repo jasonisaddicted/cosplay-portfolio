@@ -6,9 +6,9 @@
 // ============================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -32,6 +32,20 @@ window.CONFIG = {};
 window.db = db;
 window.auth = auth;
 window.storage = storage;
+
+// ── Expose Firebase functions globally for app.js ──
+window.collection = collection;
+window.getDocs = getDocs;
+window.doc = doc;
+window.getDoc = getDoc;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.deleteDoc = deleteDoc;
+window.query = query;
+window.orderBy = orderBy;
+window.ref = ref;
+window.uploadBytes = uploadBytes;
+window.getDownloadURL = getDownloadURL;
 
 // ── Load all data from Firestore on page load ──
 async function loadFirebaseConfig() {
