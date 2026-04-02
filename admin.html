@@ -630,6 +630,7 @@
         </h4>
         <div id="studioAlbumOrderPanel" style="display:none; padding:15px; background:#181818; border-radius:3px;">
           <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Drag and drop to rearrange the order of Studio sessions</p>
+          <div id="studioAlbumDebug" style="padding:10px; margin-bottom:15px; background:#1a1a1a; border:1px solid #444; border-radius:2px; font-size:0.75rem; color:#888; font-family:monospace; min-height:20px;display:none;">Debug: waiting...</div>
           <div id="studioAlbumGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">
             <!-- Populated by JavaScript -->
           </div>
@@ -2608,7 +2609,13 @@
   window.dragStudioAlbumStart = (e) => {
     draggedStudioAlbum = e.target.closest('[data-studio-album-id]');
     if (draggedStudioAlbum) {
-      console.log('🎬 Dragging studio album:', draggedStudioAlbum.dataset.studioAlbumId);
+      const albumId = draggedStudioAlbum.dataset.studioAlbumId;
+      console.log('🎬 Dragging studio album:', albumId);
+      const debug = document.getElementById('studioAlbumDebug');
+      if (debug) {
+        debug.style.display = 'block';
+        debug.innerHTML = `🎬 Dragging: <strong>${albumId}</strong> | Waiting for drop...`;
+      }
       draggedStudioAlbum.style.opacity = '0.5';
       draggedStudioAlbum.style.borderStyle = 'dashed';
       e.dataTransfer.effectAllowed = 'move';
@@ -2633,18 +2640,24 @@
     const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
     const draggedIdx = allAlbums.indexOf(draggedStudioAlbum);
     const targetAlbum = container.querySelector(`[data-studio-album-id="${albumId}"]`);
+    const draggedId = draggedStudioAlbum.dataset.studioAlbumId;
 
-    console.log(`📤 Drop detected: dragged=${draggedStudioAlbum.dataset.studioAlbumId}, target=${albumId}, draggedIdx=${draggedIdx}, targetIdx=${targetIdx}`);
+    const msg1 = `📤 Drop: ${draggedId} → ${albumId} (idx: ${draggedIdx} → ${targetIdx})`;
+    console.log(msg1);
+    const debug = document.getElementById('studioAlbumDebug');
+    if (debug) {
+      debug.innerHTML = msg1;
+    }
 
     if (draggedStudioAlbum !== targetAlbum && targetAlbum !== null && draggedIdx !== -1) {
       // Get the actual current target index in the DOM
       const currentTargetIdx = allAlbums.indexOf(targetAlbum);
-      console.log(`   Actual indices: draggedIdx=${draggedIdx}, currentTargetIdx=${currentTargetIdx}`);
+      const msg2 = draggedIdx < currentTargetIdx ? '↓ DOWN' : '↑ UP';
+      console.log(`   Actual indices: draggedIdx=${draggedIdx}, currentTargetIdx=${currentTargetIdx} ${msg2}`);
 
       // Reorder the elements in DOM
       if (draggedIdx < currentTargetIdx) {
         // Moving down: insert after target
-        console.log('   → Moving DOWN (inserting after target)');
         if (targetAlbum.nextSibling) {
           container.insertBefore(draggedStudioAlbum, targetAlbum.nextSibling);
         } else {
@@ -2652,15 +2665,21 @@
         }
       } else {
         // Moving up: insert before target
-        console.log('   → Moving UP (inserting before target)');
         container.insertBefore(draggedStudioAlbum, targetAlbum);
       }
 
+      if (debug) {
+        debug.innerHTML = `📤 Drop OK (${msg2}) → Saving to Firebase...`;
+      }
       console.log('   ✓ DOM reordered, saving to Firebase...');
       // Save new order to Firebase
       await window.saveStudioAlbumOrder();
     } else {
-      console.log('   ⚠ Drop cancelled: same element or target not found');
+      const msg3 = draggedStudioAlbum === targetAlbum ? 'same element' : 'target not found';
+      console.log(`   ⚠ Drop cancelled: ${msg3}`);
+      if (debug) {
+        debug.innerHTML = `⚠ Cancelled: ${msg3}`;
+      }
     }
 
     draggedStudioAlbum.style.opacity = '1';
@@ -2683,22 +2702,31 @@
     try {
       const container = document.getElementById('studioAlbumGrid');
       const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
+      const debug = document.getElementById('studioAlbumDebug');
 
       console.log('📍 Saving studio album order. Current DOM order:');
+      let debugMsg = '📍 Saving: ';
       const updatePromises = allAlbums.map((albumEl, newIdx) => {
         const albumId = albumEl.dataset.studioAlbumId;
         console.log(`  Position ${newIdx + 1}: ${albumId}`);
+        debugMsg += `#${newIdx + 1}: ${albumId.substring(0, 8)}... `;
         return updateDoc(doc(db, 'studio', albumId), { order: newIdx + 1 });
       });
 
+      if (debug) debug.innerHTML = debugMsg + '<br>Updating Firebase...';
       await Promise.all(updatePromises);
       console.log('✓ Studio album order saved to Firebase');
 
+      if (debug) debug.innerHTML = debugMsg + '<br>✓ Saved! Refreshing...';
       // Refresh the display to show the new order
       await window.displayStudioAlbumOrderPanel();
       await window.loadStudio();
+
+      if (debug) debug.innerHTML = debugMsg + '<br>✓ Complete!';
+      setTimeout(() => { if (debug) debug.style.display = 'none'; }, 2000);
     } catch (err) {
       console.error('Error saving studio album order:', err);
+      if (debug) debug.innerHTML = `❌ Error: ${err.message}`;
       alert('Error: ' + err.message);
     }
   };
