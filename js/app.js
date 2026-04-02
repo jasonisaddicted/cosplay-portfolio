@@ -114,7 +114,7 @@ const Lightbox = (() => {
 
   // Auto-discovers all albums (events + studio + collab) featuring this handle.
   // Adding new albums in config.js automatically surfaces them in the panel.
-  function findCoserAlbums(handle) {
+  window.findCoserAlbums = function(handle) {
     const results = [];
     if (!handle || typeof CONFIG === 'undefined') return results;
     (CONFIG.events || []).forEach(album => {
@@ -136,7 +136,7 @@ const Lightbox = (() => {
         });
     });
     return results;
-  }
+  };
 
   // Auto-discovers all albums featuring this character
   function findCharacterAlbums(character) {
@@ -1222,7 +1222,7 @@ function initHome() {
 }
 
 // ── Banner Panel Functions ───────────────────────────────────
-function buildAlbumsSection(albums, coserHandle) {
+window.buildAlbumsSection = function(albums, coserHandle) {
   if (!albums || albums.length === 0) return '';
 
   const igHandle = coserHandle ? (coserHandle.startsWith('@') ? coserHandle : '@' + coserHandle) : '';
@@ -1315,7 +1315,7 @@ function buildAlbumsSection(albums, coserHandle) {
   `;
 
   return albumsHtml;
-}
+};
 
 function openBannerPanel(banner) {
   const panelDiv = document.getElementById('bannerPanel');
