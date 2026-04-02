@@ -2722,7 +2722,7 @@
       await window.displayStudioAlbumOrderPanel();
       await window.loadStudio();
 
-      if (debug) debug.innerHTML = debugMsg + '<br>✓ Complete!';
+      if (debug) debug.innerHTML = debugMsg + '<br>✓ Complete! 🎉<br><strong style="color:#c8a46e;">⚠️ Refresh the main Studio page to see changes</strong>';
       setTimeout(() => { if (debug) debug.style.display = 'none'; }, 2000);
     } catch (err) {
       console.error('Error saving studio album order:', err);

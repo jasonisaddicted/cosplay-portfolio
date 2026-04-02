@@ -1420,6 +1420,9 @@ function initStudio() {
 async function initOutdoor() {
   if (!document.body.classList.contains('page-outdoor')) return;
 
+  // Set page title
+  document.title = `Outdoor · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
+
   try {
     // Load outdoor albums from Firebase
     const snap = await getDocs(query(collection(db, 'outdoor'), orderBy('order', 'asc')));
