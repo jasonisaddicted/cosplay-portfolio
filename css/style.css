@@ -176,7 +176,7 @@ ul { list-style: none; }
 }
 
 /* ── Hero Section ───────────────────────────────────────────── */
-.hero {
+.banner {
   position: relative;
   width: 100vw;
   aspect-ratio: 4/3;  /* Mobile: 4:3 full width */
@@ -188,22 +188,22 @@ ul { list-style: none; }
 }
 
 @media (min-width: 1024px) {
-  .hero {
+  .banner {
     aspect-ratio: 4/3;  /* Desktop: 4:3 */
     width: 100%;
     max-width: clamp(280px, 90vw, 55vw);
     margin: var(--nav-height) auto 0;
   }
 }
-.hero__img {
+.banner__img {
   width: 100%; height: 100%;
   object-fit: cover;
   object-position: center;
   transition: transform 8s ease;
 }
-.hero:hover .hero__img { transform: scale(1.03); }
+.banner:hover .banner__img { transform: scale(1.03); }
 
-.hero__overlay {
+.banner__overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -213,12 +213,12 @@ ul { list-style: none; }
     rgba(18,18,18,0.1) 100%
   );
 }
-.hero__content {
+.banner__content {
   position: absolute;
   bottom: 56px;
   left: 56px;
 }
-.hero__label {
+.banner__label {
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -226,21 +226,21 @@ ul { list-style: none; }
   color: var(--accent);
   margin-bottom: 10px;
 }
-.hero__character {
+.banner__character {
   font-size: clamp(2rem, 5vw, 4rem);
   font-weight: 700;
   line-height: 1.1;
   color: var(--white);
   letter-spacing: -0.02em;
 }
-.hero__series {
+.banner__series {
   font-size: 0.85rem;
   font-weight: 300;
   color: rgba(228, 228, 228, 0.7);
   margin-top: 6px;
   letter-spacing: 0.06em;
 }
-.hero__credit {
+.banner__credit {
   font-size: 0.7rem;
   font-weight: 400;
   color: var(--text-dim);
@@ -2076,8 +2076,8 @@ footer {
     background: rgba(200, 164, 110, 0.08);
   }
   /* Mobile/Tablet banner: 4:3 aspect ratio (landscape) */
-  .hero { aspect-ratio: 4/3; max-height: none; }
-  .hero__content { left: 24px; bottom: 36px; }
+  .banner { aspect-ratio: 4/3; max-height: none; }
+  .banner__content { left: 24px; bottom: 36px; }
   .section-header { padding: 40px 20px 24px; flex-wrap: wrap; }
   .picks-grid { display: none; }
   .picks-carousel.active { display: block; }

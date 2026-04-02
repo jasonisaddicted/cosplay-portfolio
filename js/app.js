@@ -1149,34 +1149,34 @@ function initHome() {
   // Banner Photo (new system - separate from featured)
   const banner = cfg.bannerPhoto;
   if (banner && banner.src) {
-    const heroSection = document.getElementById('hero');
-    if (!heroSection) {
-      console.warn('Hero section not found');
+    const bannerSection = document.getElementById('banner');
+    if (!bannerSection) {
+      console.warn('Banner section not found');
       return;
     }
 
-    const heroImg = heroSection.querySelector('.hero__img');
-    if (!heroImg) {
-      console.warn('Hero image element not found');
+    const bannerImg = bannerSection.querySelector('.banner__img');
+    if (!bannerImg) {
+      console.warn('Banner image element not found');
       return;
     }
 
-    heroImg.src = banner.src;
-    heroImg.alt = banner.character || '';
+    bannerImg.src = banner.src;
+    bannerImg.alt = banner.character || '';
 
-    // Image displays at 16:9 desktop / 3:4 mobile aspect ratio with object-fit: cover
+    // Image displays at 4:3 aspect ratio with object-fit: cover
     // (CSS handles aspect-ratio, image fits edge-to-edge with center crop)
 
-    heroSection.querySelector('.hero__character').textContent = banner.character || '';
-    heroSection.querySelector('.hero__series').textContent = banner.series || '';
-    heroSection.querySelector('.hero__credit').textContent = banner.coser ? `@${banner.coser}` : '';
-    const heroLabel = document.querySelector('.hero-label-text');
-    if (heroLabel) heroLabel.textContent = 'THIS MONTH';
+    bannerSection.querySelector('.banner__character').textContent = banner.character || '';
+    bannerSection.querySelector('.banner__series').textContent = banner.series || '';
+    bannerSection.querySelector('.banner__credit').textContent = banner.coser ? `@${banner.coser}` : '';
+    const bannerLabel = document.querySelector('.banner-label-text');
+    if (bannerLabel) bannerLabel.textContent = 'THIS MONTH';
 
     // Click to open banner panel
-    heroSection.style.cursor = 'pointer';
-    heroSection.addEventListener('click', () => {
-      console.log('Hero clicked, opening banner panel');
+    bannerSection.style.cursor = 'pointer';
+    bannerSection.addEventListener('click', () => {
+      console.log('Banner clicked, opening banner panel');
       openBannerPanel(banner);
     });
     console.log('✓ Banner loaded and click handler attached');

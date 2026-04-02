@@ -10,7 +10,7 @@
 
   // ── Block right-click context menu ───────────────────────
   document.addEventListener('contextmenu', function (e) {
-    if (e.target.tagName === 'IMG' || e.target.closest('.photo-grid__item, .pick-item, .album-card, .lightbox__img-wrap, .collab-thumb, .hero, .collab-entry__cover')) {
+    if (e.target.tagName === 'IMG' || e.target.closest('.photo-grid__item, .pick-item, .album-card, .lightbox__img-wrap, .collab-thumb, .banner, .collab-entry__cover')) {
       e.preventDefault();
       return false;
     }
@@ -79,7 +79,7 @@
     .photo-grid__item,
     .album-card,
     .collab-thumb,
-    .hero,
+    .banner,
     .collab-entry__cover {
       pointer-events: all !important;
       cursor: pointer;
