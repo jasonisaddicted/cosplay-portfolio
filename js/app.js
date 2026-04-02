@@ -660,62 +660,21 @@ window.openCharacterModal = (character) => {
 };
 
 // Open featured panel with photo details
-window.openFeaturedPanel = (photo) => {
-  // Show detailed modal instead of side panel
-  const existingModal = document.querySelector('.featured-photo-detail-modal');
-  if (existingModal) existingModal.remove();
+// Open featured photo in fullscreen lightbox (index-based)
+window.openFeaturedPhoto = (index) => {
+  // Get all featured photos from config
+  const featuredPhotos = (CONFIG.featured || []).map(p => ({
+    src: p.src,
+    coser: p.credit || p.coser || '',
+    character: p.character || '',
+    series: p.series || ''
+  }));
 
-  const modal = document.createElement('div');
-  modal.className = 'featured-photo-detail-modal';
-  modal.style.cssText = `
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8); z-index: 2000;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-  `;
+  if (featuredPhotos.length === 0) return;
 
-  modal.innerHTML = `
-    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; padding: 20px;">
-      <button onclick="this.closest('.featured-photo-detail-modal').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer;">×</button>
-
-      <div style="aspect-ratio: 3/4; overflow: hidden; background: var(--bg-card); margin-bottom: 20px; border-radius: 2px;">
-        <img src="${photo.src}" alt="${photo.character || ''}" style="width: 100%; height: 100%; object-fit: cover;">
-      </div>
-
-      ${photo.character ? `
-        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Character</div>
-        <div style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 16px;">${photo.character}</div>
-      ` : ''}
-
-      ${photo.series ? `
-        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Series</div>
-        <div style="font-size: 0.95rem; color: var(--text); margin-bottom: 16px;">${photo.series}</div>
-      ` : ''}
-
-      ${photo.credit ? `
-        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Cosplayer</div>
-        <div style="font-size: 0.95rem; color: var(--text); margin-bottom: 16px;">${photo.credit}</div>
-      ` : ''}
-
-      ${photo.caption ? `
-        <div style="color: var(--accent); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">Caption</div>
-        <div style="font-size: 0.9rem; color: var(--text-muted);">${photo.caption}</div>
-      ` : ''}
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // Close on background click
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.remove();
-  });
-
-  // Close on escape
-  const closeOnEscape = (e) => {
-    if (e.key === 'Escape') modal.remove();
-  };
-  document.addEventListener('keydown', closeOnEscape);
+  Lightbox.init(featuredPhotos);
+  Lightbox.setBack(() => Lightbox.close());
+  Lightbox.open(Math.min(index, featuredPhotos.length - 1));
 };
 
 // Collaborators panel (Projects & Appearances)
@@ -1173,11 +1132,18 @@ function initHome() {
     const bannerLabel = document.querySelector('.banner-label-text');
     if (bannerLabel) bannerLabel.textContent = 'THIS MONTH';
 
-    // Click to open banner panel
+    // Click to open banner in fullscreen lightbox
     bannerSection.style.cursor = 'pointer';
     bannerSection.addEventListener('click', () => {
-      console.log('Banner clicked, opening banner panel');
-      openBannerPanel(banner);
+      console.log('Banner clicked, opening in lightbox');
+      Lightbox.init([{
+        src: banner.src,
+        coser: banner.coser || '',
+        character: banner.character || '',
+        series: banner.series || ''
+      }]);
+      Lightbox.setBack(() => Lightbox.close());
+      Lightbox.open(0);
     });
     console.log('✓ Banner loaded and click handler attached');
   } else {
@@ -1199,7 +1165,7 @@ function initHome() {
       gridItem.innerHTML = `<img src="${photo.src}" alt="${photo.character || ''}" loading="lazy">`;
 
       gridItem.addEventListener('click', () => {
-        openFeaturedPanel(photo);
+        openFeaturedPhoto(idx);
       });
 
       gridContainer.appendChild(gridItem);
