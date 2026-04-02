@@ -200,9 +200,9 @@ ul { list-style: none; }
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(18,18,18,0.6) 0%,
-    rgba(18,18,18,0.2) 50%,
-    transparent 100%
+    rgba(18,18,18,0.85) 0%,
+    rgba(18,18,18,0.3) 40%,
+    rgba(18,18,18,0.1) 100%
   );
 }
 .hero__content {
