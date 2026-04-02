@@ -729,6 +729,11 @@
       <button onclick="closePhotoModal()" style="position:absolute; top:10px; right:10px; background:#666; color:#fff; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;">✕</button>
       <h3 id="photoModalTitle" style="margin-bottom:20px;">Edit Photo</h3>
 
+      <!-- Photo Thumbnail Preview -->
+      <div style="margin-bottom:20px;">
+        <img id="photoEditThumbnail" src="" alt="Photo preview" style="width:100%; max-height:250px; object-fit:cover; border-radius:3px; border:1px solid #333;">
+      </div>
+
       <div class="form-group" style="margin-bottom:15px;">
         <label>Cosplayer Handle</label>
         <input type="text" id="photoEditHandle" placeholder="@handle" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
@@ -1746,6 +1751,7 @@
     const photo = event.photos[photoIndex];
 
     document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditThumbnail').src = photo.src || '';
     document.getElementById('photoEditHandle').value = photo.coser || '';
     document.getElementById('photoEditHandle').style.display = 'block';
     document.getElementById('photoEditHandle').parentElement.style.display = 'block';
@@ -1767,6 +1773,7 @@
     const photo = session.cosplayers[cosplayerIdx].photos[photoIdx];
 
     document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditThumbnail').src = photo.src || '';
     document.getElementById('photoEditHandle').value = photo.coser || '';
     document.getElementById('photoEditHandle').style.display = 'block';
     document.getElementById('photoEditHandle').parentElement.style.display = 'block';
@@ -1787,6 +1794,7 @@
     const photo = collab.photos[photoIndex];
 
     document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+    document.getElementById('photoEditThumbnail').src = photo.src || '';
     document.getElementById('photoEditHandle').value = '';
     document.getElementById('photoEditHandle').style.display = 'none';
     document.getElementById('photoEditHandle').parentElement.style.display = 'none';
