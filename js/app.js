@@ -1416,6 +1416,14 @@ function initStudio() {
     `${CONFIG.studio.length} session${CONFIG.studio.length !== 1 ? 's' : ''}`;
 }
 
+// ── Page: Outdoor ────────────────────────────────────────────
+function initOutdoor() {
+  if (!document.body.classList.contains('page-outdoor')) return;
+  renderAlbumGrid(CONFIG.outdoor, document.getElementById('albums-grid'));
+  document.querySelector('.section-header__count').textContent =
+    `${CONFIG.outdoor.length} session${CONFIG.outdoor.length !== 1 ? 's' : ''}`;
+}
+
 // ── Helper: total photo count for an album ────────────────────
 function albumPhotoCount(album) {
   if (album.photos)     return album.photos.length;
@@ -1433,6 +1441,7 @@ function renderAlbumGrid(albums, container) {
 
   const type = container.dataset.type;
   const isEvents = type === 'events';
+  const isOutdoor = type === 'outdoor';
 
   albums.forEach(album => {
     const card = document.createElement('a');
@@ -1440,8 +1449,8 @@ function renderAlbumGrid(albums, container) {
     card.className = 'album-card';
     const count = albumPhotoCount(album);
 
-    // Coser overlay (events only)
-    const coserOverlayHtml = isEvents ? `
+    // Coser overlay (events and outdoor)
+    const coserOverlayHtml = (isEvents || isOutdoor) ? `
       <div class="album-card__coser-overlay">
         <div class="album-card__coser-label">COSER</div>
         <div class="album-card__coser-name"></div>
@@ -1466,8 +1475,8 @@ function renderAlbumGrid(albums, container) {
       </div>
     `;
 
-    // ── Event card: slideshow + hover coser overlay ──────────
-    if (isEvents && album.photos && album.photos.length > 0) {
+    // ── Event/Outdoor card: slideshow + hover coser overlay ──────────
+    if ((isEvents || isOutdoor) && album.photos && album.photos.length > 0) {
       const imgEl      = card.querySelector('img');
       const elName     = card.querySelector('.album-card__coser-name');
       const elChar     = card.querySelector('.album-card__coser-character');
@@ -1508,7 +1517,16 @@ function initAlbum() {
   const id     = params.get('id');
   const type   = params.get('type');
 
-  const collection = type === 'studio' ? CONFIG.studio : CONFIG.events;
+  let collection;
+  if (type === 'studio') {
+    collection = CONFIG.studio;
+  } else if (type === 'outdoor') {
+    collection = CONFIG.outdoor;
+  } else if (type === 'collab') {
+    collection = CONFIG.collaborators;
+  } else {
+    collection = CONFIG.events;
+  }
   const album = collection.find(a => a.id === id);
 
   const titleEl   = document.getElementById('album-title');
@@ -1524,8 +1542,19 @@ function initAlbum() {
   photoGrid.className = 'photo-grid';
 
   if (breadEl) {
-    breadEl.href        = type === 'studio' ? 'studio.html' : 'events.html';
-    breadEl.textContent = type === 'studio' ? 'Studio' : 'Events';
+    if (type === 'studio') {
+      breadEl.href = 'studio.html';
+      breadEl.textContent = 'Studio';
+    } else if (type === 'outdoor') {
+      breadEl.href = 'outdoor.html';
+      breadEl.textContent = 'Outdoor';
+    } else if (type === 'collab') {
+      breadEl.href = 'collabs.html';
+      breadEl.textContent = 'Collabs';
+    } else {
+      breadEl.href = 'events.html';
+      breadEl.textContent = 'Events';
+    }
   }
 
   titleEl.textContent = album.name;
@@ -1719,6 +1748,7 @@ window.addEventListener('firebase-config-loaded', () => {
   initSiteIdentity();
   initHome();
   initEvents();
+  initOutdoor();
   initStudio();
   initAlbum();
   initCollabs();

@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Album — Cosplay Portfolio</title>
+  <title>Outdoor — Cosplay Portfolio</title>
   <link rel="stylesheet" href="css/style.css?v=67">
 </head>
-<body class="page-album">
+<body class="page-outdoor">
 
   <!-- Navigation -->
   <nav class="nav scrolled">
     <a class="nav__brand" href="index.html" id="nav-brand"></a>
-    <ul class="nav__links">
+    <button class="nav__hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul class="nav__links" id="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="events.html">Events</a></li>
       <li><a href="outdoor.html">Outdoor</a></li>
@@ -20,49 +25,31 @@
     </ul>
   </nav>
 
-  <!-- Album Header -->
-  <div class="album-header">
-    <div class="album-header__breadcrumb">
-      <a href="index.html">Home</a>
-      <span>›</span>
-      <a href="#" id="album-breadcrumb-link">Events</a>
-      <span>›</span>
-      <span id="album-title-crumb"></span>
+  <!-- Page Hero -->
+  <div class="page-hero mt-nav">
+    <div class="page-hero__bg"></div>
+    <div class="page-hero__content">
+      <div class="page-hero__label">Gallery</div>
+      <h1 class="page-hero__title">Outdoor</h1>
+      <p class="page-hero__sub">Location shoots &amp; outdoor sessions</p>
     </div>
-    <h1 class="album-header__title" id="album-title">Loading…</h1>
-    <div class="album-header__meta" id="album-meta"></div>
-    <p class="album-header__desc" id="album-desc"></p>
   </div>
 
-  <!-- Photo Masonry Grid -->
-  <div class="photo-grid" id="photo-grid"></div>
+  <!-- Section Header -->
+  <div class="section-header">
+    <span class="section-header__label">Browse</span>
+    <h2 class="section-header__title">All Outdoor Sessions</h2>
+    <span class="section-header__count"></span>
+  </div>
+
+  <!-- Albums Grid -->
+  <div class="albums-grid" id="albums-grid" data-type="outdoor"></div>
 
   <!-- Footer -->
   <footer>
     <span class="footer__brand" id="footer-brand"></span>
     <span class="footer__copy" id="footer-copy"></span>
   </footer>
-
-  <!-- Lightbox -->
-  <div class="lightbox" id="lightbox">
-    <div class="lightbox__inner">
-      <div class="lightbox__img-wrap">
-        <img class="lightbox__img" src="" alt="">
-        <div class="lightbox__caption"></div>
-      </div>
-    </div>
-    <button class="lightbox__back" aria-label="Back" style="display:none;">
-      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-      <span>Back</span>
-    </button>
-    <button class="lightbox__nav lightbox__prev" aria-label="Previous">
-      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-    </button>
-    <button class="lightbox__nav lightbox__next" aria-label="Next">
-      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-    </button>
-    <div class="lightbox__counter"></div>
-  </div>
 
   <!-- Mobile Preview Button -->
   <button class="mob-toggle" id="mob-toggle" aria-label="Mobile preview" title="Preview on mobile">
@@ -86,17 +73,7 @@
   <script type="module" src="js/firebase-init.js?v=67"></script>
   <script src="js/app.js?v=67"></script>
   <script>
-    // Sync breadcrumb title after album loads
-    document.addEventListener('DOMContentLoaded', () => {
-      const crumb = document.getElementById('album-title-crumb');
-      const title = document.getElementById('album-title');
-      if (crumb && title) {
-        const observer = new MutationObserver(() => {
-          crumb.textContent = title.textContent;
-        });
-        observer.observe(title, { childList: true, characterData: true, subtree: true });
-      }
-    });
+    document.title = `Outdoor · ${CONFIG.photographer}`;
   </script>
   <script>
     (function () {

@@ -646,6 +646,53 @@ const CONFIG = {
     }
   ],
 
+  // ── Outdoor ───────────────────────────────────────────────
+  // Location shoots & outdoor sessions.
+  // Similar structure to events.
+  // Each outdoor = one album card on the Outdoor page.
+  //
+  // Photo fields:
+  //   src       — image URL or local path
+  //   coser     — cosplayer @handle (shown on hover)
+  //   character — character name
+  //   series    — game / anime / series name
+  outdoor: [
+    {
+      id: "botanical-garden-2024",
+      name: "Botanical Garden",
+      date: "April 2024",
+      location: "San Jose, CA",
+      description: "Outdoor photoshoot at the beautiful San Jose Japanese Friendship Garden.",
+      cover: "https://picsum.photos/seed/od1cv/800/600",
+      photos: [
+        // @sakurahime_cos — Hu Tao — Genshin Impact
+        { src: "https://picsum.photos/seed/od1a1/800/1000",  coser: "@sakurahime_cos",  character: "Hu Tao",    series: "Genshin Impact" },
+        { src: "https://picsum.photos/seed/od1a2/800/1100",  coser: "@sakurahime_cos",  character: "Hu Tao",    series: "Genshin Impact" },
+        { src: "https://picsum.photos/seed/od1a3/900/1000",  coser: "@sakurahime_cos",  character: "Hu Tao",    series: "Genshin Impact" },
+        { src: "https://picsum.photos/seed/od1a4/800/1000",  coser: "@sakurahime_cos",  character: "Hu Tao",    series: "Genshin Impact" },
+        { src: "https://picsum.photos/seed/od1a5/800/950",   coser: "@sakurahime_cos",  character: "Hu Tao",    series: "Genshin Impact" },
+        { src: "https://picsum.photos/seed/od1a6/800/1100",  coser: "@sakurahime_cos",  character: "Hu Tao",    series: "Genshin Impact" }
+      ]
+    },
+    {
+      id: "mountain-peaks-2024",
+      name: "Mountain Peaks",
+      date: "June 2024",
+      location: "Big Sur, CA",
+      description: "Scenic coastal mountain shoot with breathtaking ocean views.",
+      cover: "https://picsum.photos/seed/od2cv/800/600",
+      photos: [
+        // @voidvessel_cos — 2B — NieR: Automata
+        { src: "https://picsum.photos/seed/od2a1/800/1000",  coser: "@voidvessel_cos",  character: "2B",        series: "NieR: Automata"  },
+        { src: "https://picsum.photos/seed/od2a2/800/1100",  coser: "@voidvessel_cos",  character: "2B",        series: "NieR: Automata"  },
+        { src: "https://picsum.photos/seed/od2a3/900/1000",  coser: "@voidvessel_cos",  character: "2B",        series: "NieR: Automata"  },
+        { src: "https://picsum.photos/seed/od2a4/800/1000",  coser: "@voidvessel_cos",  character: "2B",        series: "NieR: Automata"  },
+        { src: "https://picsum.photos/seed/od2a5/800/950",   coser: "@voidvessel_cos",  character: "2B",        series: "NieR: Automata"  },
+        { src: "https://picsum.photos/seed/od2a6/800/1100",  coser: "@voidvessel_cos",  character: "2B",        series: "NieR: Automata"  }
+      ]
+    }
+  ],
+
   // ── Collaborators ─────────────────────────────────────────
   // One entry per cosplayer you collaborate with.
   // Appears on the /collabs.html page.

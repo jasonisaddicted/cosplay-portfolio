@@ -206,6 +206,7 @@
     <div class="tabs">
       <button class="tab active" onclick="switchTab('featured')">Featured</button>
       <button class="tab" onclick="switchTab('events')">Events</button>
+      <button class="tab" onclick="switchTab('outdoor')">Outdoor</button>
       <button class="tab" onclick="switchTab('studio')">Studio</button>
       <button class="tab" onclick="switchTab('collabs')">Collabs</button>
     </div>
@@ -307,6 +308,7 @@
       <!-- Album Tabs -->
       <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid #2e2e2e;">
         <button id="albumTab-events" class="album-tab active" onclick="switchAlbumTab('events')" style="padding:10px 20px; background:transparent; border:none; color:#c8a46e; border-bottom:2px solid #c8a46e; font-weight:600; cursor:pointer;">Events</button>
+        <button id="albumTab-outdoor" class="album-tab" onclick="switchAlbumTab('outdoor')" style="padding:10px 20px; background:transparent; border:none; color:#999; border-bottom:2px solid transparent; font-weight:600; cursor:pointer;">Outdoor</button>
         <button id="albumTab-studio" class="album-tab" onclick="switchAlbumTab('studio')" style="padding:10px 20px; background:transparent; border:none; color:#999; border-bottom:2px solid transparent; font-weight:600; cursor:pointer;">Studio</button>
         <button id="albumTab-collab" class="album-tab" onclick="switchAlbumTab('collab')" style="padding:10px 20px; background:transparent; border:none; color:#999; border-bottom:2px solid transparent; font-weight:600; cursor:pointer;">Collaborators</button>
       </div>
@@ -430,6 +432,114 @@
       </div>
 
       <div class="items-list" id="eventsList"></div>
+    </div>
+
+    <!-- Outdoor -->
+    <div id="outdoor" class="content">
+      <h2 style="margin-bottom:20px;">Outdoor Sessions</h2>
+
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px;">Batch Upload Outdoor Photos</h3>
+        <div class="form-group">
+          <label>Drop photos here</label>
+          <div class="upload-area" id="uploadOutdoorBatch" onclick="document.getElementById('uploadOutdoorFiles').click()">
+            <p>Click or drag multiple photos</p>
+            <input type="file" id="uploadOutdoorFiles" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="upload-progress" id="uploadOutdoorBatchStatus"></div>
+        </div>
+        <div class="form-group">
+          <label>Outdoor Session</label>
+          <div style="display:flex; gap:10px;">
+            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="new" checked onchange="toggleOutdoorMode('new')"> <span style="margin-left:5px;">Create New</span></label>
+            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="existing" onchange="toggleOutdoorMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
+          </div>
+        </div>
+        <div id="newOutdoorFields">
+          <div class="form-group">
+            <label>Session Name</label>
+            <input type="text" id="outdoorName" placeholder="e.g., Mountain Peak Session">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="text" id="outdoorDate" placeholder="e.g., May 2024">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="outdoorLoc" placeholder="e.g., Big Sur, CA">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="outdoorDesc" placeholder="Session description..."></textarea>
+          </div>
+        </div>
+        <div id="existingOutdoorFields" style="display:none;">
+          <div class="form-group">
+            <label>Add to Session</label>
+            <select id="existingOutdoorSelect">
+              <option value="">Select an outdoor session...</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Character Name</label>
+          <input type="text" id="batchOutdoorChar" placeholder="e.g., Hu Tao">
+        </div>
+        <div class="form-group">
+          <label>Series</label>
+          <input type="text" id="batchOutdoorSeries" placeholder="e.g., Genshin Impact">
+        </div>
+        <div class="form-group">
+          <label>Cosplayer Handle</label>
+          <input type="text" id="batchOutdoorHandle" placeholder="e.g., @sakurahime_cos">
+        </div>
+        <button onclick="saveBatchOutdoor()" style="width:100%;">Upload & Create/Add Session</button>
+        <div id="batchOutdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
+      <div class="form-group" style="max-width:400px;">
+        <label>Session Name</label>
+        <input type="text" id="outdoorSessionName" placeholder="e.g., Outdoor Session 2025">
+      </div>
+      <div class="form-group" style="max-width:400px;">
+        <label>Date</label>
+        <input type="text" id="outdoorSessionDate" placeholder="e.g., May 2024">
+      </div>
+      <div class="form-group" style="max-width:400px;">
+        <label>Location</label>
+        <input type="text" id="outdoorSessionLoc" placeholder="e.g., Big Sur, CA">
+      </div>
+      <div class="form-group" style="max-width:400px;">
+        <label>Description</label>
+        <textarea id="outdoorSessionDesc" placeholder="Session description..."></textarea>
+      </div>
+      <button id="saveOutdoorBtn" onclick="saveOutdoor()" style="max-width:400px; width:100%;">Create Outdoor Session</button>
+      <div id="outdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
+
+      <!-- Outdoor Photo Management Section -->
+      <div id="outdoorPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
+        <!-- Cosplayers Order Panel -->
+        <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
+          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleOutdoorCoserOrderPanel(this)">
+            📋 Arrange & Edit Cosplayer Details (Click to expand/collapse)
+          </h4>
+          <div id="outdoorCoserOrderList" style="display:none; padding:10px;">
+            <!-- Populated by JavaScript -->
+          </div>
+        </div>
+
+        <h3 style="margin-bottom:15px;">Manage Photos in This Outdoor Session</h3>
+        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (6 columns) — Edit position numbers and drag photos to reorder</p>
+        <div id="outdoorPhotosList" style="margin-bottom:15px;"></div>
+        <div id="outdoorPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
+        <button onclick="applyOutdoorPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
+
+      </div>
+
+      <div class="items-list" id="outdoorList"></div>
     </div>
 
     <!-- Studio -->
@@ -2689,6 +2799,336 @@
       document.getElementById('batchCollabMsg').textContent = 'Error: ' + err.message;
       document.getElementById('batchCollabMsg').className = 'error';
     }
+  };
+
+  // ─ Outdoor ─
+  window.saveOutdoor = async () => {
+    const name = document.getElementById('outdoorSessionName').value;
+    const date = document.getElementById('outdoorSessionDate').value;
+    const location = document.getElementById('outdoorSessionLoc').value;
+    const description = document.getElementById('outdoorSessionDesc').value;
+
+    if (!name) {
+      document.getElementById('outdoorMsg').textContent = 'Session name required';
+      document.getElementById('outdoorMsg').className = 'error';
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'outdoor'), {
+        name, date, location, description, photos: [], cosplayers: []
+      });
+      document.getElementById('outdoorMsg').textContent = '✓ Outdoor session created!';
+      document.getElementById('outdoorMsg').className = 'success';
+      document.getElementById('outdoorSessionName').value = '';
+      document.getElementById('outdoorSessionDate').value = '';
+      document.getElementById('outdoorSessionLoc').value = '';
+      document.getElementById('outdoorSessionDesc').value = '';
+      loadOutdoor();
+      setTimeout(() => { document.getElementById('outdoorMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('outdoorMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('outdoorMsg').className = 'error';
+    }
+  };
+
+  window.loadOutdoor = async () => {
+    const snap = await getDocs(collection(db, 'outdoor'));
+    const html = snap.docs.map(doc => {
+      const d = doc.data();
+      return `
+        <div class="item">
+          <div class="item-header">
+            <div>
+              <div class="item-title">${d.name}</div>
+              <div style="font-size:0.8rem; color:#666;">${d.date} · ${d.location}</div>
+            </div>
+            <div class="item-actions">
+              <button onclick="editOutdoor('${doc.id}')">Edit</button>
+              <button onclick="deleteOutdoor('${doc.id}')">Delete</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('outdoorList').innerHTML = html || '<p style="color:#666;">No outdoor sessions yet</p>';
+  };
+
+  window.editOutdoor = async (id) => {
+    const docSnap = await getDoc(doc(db, 'outdoor', id));
+    const d = docSnap.data();
+    document.getElementById('outdoorSessionName').value = d.name;
+    document.getElementById('outdoorSessionDate').value = d.date;
+    document.getElementById('outdoorSessionLoc').value = d.location || '';
+    document.getElementById('outdoorSessionDesc').value = d.description || '';
+    document.getElementById('outdoorMsg').textContent = '';
+    document.getElementById('saveOutdoorBtn').textContent = 'Update Session';
+    document.getElementById('saveOutdoorBtn').onclick = () => updateOutdoor(id);
+    document.getElementById('outdoorSessionName').focus();
+
+    // Show photo management section
+    document.getElementById('outdoorPhotosSection').style.display = 'block';
+    window.currentEditingOutdoorId = id;
+    displayOutdoorPhotos(id);
+  };
+
+  window.updateOutdoor = async (id) => {
+    const name = document.getElementById('outdoorSessionName').value;
+    const date = document.getElementById('outdoorSessionDate').value;
+    const location = document.getElementById('outdoorSessionLoc').value;
+    const description = document.getElementById('outdoorSessionDesc').value;
+
+    if (!name || !date) {
+      document.getElementById('outdoorMsg').textContent = 'Name and date required';
+      document.getElementById('outdoorMsg').className = 'error';
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'outdoor', id), { name, date, location, description });
+      document.getElementById('outdoorMsg').textContent = '✓ Session updated!';
+      document.getElementById('outdoorMsg').className = 'success';
+      document.getElementById('outdoorSessionName').value = '';
+      document.getElementById('outdoorSessionDate').value = '';
+      document.getElementById('outdoorSessionLoc').value = '';
+      document.getElementById('outdoorSessionDesc').value = '';
+      document.getElementById('saveOutdoorBtn').textContent = 'Create Outdoor Session';
+      document.getElementById('saveOutdoorBtn').onclick = saveOutdoor;
+      loadOutdoor();
+      setTimeout(() => { document.getElementById('outdoorMsg').textContent = ''; }, 3000);
+    } catch (err) {
+      document.getElementById('outdoorMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('outdoorMsg').className = 'error';
+    }
+  };
+
+  window.deleteOutdoor = async (id) => {
+    if (confirm('Delete this outdoor session?')) {
+      await deleteDoc(doc(db, 'outdoor', id));
+      loadOutdoor();
+    }
+  };
+
+  window.displayOutdoorPhotos = async (id) => {
+    const docSnap = await getDoc(doc(db, 'outdoor', id));
+    const session = docSnap.data();
+    const photos = session.photos || [];
+
+    // Group photos by cosplayer handle
+    const grouped = {};
+    photos.forEach((photo, index) => {
+      const handle = photo.coser || 'Unknown';
+      if (!grouped[handle]) grouped[handle] = [];
+      grouped[handle].push({ ...photo, index });
+    });
+
+    // Display cosplayer order panel
+    displayOutdoorCoserOrderPanel(id, Object.keys(grouped));
+
+    // Build HTML for grouped photos in grid layout
+    let html = '';
+    Object.entries(grouped).forEach(([handle, coserPhotos]) => {
+      html += `
+        <div style="margin-bottom:30px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
+          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="toggleCoserPhotosGroup(this)">
+            ${handle} (${coserPhotos.length} photos) — Click to expand/collapse
+          </h4>
+          <div class="coser-photos-group" style="display:block; padding:10px;">
+            <div class="event-photo-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:15px;">`;
+
+      coserPhotos.forEach(p => {
+        html += `
+              <div draggable="true" ondragstart="window.dragStartHandler(event, '${id}', 0, ${p.index}, 'outdoor')" ondragover="window.dragOverHandler(event)" ondrop="window.dropHandler(event, '${id}', 0, ${p.index}, 'outdoor')" ondragend="window.dragEndHandler(event)" data-outdoor-photo-index="${p.index}" style="padding:10px; background:#0d0d0d; border:2px solid #222; border-radius:3px; cursor:grab; opacity:1; transition:all 0.2s; display:flex; flex-direction:column;">
+                <img src="${p.src}" style="width:100%; aspect-ratio:3/4; object-fit:cover; margin-bottom:8px; border-radius:2px;" alt="${p.character || 'Photo'}" />
+                <div style="font-size:0.75rem; color:#888; margin-bottom:6px; line-height:1.3;">${p.character || 'N/A'}</div>
+                <div style="font-size:0.7rem; color:#666; margin-bottom:8px; line-height:1.2;">${p.series || 'N/A'}</div>
+                <div style="display:flex; gap:3px; align-items:center; margin-bottom:6px;">
+                  <label style="margin:0; font-size:0.65rem; color:#999;">Pos:</label>
+                  <input type="number" min="1" max="100" value="${p.index + 1}" data-original="${p.index + 1}" class="outdoorPhotoPosition" data-photo-id="outdoor_${id}_${p.index}" style="width:40px; padding:3px; font-size:0.7rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+                </div>
+              </div>`;
+      });
+
+      html += `</div></div></div>`;
+    });
+
+    document.getElementById('outdoorPhotosList').innerHTML = html || '<p style="color:#666;">No photos yet</p>';
+    setupOutdoorPhotoListeners();
+  };
+
+  window.setupOutdoorPhotoListeners = () => {
+    document.querySelectorAll('.outdoorPhotoPosition').forEach(input => {
+      input.addEventListener('input', function() {
+        const photoId = this.dataset.photoId;
+        const btn = document.querySelector(`button[data-photo-id="${photoId}"]`);
+        if (this.value !== this.dataset.original && btn) {
+          btn.disabled = false;
+          btn.style.background = '#c9a961';
+          btn.style.color = '#000';
+          btn.style.cursor = 'pointer';
+        }
+      });
+    });
+  };
+
+  window.applyOutdoorPhotoReorder = async () => {
+    const sessionId = window.currentEditingOutdoorId;
+    if (!sessionId) return;
+
+    const docSnap = await getDoc(doc(db, 'outdoor', sessionId));
+    const session = docSnap.data();
+    const photos = session.photos || [];
+    const errors = [];
+
+    document.querySelectorAll('.outdoorPhotoPosition').forEach(input => {
+      const newPos = parseInt(input.value);
+      const [, sessionCheck, photoIdx] = input.dataset.photoId.match(/outdoor_([^_]+)_(\d+)/);
+      const originalPos = parseInt(input.dataset.original);
+
+      if (newPos !== originalPos && (newPos < 1 || newPos > photos.length)) {
+        errors.push(`Position ${newPos} is out of range (1–${photos.length})`);
+      }
+    });
+
+    if (errors.length) {
+      const errorDiv = document.getElementById('outdoorPhotosError');
+      errorDiv.textContent = errors.join('; ');
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    const newPhotos = [...photos];
+    const moves = [];
+
+    document.querySelectorAll('.outdoorPhotoPosition').forEach(input => {
+      const newPos = parseInt(input.value);
+      const originalPos = parseInt(input.dataset.original);
+      if (newPos !== originalPos) {
+        moves.push({ from: originalPos - 1, to: newPos - 1 });
+      }
+    });
+
+    moves.forEach(({ from, to }) => {
+      const [photo] = newPhotos.splice(from, 1);
+      newPhotos.splice(to, 0, photo);
+    });
+
+    try {
+      await updateDoc(doc(db, 'outdoor', sessionId), { photos: newPhotos });
+      document.getElementById('outdoorPhotosError').style.display = 'none';
+      await displayOutdoorPhotos(sessionId);
+    } catch (err) {
+      document.getElementById('outdoorPhotosError').textContent = 'Error: ' + err.message;
+      document.getElementById('outdoorPhotosError').style.display = 'block';
+    }
+  };
+
+  window.toggleOutdoorMode = (mode) => {
+    if (mode === 'new') {
+      document.getElementById('newOutdoorFields').style.display = 'block';
+      document.getElementById('existingOutdoorFields').style.display = 'none';
+    } else {
+      document.getElementById('newOutdoorFields').style.display = 'none';
+      document.getElementById('existingOutdoorFields').style.display = 'block';
+      loadExistingOutdoorSessions();
+    }
+  };
+
+  window.loadExistingOutdoorSessions = async () => {
+    const snap = await getDocs(collection(db, 'outdoor'));
+    const options = snap.docs.map(doc => `<option value="${doc.id}">${doc.data().name}</option>`).join('');
+    document.getElementById('existingOutdoorSelect').innerHTML = '<option value="">Select an outdoor session...</option>' + options;
+  };
+
+  window.saveBatchOutdoor = async () => {
+    const files = document.getElementById('uploadOutdoorFiles').files;
+    if (!files.length) {
+      document.getElementById('batchOutdoorMsg').textContent = 'No files selected';
+      document.getElementById('batchOutdoorMsg').className = 'error';
+      return;
+    }
+
+    const character = document.getElementById('batchOutdoorChar').value;
+    const series = document.getElementById('batchOutdoorSeries').value;
+    const handle = document.getElementById('batchOutdoorHandle').value;
+    const mode = document.querySelector('input[name="outdoorMode"]:checked').value;
+
+    let sessionId;
+    if (mode === 'new') {
+      const sessionName = document.getElementById('outdoorName').value;
+      const sessionDate = document.getElementById('outdoorDate').value;
+      const sessionLoc = document.getElementById('outdoorLoc').value;
+      const sessionDesc = document.getElementById('outdoorDesc').value;
+
+      if (!sessionName) {
+        document.getElementById('batchOutdoorMsg').textContent = 'Session name required';
+        document.getElementById('batchOutdoorMsg').className = 'error';
+        return;
+      }
+
+      const newSessionRef = await addDoc(collection(db, 'outdoor'), {
+        name: sessionName,
+        date: sessionDate,
+        location: sessionLoc,
+        description: sessionDesc,
+        photos: [],
+        cosplayers: []
+      });
+      sessionId = newSessionRef.id;
+    } else {
+      sessionId = document.getElementById('existingOutdoorSelect').value;
+      if (!sessionId) {
+        document.getElementById('batchOutdoorMsg').textContent = 'Please select a session';
+        document.getElementById('batchOutdoorMsg').className = 'error';
+        return;
+      }
+    }
+
+    document.getElementById('uploadOutdoorBatchStatus').textContent = 'Uploading...';
+    let uploaded = 0;
+
+    try {
+      const docSnap = await getDoc(doc(db, 'outdoor', sessionId));
+      const session = docSnap.data();
+      const newPhotos = [...(session.photos || [])];
+
+      for (const file of files) {
+        const photoRef = ref(storage, `outdoor/${sessionId}/${file.name}-${Date.now()}`);
+        await uploadBytes(photoRef, file);
+        const src = await getDownloadURL(photoRef);
+        newPhotos.push({ src, character, series, coser: handle });
+        uploaded++;
+        document.getElementById('uploadOutdoorBatchStatus').textContent = `Uploaded ${uploaded}/${files.length}`;
+      }
+
+      await updateDoc(doc(db, 'outdoor', sessionId), { photos: newPhotos });
+      document.getElementById('batchOutdoorMsg').textContent = `✓ ${uploaded} photos uploaded!`;
+      document.getElementById('batchOutdoorMsg').className = 'success';
+      document.getElementById('uploadOutdoorFiles').value = '';
+      document.getElementById('batchOutdoorChar').value = '';
+      document.getElementById('batchOutdoorSeries').value = '';
+      document.getElementById('batchOutdoorHandle').value = '';
+      document.getElementById('uploadOutdoorBatchStatus').textContent = '';
+      loadOutdoor();
+    } catch (err) {
+      document.getElementById('batchOutdoorMsg').textContent = `Error: ${err.message}`;
+      document.getElementById('batchOutdoorMsg').className = 'error';
+    }
+  };
+
+  window.displayOutdoorCoserOrderPanel = async (sessionId, handles) => {
+    const container = document.getElementById('outdoorCoserOrderList');
+    const html = handles.map(handle => `
+      <div style="padding:8px; background:#111; border:1px solid #222; margin-bottom:8px; border-radius:2px; display:flex; justify-content:space-between; align-items:center;">
+        <span>${handle}</span>
+      </div>
+    `).join('');
+    container.innerHTML = html || '<p style="color:#666;">No cosplayers</p>';
+  };
+
+  window.toggleOutdoorCoserOrderPanel = function(header) {
+    const panel = header.nextElementSibling;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   };
 
   // ─ Collabs ─
