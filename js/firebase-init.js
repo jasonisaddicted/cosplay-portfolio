@@ -72,6 +72,18 @@ async function loadFirebaseConfig() {
     });
 
     console.log("✅ Firebase CONFIG loaded:", window.CONFIG);
+    console.log("📸 Banner Photo:", window.CONFIG.bannerPhoto);
+
+    if (window.CONFIG.bannerPhoto) {
+      console.log("✓ Banner found:", {
+        character: window.CONFIG.bannerPhoto.character,
+        series: window.CONFIG.bannerPhoto.series,
+        coser: window.CONFIG.bannerPhoto.coser,
+        hasSrc: !!window.CONFIG.bannerPhoto.src
+      });
+    } else {
+      console.warn("⚠ No banner photo in config");
+    }
 
     // Dispatch custom event so pages can initialize
     window.dispatchEvent(new CustomEvent('firebase-config-loaded'));
