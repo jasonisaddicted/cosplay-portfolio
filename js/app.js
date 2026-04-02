@@ -1150,7 +1150,17 @@ function initHome() {
   const banner = cfg.bannerPhoto;
   if (banner && banner.src) {
     const heroSection = document.getElementById('hero');
+    if (!heroSection) {
+      console.warn('Hero section not found');
+      return;
+    }
+
     const heroImg = heroSection.querySelector('.hero__img');
+    if (!heroImg) {
+      console.warn('Hero image element not found');
+      return;
+    }
+
     heroImg.src = banner.src;
     heroImg.alt = banner.character || '';
 
@@ -1164,9 +1174,14 @@ function initHome() {
     if (heroLabel) heroLabel.textContent = 'THIS MONTH';
 
     // Click to open banner panel
+    heroSection.style.cursor = 'pointer';
     heroSection.addEventListener('click', () => {
+      console.log('Hero clicked, opening banner panel');
       openBannerPanel(banner);
     });
+    console.log('✓ Banner loaded and click handler attached');
+  } else {
+    console.log('No banner photo found', { hasBanner: !!banner, hasSrc: banner?.src });
   }
 
   // Featured section — show all featured picks (not used for hero anymore)
@@ -1303,10 +1318,17 @@ function buildAlbumsSection(albums, coserHandle) {
 }
 
 function openBannerPanel(banner) {
-  if (!banner.coser) return; // Can't show panel without cosplayer handle
-
   const panelDiv = document.getElementById('bannerPanel');
+  if (!panelDiv) {
+    console.error('Banner panel not found in DOM');
+    return;
+  }
+
   const contentDiv = document.getElementById('bannerPanelContent');
+  if (!contentDiv) {
+    console.error('Banner panel content not found in DOM');
+    return;
+  }
 
   // Build panel content
   const html = buildBannerPanelContent(banner);
