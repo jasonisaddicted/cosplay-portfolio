@@ -100,15 +100,7 @@ ul { list-style: none; }
   backdrop-filter: blur(8px);
 }
 .nav__brand {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--white);
-  line-height: 1.2;
+  display: none;
 }
 .nav__brand-sub {
   display: block;
