@@ -94,6 +94,7 @@ const Lightbox = (() => {
   let current = 0;
   let panelTimers = [];
   let backCallback = null;
+  let historyState = null;
 
   const lb = document.getElementById('lightbox');
   if (!lb) return {};
@@ -597,6 +598,12 @@ const Lightbox = (() => {
     document.body.style.overflow = 'hidden';
     if (backBtn && backCallback) backBtn.style.display = 'flex';
     buildInfoPanel(p);
+
+    // Push history state so browser back button closes lightbox
+    if (!historyState) {
+      historyState = { lightbox: true };
+      window.history.pushState(historyState, '', window.location.href);
+    }
   }
 
   function hide() {
@@ -605,6 +612,7 @@ const Lightbox = (() => {
     imgEl.src = '';
     if (backBtn) backBtn.style.display = 'none';
     backCallback = null;
+    historyState = null;
     clearPanelTimers();
   }
 
@@ -630,6 +638,17 @@ const Lightbox = (() => {
     if (e.key === 'Escape')      hide();
     if (e.key === 'ArrowLeft')   show(current - 1);
     if (e.key === 'ArrowRight')  show(current + 1);
+  });
+
+  // Handle system back button closing lightbox
+  window.addEventListener('popstate', (e) => {
+    if (lb.classList.contains('active')) {
+      if (backCallback) {
+        backCallback();
+      } else {
+        hide();
+      }
+    }
   });
 
   let touchStartX = 0;
