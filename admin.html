@@ -621,6 +621,21 @@
         <button onclick="window.applyStudioPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Apply Position Changes</button>
       </div>
 
+      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
+
+      <!-- Studio Album Arrangement Panel -->
+      <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
+        <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="window.toggleStudioAlbumOrderPanel(this)">
+          📋 Arrange Studio Albums (Click to expand/collapse)
+        </h4>
+        <div id="studioAlbumOrderPanel" style="display:none; padding:15px; background:#181818; border-radius:3px;">
+          <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Drag and drop to rearrange the order of Studio sessions</p>
+          <div id="studioAlbumGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">
+            <!-- Populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+
       <div class="items-list" id="studioList"></div>
     </div>
 
@@ -2491,6 +2506,8 @@
       `;
     }).join('');
     document.getElementById('studioList').innerHTML = html || '<p style="color:#666;">No studio sessions yet</p>';
+    // Also update the album order panel
+    window.displayStudioAlbumOrderPanel();
   };
 
   window.editStudio = async (id) => {
@@ -2542,6 +2559,114 @@
     if (confirm('Delete this studio session?')) {
       await deleteDoc(doc(db, 'studio', id));
       window.loadStudio();
+    }
+  };
+
+  // ─ Studio Album Reordering ─
+  window.toggleStudioAlbumOrderPanel = (header) => {
+    const panel = header.nextElementSibling;
+    if (panel) {
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      header.style.opacity = panel.style.display === 'none' ? '0.6' : '1';
+    }
+  };
+
+  window.displayStudioAlbumOrderPanel = async () => {
+    const snap = await getDocs(query(collection(db, 'studio'), orderBy('order', 'asc')));
+    const albums = snap.docs.map((doc, idx) => ({ id: doc.id, order: idx + 1, ...doc.data() }));
+
+    if (albums.length === 0) {
+      document.getElementById('studioAlbumGrid').innerHTML = '<p style="color:#666;">No studio albums yet</p>';
+      return;
+    }
+
+    let html = '';
+    albums.forEach((album, idx) => {
+      const cover = album.cosplayers?.[0]?.photos?.[0]?.src || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect fill="%23333" width="150" height="150"/%3E%3C/svg%3E';
+      html += `
+        <div draggable="true" ondragstart="window.dragStudioAlbumStart(event)" ondragover="window.dragStudioAlbumOver(event)" ondrop="window.dragStudioAlbumDrop(event, '${album.id}', ${idx})" ondragend="window.dragStudioAlbumEnd(event)" data-studio-album-id="${album.id}" data-album-index="${idx}" style="padding:10px; background:#0d0d0d; border:2px solid #333; border-radius:3px; cursor:grab; opacity:1; transition:all 0.2s; display:flex; flex-direction:column; text-align:center;">
+          <img src="${cover}" style="width:100%; height:120px; object-fit:cover; margin-bottom:8px; border-radius:2px;" alt="${album.name}" />
+          <div style="color:#fff; font-size:0.85rem; font-weight:bold; margin-bottom:4px; word-break:break-word;">${album.name}</div>
+          <div style="color:#666; font-size:0.75rem; margin-bottom:4px;">${album.date || 'N/A'}</div>
+          <div style="color:#999; font-size:0.7rem;">Position: #${idx + 1}</div>
+        </div>`;
+    });
+
+    document.getElementById('studioAlbumGrid').innerHTML = html;
+  };
+
+  let draggedStudioAlbum = null;
+
+  window.dragStudioAlbumStart = (e) => {
+    draggedStudioAlbum = e.target.closest('[data-studio-album-id]');
+    draggedStudioAlbum.style.opacity = '0.5';
+    draggedStudioAlbum.style.borderStyle = 'dashed';
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  window.dragStudioAlbumOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const album = e.target.closest('[data-studio-album-id]');
+    if (album && album !== draggedStudioAlbum) {
+      album.style.borderColor = '#c8a46e';
+      album.style.borderWidth = '2px';
+    }
+  };
+
+  window.dragStudioAlbumDrop = async (e, albumId, targetIdx) => {
+    e.preventDefault();
+    if (!draggedStudioAlbum) return;
+
+    const container = document.getElementById('studioAlbumGrid');
+    const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
+
+    const fromIdx = allAlbums.indexOf(draggedStudioAlbum);
+    if (fromIdx !== targetIdx && fromIdx >= 0 && targetIdx >= 0) {
+      // Reorder in DOM
+      const albumOrder = allAlbums.map((el, idx) => {
+        if (idx === targetIdx) return fromIdx < targetIdx ? allAlbums[(fromIdx + 1) % allAlbums.length].dataset.studioAlbumId : allAlbums[fromIdx].dataset.studioAlbumId;
+        if (idx === fromIdx) return allAlbums[targetIdx].dataset.studioAlbumId;
+        return el.dataset.studioAlbumId;
+      });
+
+      // Save new order to Firebase
+      window.saveStudioAlbumOrder();
+    }
+
+    draggedStudioAlbum.style.opacity = '1';
+    draggedStudioAlbum.style.borderStyle = 'solid';
+    draggedStudioAlbum = null;
+  };
+
+  window.dragStudioAlbumEnd = (e) => {
+    if (draggedStudioAlbum) {
+      draggedStudioAlbum.style.opacity = '1';
+      draggedStudioAlbum.style.borderStyle = 'solid';
+    }
+    document.querySelectorAll('[data-studio-album-id]').forEach(album => {
+      album.style.borderColor = '#333';
+      album.style.borderWidth = '2px';
+    });
+  };
+
+  window.saveStudioAlbumOrder = async () => {
+    try {
+      const container = document.getElementById('studioAlbumGrid');
+      const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
+
+      const updatePromises = allAlbums.map((albumEl, newIdx) => {
+        const albumId = albumEl.dataset.studioAlbumId;
+        return updateDoc(doc(db, 'studio', albumId), { order: newIdx + 1 });
+      });
+
+      await Promise.all(updatePromises);
+      console.log('✓ Studio album order updated');
+      await window.displayStudioAlbumOrderPanel();
+      await window.loadStudio();
+    } catch (err) {
+      console.error('Error saving studio album order:', err);
+      alert('Error: ' + err.message);
     }
   };
 
@@ -4045,6 +4170,7 @@
   // Load banner photo and setup event listeners on page load
   document.addEventListener('DOMContentLoaded', () => {
     window.loadBannerPhoto();
+    window.loadStudio();
 
     // ─ File upload ─
     const uploadFeaturedFiles = document.getElementById('uploadFeaturedFiles');
