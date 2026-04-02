@@ -186,10 +186,6 @@ ul { list-style: none; }
   cursor: pointer;
   max-width: 42vw;
   margin: var(--nav-height) auto 0;
-  left: auto;
-  right: auto;
-  padding: 0 40px;
-  box-sizing: border-box;
 }
 .hero__img {
   width: 100%; height: 100%;
@@ -344,10 +340,9 @@ ul { list-style: none; }
 /* ── Featured Section ──────────────────────────────────────── */
 .featured-section {
   position: relative;
-  padding: 0 40px 80px;
+  padding: 0 0 80px;
   margin: 0 auto;
   max-width: 42vw;
-  box-sizing: border-box;
 }
 
 /* Featured Banner */
@@ -428,6 +423,7 @@ ul { list-style: none; }
 /* Featured Grid */
 .featured-grid-wrapper {
   padding: 0 0 80px;
+  margin: 0;
 }
 @media (max-width: 768px) {
   .featured-grid-wrapper {
@@ -1960,7 +1956,7 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
 /* ── Footer ─────────────────────────────────────────────────── */
 footer {
   border-top: 1px solid var(--border);
-  padding: 40px 40px;
+  padding: 40px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1968,7 +1964,6 @@ footer {
   gap: 16px;
   max-width: 42vw;
   margin: 0 auto;
-  box-sizing: border-box;
 }
 .footer__brand {
   font-size: 0.75rem;
