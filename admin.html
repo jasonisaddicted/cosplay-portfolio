@@ -599,7 +599,7 @@
         <label>Description</label>
         <textarea id="studioDesc" placeholder="Session description..."></textarea>
       </div>
-      <button id="saveStudioBtn" onclick="saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
+      <button id="saveStudioBtn" onclick="window.saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
       <div id="studioMsg" style="margin-top:10px; font-size:0.85rem;"></div>
 
       <!-- Studio Photo Management Section -->
@@ -618,7 +618,7 @@
         <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (3 columns) — Edit position numbers and drag photos to reorder</p>
         <div id="studioPhotosList" style="margin-bottom:15px;"></div>
         <div id="studioPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
-        <button onclick="applyStudioPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Apply Position Changes</button>
+        <button onclick="window.applyStudioPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Apply Position Changes</button>
       </div>
 
       <div class="items-list" id="studioList"></div>
@@ -2050,11 +2050,11 @@
                 <div style="display:flex; gap:3px; align-items:center; margin-bottom:6px;">
                   <label style="margin:0; font-size:0.65rem; color:#999;">Pos:</label>
                   <input type="number" min="1" max="100" value="${photoIdx + 1}" data-original="${photoIdx + 1}" class="studioPhotoPosition" data-photo-id="studio_${id}_${cosplayerIdx}_${photoIdx}" style="width:40px; padding:3px; font-size:0.7rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
-                  <button class="studioPhotoApplyBtn" data-photo-id="studio_${id}_${cosplayerIdx}_${photoIdx}" onclick="applyStudioPhotoPositionChange('studio_${id}_${cosplayerIdx}_${photoIdx}')" style="padding:2px 6px; font-size:0.65rem; background:#555; color:#999; border:none; border-radius:2px; cursor:not-allowed;" disabled>✓</button>
+                  <button class="studioPhotoApplyBtn" data-photo-id="studio_${id}_${cosplayerIdx}_${photoIdx}" onclick="window.applyStudioPhotoPositionChange('studio_${id}_${cosplayerIdx}_${photoIdx}')" style="padding:2px 6px; font-size:0.65rem; background:#555; color:#999; border:none; border-radius:2px; cursor:not-allowed;" disabled>✓</button>
                 </div>
                 <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                  <button onclick="editStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="flex:1; padding:4px; font-size:0.7rem; background:#444; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
-                  <button onclick="deleteStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="flex:1; padding:4px; font-size:0.7rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete</button>
+                  <button onclick="window.editStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="flex:1; padding:4px; font-size:0.7rem; background:#444; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
+                  <button onclick="window.deleteStudioPhoto('${id}', ${cosplayerIdx}, ${photoIdx})" style="flex:1; padding:4px; font-size:0.7rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete</button>
                 </div>
               </div>`;
       });
@@ -2483,8 +2483,8 @@
               <div style="font-size:0.8rem; color:#666;">${d.date}</div>
             </div>
             <div class="item-actions">
-              <button onclick="editStudio('${doc.id}')">Edit</button>
-              <button onclick="deleteStudio('${doc.id}')">Delete</button>
+              <button onclick="window.editStudio('${doc.id}')">Edit</button>
+              <button onclick="window.deleteStudio('${doc.id}')">Delete</button>
             </div>
           </div>
         </div>
@@ -2507,7 +2507,7 @@
     // Show photo management section
     document.getElementById('studioPhotosSection').style.display = 'block';
     window.currentEditingStudioId = id;
-    displayStudioPhotos(id);
+    window.displayStudioPhotos(id);
   };
 
   window.updateStudio = async (id) => {
@@ -2529,8 +2529,8 @@
       document.getElementById('studioDate').value = '';
       document.getElementById('studioDesc').value = '';
       document.getElementById('saveStudioBtn').textContent = 'Create Studio Session';
-      document.getElementById('saveStudioBtn').onclick = saveStudio;
-      loadStudio();
+      document.getElementById('saveStudioBtn').onclick = window.saveStudio;
+      window.loadStudio();
       setTimeout(() => { document.getElementById('studioMsg').textContent = ''; }, 3000);
     } catch (err) {
       document.getElementById('studioMsg').textContent = 'Error: ' + err.message;
@@ -2541,7 +2541,7 @@
   window.deleteStudio = async (id) => {
     if (confirm('Delete this studio session?')) {
       await deleteDoc(doc(db, 'studio', id));
-      loadStudio();
+      window.loadStudio();
     }
   };
 
