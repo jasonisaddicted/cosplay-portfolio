@@ -64,6 +64,9 @@ ul { list-style: none; }
   justify-content: center;
   background: transparent;
   transition: background var(--transition), border-bottom var(--transition);
+  max-width: 1200px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .nav::before {
   content: '';
@@ -178,7 +181,7 @@ ul { list-style: none; }
   width: 100%;
   aspect-ratio: 4/3;  /* Landscape 4:3 */
   min-height: 250px;
-  max-height: calc(100vh - var(--nav-height) - 290px);
+  max-height: calc(100vh - var(--nav-height) - 683px);
   overflow: hidden;
   cursor: pointer;
   max-width: 1200px;
