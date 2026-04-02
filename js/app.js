@@ -1409,11 +1409,28 @@ function initEvents() {
 }
 
 // ── Page: Studio ─────────────────────────────────────────────
-function initStudio() {
+async function initStudio() {
   if (!document.body.classList.contains('page-studio')) return;
-  renderAlbumGrid(CONFIG.studio, document.getElementById('albums-grid'));
-  document.querySelector('.section-header__count').textContent =
-    `${CONFIG.studio.length} session${CONFIG.studio.length !== 1 ? 's' : ''}`;
+
+  try {
+    // Load studio albums from Firebase with current order
+    const snap = await getDocs(query(collection(db, 'studio'), orderBy('order', 'asc')));
+    const studioAlbums = snap.docs.map(doc => ({
+      id: doc.id,
+      order: doc.data().order || 0,
+      ...doc.data()
+    }));
+
+    renderAlbumGrid(studioAlbums, document.getElementById('albums-grid'));
+    document.querySelector('.section-header__count').textContent =
+      `${studioAlbums.length} session${studioAlbums.length !== 1 ? 's' : ''}`;
+  } catch (err) {
+    console.error('Error loading studio albums:', err);
+    // Fallback to CONFIG.studio if Firebase fails
+    renderAlbumGrid(CONFIG.studio, document.getElementById('albums-grid'));
+    document.querySelector('.section-header__count').textContent =
+      `${CONFIG.studio.length} session${CONFIG.studio.length !== 1 ? 's' : ''}`;
+  }
 }
 
 // ── Page: Outdoor ────────────────────────────────────────────
