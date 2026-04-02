@@ -2704,18 +2704,29 @@
       const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
       const debug = document.getElementById('studioAlbumDebug');
 
+      if (!allAlbums.length) {
+        console.error('❌ No albums found in grid!');
+        if (debug) debug.innerHTML = '❌ Error: No albums found!';
+        return;
+      }
+
       console.log('📍 Saving studio album order. Current DOM order:');
       let debugMsg = '📍 Saving: ';
       const updatePromises = allAlbums.map((albumEl, newIdx) => {
         const albumId = albumEl.dataset.studioAlbumId;
-        console.log(`  Position ${newIdx + 1}: ${albumId}`);
-        debugMsg += `#${newIdx + 1}: ${albumId.substring(0, 8)}... `;
-        return updateDoc(doc(db, 'studio', albumId), { order: newIdx + 1 });
+        const newOrder = newIdx + 1;
+        console.log(`  Position ${newOrder}: ${albumId}`);
+        debugMsg += `#${newOrder}: ${albumId.substring(0, 8)}... `;
+        return updateDoc(doc(db, 'studio', albumId), { order: newOrder })
+          .catch(err => {
+            console.error(`Failed to update album ${albumId}:`, err);
+            throw err;
+          });
       });
 
       if (debug) debug.innerHTML = debugMsg + '<br>Updating Firebase...';
-      await Promise.all(updatePromises);
-      console.log('✓ Studio album order saved to Firebase');
+      const results = await Promise.all(updatePromises);
+      console.log('✓ Studio album order saved to Firebase', results);
 
       if (debug) debug.innerHTML = debugMsg + '<br>✓ Saved! Refreshing...';
       // Refresh the display to show the new order
