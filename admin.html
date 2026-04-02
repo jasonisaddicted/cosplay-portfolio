@@ -415,7 +415,7 @@
       <div id="eventPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
         <!-- Cosplayers Order Panel -->
         <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleCoserOrderPanel(this)">
+          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="window.toggleCoserOrderPanel(this)">
             📋 Arrange & Edit Cosplayer Details (Click to expand/collapse)
           </h4>
           <div id="coserOrderList" style="display:none; padding:10px;">
@@ -523,7 +523,7 @@
       <div id="outdoorPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
         <!-- Cosplayers Order Panel -->
         <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleOutdoorCoserOrderPanel(this)">
+          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="window.toggleOutdoorCoserOrderPanel(this)">
             📋 Arrange & Edit Cosplayer Details (Click to expand/collapse)
           </h4>
           <div id="outdoorCoserOrderList" style="display:none; padding:10px;">
@@ -606,7 +606,7 @@
       <div id="studioPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
         <!-- Cosplayers Order Panel -->
         <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleCoserOrderPanel(this)">
+          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="window.toggleCoserOrderPanel(this)">
             📋 Arrange & Edit Cosplayer Details (Click to expand/collapse)
           </h4>
           <div id="studioCoserOrderList" style="display:none; padding:10px;">
@@ -676,7 +676,7 @@
       <div id="collabPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
         <!-- Cosplayers Order Panel -->
         <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="toggleCoserOrderPanel(this)">
+          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="window.toggleCoserOrderPanel(this)">
             📋 Arrange & Edit Cosplayer Details (Click to expand/collapse)
           </h4>
           <div id="collabCoserOrderList" style="display:none; padding:10px;">
@@ -1637,14 +1637,14 @@
     });
 
     // Display cosplayer order panel
-    displayCoserOrderPanel(id, Object.keys(grouped));
+    window.displayCoserOrderPanel(id, Object.keys(grouped));
 
     // Build HTML for grouped photos in grid layout
     let html = '';
     Object.entries(grouped).forEach(([handle, coserPhotos]) => {
       html += `
         <div style="margin-bottom:30px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="toggleCoserPhotosGroup(this)">
+          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="window.toggleCoserPhotosGroup(this)">
             ${handle} (${coserPhotos.length} photos) — Click to expand/collapse
           </h4>
           <div class="coser-photos-group" style="display:block; padding:10px;">
@@ -2028,14 +2028,14 @@
     const cosplayers = session.cosplayers || [];
 
     // Display cosplayer order panel
-    displayStudioCoserOrderPanel(id, cosplayers);
+    window.displayStudioCoserOrderPanel(id, cosplayers);
 
     let html = '';
     cosplayers.forEach((coser, cosplayerIdx) => {
       const photos = coser.photos || [];
       html += `
         <div style="margin-bottom:30px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="toggleCoserPhotosGroup(this)">
+          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="window.toggleCoserPhotosGroup(this)">
             ${coser.handle} (${photos.length} photos) — Click to expand/collapse
           </h4>
           <div class="coser-photos-group" style="display:block; padding:10px;">
@@ -2931,14 +2931,14 @@
     });
 
     // Display cosplayer order panel
-    displayOutdoorCoserOrderPanel(id, Object.keys(grouped));
+    window.displayOutdoorCoserOrderPanel(id, Object.keys(grouped));
 
     // Build HTML for grouped photos in grid layout
     let html = '';
     Object.entries(grouped).forEach(([handle, coserPhotos]) => {
       html += `
         <div style="margin-bottom:30px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="toggleCoserPhotosGroup(this)">
+          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="window.toggleCoserPhotosGroup(this)">
             ${handle} (${coserPhotos.length} photos) — Click to expand/collapse
           </h4>
           <div class="coser-photos-group" style="display:block; padding:10px;">
@@ -3257,13 +3257,13 @@
     });
 
     // Display cosplayer order panel
-    displayCollabCoserOrderPanel(id, Object.keys(grouped));
+    window.displayCollabCoserOrderPanel(id, Object.keys(grouped));
 
     let html = '';
     Object.entries(grouped).forEach(([handle, coserPhotos]) => {
       html += `
         <div style="margin-bottom:30px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="toggleCoserPhotosGroup(this)">
+          <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="window.toggleCoserPhotosGroup(this)">
             ${handle} (${coserPhotos.length} photos) — Click to expand/collapse
           </h4>
           <div class="coser-photos-group" style="display:block; padding:10px;">
@@ -3669,6 +3669,26 @@
     document.getElementById('uploadCollabBatch').classList.remove('dragging');
     if (e.dataTransfer.files.length) {
       document.getElementById('uploadCollabFiles').files = e.dataTransfer.files;
+    }
+  });
+
+  // Batch upload drag & drop - Outdoor
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+    document.getElementById('uploadOutdoorBatch').addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+  document.getElementById('uploadOutdoorBatch').addEventListener('dragover', () => {
+    document.getElementById('uploadOutdoorBatch').classList.add('dragging');
+  });
+  document.getElementById('uploadOutdoorBatch').addEventListener('dragleave', () => {
+    document.getElementById('uploadOutdoorBatch').classList.remove('dragging');
+  });
+  document.getElementById('uploadOutdoorBatch').addEventListener('drop', (e) => {
+    document.getElementById('uploadOutdoorBatch').classList.remove('dragging');
+    if (e.dataTransfer.files.length) {
+      document.getElementById('uploadOutdoorFiles').files = e.dataTransfer.files;
     }
   });
 
