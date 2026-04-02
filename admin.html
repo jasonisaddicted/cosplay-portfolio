@@ -288,66 +288,6 @@
       </div>
 
       <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
-
-      <h3 style="margin-bottom:15px;">Or Add Single Pick</h3>
-      <div class="grid grid-full">
-        <div>
-          <div class="form-group">
-            <label>Upload Photo</label>
-            <div class="upload-area" id="uploadFeatured" onclick="document.getElementById('uploadFeaturFile').click()">
-              <p>Click or drag to upload</p>
-              <input type="file" id="uploadFeaturFile" accept="image/*" style="display:none;">
-            </div>
-            <div class="upload-progress" id="uploadFeatureStatus"></div>
-          </div>
-          <div class="form-group">
-            <label>Photo URL</label>
-            <input type="text" id="featuredSrc" placeholder="https://...">
-          </div>
-          <div class="form-group">
-            <label>Character Name</label>
-            <input type="text" id="featuredChar" placeholder="e.g., Hu Tao">
-          </div>
-          <div class="form-group">
-            <label>Series</label>
-            <input type="text" id="featuredSeries" placeholder="e.g., Genshin Impact">
-          </div>
-          <div class="form-group">
-            <label>Cosplayer Handle</label>
-            <input type="text" id="featuredCredit" placeholder="e.g., @sakurahime_cos">
-          </div>
-          <div class="form-group">
-            <label>Caption (Optional)</label>
-            <input type="text" id="featuredCaption" placeholder="e.g., Photo shoot details">
-          </div>
-          <div class="form-group">
-            <label>Order (priority)</label>
-            <input type="number" id="featuredOrder" placeholder="1" value="1">
-          </div>
-          <div class="form-group">
-            <label>Crop Position (for portrait images)</label>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <label style="flex:1; min-width:80px; display:flex; align-items:center; padding:8px; background:#0d0d0d; border:1px solid #333; border-radius:3px; cursor:pointer;">
-                <input type="radio" name="featuredCropPos" value="top" style="margin-right:5px;">
-                <span>Top</span>
-              </label>
-              <label style="flex:1; min-width:80px; display:flex; align-items:center; padding:8px; background:#0d0d0d; border:1px solid #333; border-radius:3px; cursor:pointer;">
-                <input type="radio" name="featuredCropPos" value="center" checked style="margin-right:5px;">
-                <span>Center</span>
-              </label>
-              <label style="flex:1; min-width:80px; display:flex; align-items:center; padding:8px; background:#0d0d0d; border:1px solid #333; border-radius:3px; cursor:pointer;">
-                <input type="radio" name="featuredCropPos" value="bottom" style="margin-right:5px;">
-                <span>Bottom</span>
-              </label>
-            </div>
-            <div style="font-size:0.75rem; color:#666; margin-top:5px;">Shows where to crop portrait images on desktop</div>
-          </div>
-          <button onclick="saveFeatured()" style="width:100%;">Save Featured Pick</button>
-          <div id="featureMsg" style="margin-top:10px; font-size:0.85rem;"></div>
-        </div>
-      </div>
-
-      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
       <h3 style="margin-bottom:15px;">Current Featured Picks</h3>
       <div class="items-list" id="featuredList"></div>
 
@@ -487,37 +427,6 @@
         <div id="eventPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
         <button onclick="applyEventPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
 
-        <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
-
-        <!-- Add More Photos Section -->
-        <h3 style="margin-bottom:15px;">Add More Photos to This Event</h3>
-        <div style="background:#181818; border:1px solid #2e2e2e; padding:20px;">
-          <div class="form-group">
-            <label>Drop photos here</label>
-            <div class="upload-area" id="uploadMoreEventPhotos" onclick="document.getElementById('addMoreEventFiles').click()" style="border:2px dashed #2e2e2e; padding:30px; text-align:center; cursor:pointer; margin-bottom:20px;">
-              <p>Click or drag multiple photos</p>
-              <input type="file" id="addMoreEventFiles" accept="image/*" multiple style="display:none;">
-            </div>
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Cosplayer Handle</label>
-            <input type="text" id="addMoreHandle" placeholder="@handle">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Character</label>
-            <input type="text" id="addMoreCharacter" placeholder="Character name">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Series</label>
-            <input type="text" id="addMoreSeries" placeholder="Series name">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Caption (Optional)</label>
-            <input type="text" id="addMoreCaption" placeholder="Photo shoot details">
-          </div>
-          <button onclick="addPhotosToEvent()" style="max-width:400px; width:100%;">Upload & Add Photos</button>
-          <div id="addMoreEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
-        </div>
       </div>
 
       <div class="items-list" id="eventsList"></div>
@@ -564,24 +473,6 @@
         <button onclick="saveBatchStudio()" style="width:100%;">Upload & Create Session</button>
         <div id="batchMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
-
-      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
-
-      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
-      <div class="form-group" style="max-width:400px;">
-        <label>Session Name</label>
-        <input type="text" id="studioName" placeholder="e.g., Genshin Impact Session">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Date</label>
-        <input type="text" id="studioDate" placeholder="e.g., January 2025">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Description</label>
-        <textarea id="studioDesc" placeholder="Session description..."></textarea>
-      </div>
-      <button id="saveStudioBtn" onclick="saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
-      <div id="studioMsg" style="margin-top:10px; font-size:0.85rem;"></div>
 
       <!-- Studio Photo Management Section -->
       <div id="studioPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
