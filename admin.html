@@ -1037,6 +1037,10 @@
       const display = document.getElementById('bannerDisplay');
 
       if (banner && banner.src) {
+        let descriptionHTML = '';
+        if (banner.description) {
+          descriptionHTML = `<div style="font-size:0.85rem; color:#999; margin-bottom:12px; padding-top:12px; border-top:1px solid #444; line-height:1.5;">${banner.description}</div>`;
+        }
 
         display.innerHTML = `
           <div style="position:relative; max-width:100%;">
@@ -1045,6 +1049,7 @@
               <div style="font-weight:bold; margin-bottom:5px;">${banner.character}</div>
               <div style="font-size:0.9rem; color:#aaa; margin-bottom:8px;">${banner.series}</div>
               <div style="font-size:0.85rem; color:#888; margin-bottom:12px;">@${banner.coser}</div>
+              ${descriptionHTML}
               <div style="display:flex; gap:8px; margin-top:12px;">
                 <button onclick="openBannerEditModal()" style="padding:6px 12px; background:#4CAF50; color:#fff; border:none; cursor:pointer; font-size:0.85rem; font-weight:bold;">Edit</button>
                 <button onclick="deleteBannerPhoto()" style="padding:6px 12px; background:#c74545; color:#fff; border:none; cursor:pointer; font-size:0.85rem; font-weight:bold;">Delete</button>
