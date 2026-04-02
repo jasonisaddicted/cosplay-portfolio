@@ -308,7 +308,7 @@ ul { list-style: none; }
 
 /* ── Section Header ─────────────────────────────────────────── */
 .section-header {
-  padding: 64px 40px 32px;
+  padding: 24px 40px 12px;
   display: flex;
   align-items: baseline;
   gap: 20px;
