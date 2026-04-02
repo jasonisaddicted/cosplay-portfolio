@@ -2628,18 +2628,14 @@
 
     const container = document.getElementById('studioAlbumGrid');
     const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
+    const targetAlbum = container.querySelector(`[data-studio-album-id="${albumId}"]`);
 
-    const fromIdx = allAlbums.indexOf(draggedStudioAlbum);
-    if (fromIdx !== targetIdx && fromIdx >= 0 && targetIdx >= 0) {
-      // Reorder in DOM
-      const albumOrder = allAlbums.map((el, idx) => {
-        if (idx === targetIdx) return fromIdx < targetIdx ? allAlbums[(fromIdx + 1) % allAlbums.length].dataset.studioAlbumId : allAlbums[fromIdx].dataset.studioAlbumId;
-        if (idx === fromIdx) return allAlbums[targetIdx].dataset.studioAlbumId;
-        return el.dataset.studioAlbumId;
-      });
+    if (draggedStudioAlbum !== targetAlbum && targetAlbum) {
+      // Reorder: insert dragged element before target
+      targetAlbum.parentNode.insertBefore(draggedStudioAlbum, targetAlbum);
 
       // Save new order to Firebase
-      window.saveStudioAlbumOrder();
+      await window.saveStudioAlbumOrder();
     }
 
     draggedStudioAlbum.style.opacity = '1';
