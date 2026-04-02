@@ -181,7 +181,7 @@ ul { list-style: none; }
   width: 100%;
   aspect-ratio: 4/3;  /* Landscape 4:3 */
   min-height: 250px;
-  max-height: calc(100vh - var(--nav-height) - 160px - 18.67vw);
+  max-height: calc(100vh - var(--nav-height) - 120px - 18.67vw);
   overflow: hidden;
   cursor: pointer;
   max-width: 42vw;
