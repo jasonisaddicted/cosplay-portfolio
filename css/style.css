@@ -85,7 +85,7 @@ ul { list-style: none; }
 }
 .nav__brand {
   margin-right: auto;
-  padding-left: 40px;
+  padding-left: 0;
 }
 .nav__hamburger,
 .nav__links {
