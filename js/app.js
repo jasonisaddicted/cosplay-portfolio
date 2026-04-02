@@ -1417,11 +1417,28 @@ function initStudio() {
 }
 
 // ── Page: Outdoor ────────────────────────────────────────────
-function initOutdoor() {
+async function initOutdoor() {
   if (!document.body.classList.contains('page-outdoor')) return;
-  renderAlbumGrid(CONFIG.outdoor, document.getElementById('albums-grid'));
-  document.querySelector('.section-header__count').textContent =
-    `${CONFIG.outdoor.length} session${CONFIG.outdoor.length !== 1 ? 's' : ''}`;
+
+  try {
+    // Load outdoor albums from Firebase
+    const snap = await getDocs(query(collection(db, 'outdoor'), orderBy('order', 'asc')));
+    const outdoorAlbums = snap.docs.map(doc => ({
+      id: doc.id,
+      order: doc.data().order || 0,
+      ...doc.data()
+    }));
+
+    renderAlbumGrid(outdoorAlbums, document.getElementById('albums-grid'));
+    document.querySelector('.section-header__count').textContent =
+      `${outdoorAlbums.length} session${outdoorAlbums.length !== 1 ? 's' : ''}`;
+  } catch (err) {
+    console.error('Error loading outdoor albums:', err);
+    // Fallback to CONFIG.outdoor if Firebase fails
+    renderAlbumGrid(CONFIG.outdoor, document.getElementById('albums-grid'));
+    document.querySelector('.section-header__count').textContent =
+      `${CONFIG.outdoor.length} session${CONFIG.outdoor.length !== 1 ? 's' : ''}`;
+  }
 }
 
 // ── Helper: total photo count for an album ────────────────────
@@ -1510,24 +1527,37 @@ function renderAlbumGrid(albums, container) {
 }
 
 // ── Page: Album ───────────────────────────────────────────────
-function initAlbum() {
+async function initAlbum() {
   if (!document.body.classList.contains('page-album')) return;
 
   const params = new URLSearchParams(window.location.search);
   const id     = params.get('id');
   const type   = params.get('type');
 
-  let collection;
-  if (type === 'studio') {
-    collection = CONFIG.studio;
-  } else if (type === 'outdoor') {
-    collection = CONFIG.outdoor;
+  let album;
+
+  // Load from Firebase for dynamic sections
+  if (type === 'outdoor') {
+    try {
+      const docSnap = await getDoc(doc(db, 'outdoor', id));
+      album = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+    } catch (err) {
+      console.error('Error loading outdoor album:', err);
+      album = CONFIG.outdoor?.find(a => a.id === id);
+    }
+  } else if (type === 'studio') {
+    try {
+      const docSnap = await getDoc(doc(db, 'studio', id));
+      album = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+    } catch (err) {
+      console.error('Error loading studio album:', err);
+      album = CONFIG.studio?.find(a => a.id === id);
+    }
   } else if (type === 'collab') {
-    collection = CONFIG.collaborators;
+    album = CONFIG.collaborators?.find(a => a.id === id);
   } else {
-    collection = CONFIG.events;
+    album = CONFIG.events?.find(a => a.id === id);
   }
-  const album = collection.find(a => a.id === id);
 
   const titleEl   = document.getElementById('album-title');
   const metaEl    = document.getElementById('album-meta');
