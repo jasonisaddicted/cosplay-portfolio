@@ -3009,8 +3009,12 @@
     }
 
     try {
+      // Get the current highest order to set the new one
+      const existingDocs = await getDocs(collection(db, 'outdoor'));
+      const maxOrder = existingDocs.docs.reduce((max, d) => Math.max(max, d.data().order || 0), 0);
+
       await addDoc(collection(db, 'outdoor'), {
-        name, date, location, description, photos: [], cosplayers: []
+        name, date, location, description, order: maxOrder + 1, photos: [], cosplayers: []
       });
       document.getElementById('outdoorMsg').textContent = '✓ Outdoor session created!';
       document.getElementById('outdoorMsg').className = 'success';
@@ -3260,11 +3264,16 @@
         return;
       }
 
+      // Get the current highest order to set the new one
+      const existingDocs = await getDocs(collection(db, 'outdoor'));
+      const maxOrder = existingDocs.docs.reduce((max, d) => Math.max(max, d.data().order || 0), 0);
+
       const newSessionRef = await addDoc(collection(db, 'outdoor'), {
         name: sessionName,
         date: sessionDate,
         location: sessionLoc,
         description: sessionDesc,
+        order: maxOrder + 1,
         photos: [],
         cosplayers: []
       });
@@ -4232,6 +4241,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     window.loadBannerPhoto();
     window.loadStudio();
+    window.loadOutdoor();
 
     // ─ File upload ─
     const uploadFeaturedFiles = document.getElementById('uploadFeaturedFiles');
