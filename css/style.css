@@ -61,10 +61,32 @@ ul { list-style: none; }
   height: var(--nav-height);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 40px;
+  justify-content: center;
   background: transparent;
   transition: background var(--transition), border-bottom var(--transition);
+}
+.nav::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px;
+  height: 100%;
+  pointer-events: none;
+}
+.nav__brand,
+.nav__hamburger,
+.nav__links {
+  position: relative;
+  z-index: 1;
+}
+.nav__brand {
+  margin-right: auto;
+  padding-left: 40px;
+}
+.nav__hamburger,
+.nav__links {
+  padding-right: 40px;
 }
 .nav.scrolled {
   background: rgba(18, 18, 18, 0.97);
@@ -154,9 +176,9 @@ ul { list-style: none; }
 .hero {
   position: relative;
   width: 100%;
-  aspect-ratio: 4/3;  /* Landscape */
-  min-height: 300px;
-  max-height: 60vh;
+  aspect-ratio: 16/9;  /* Ultra-landscape for viewport fit */
+  min-height: 250px;
+  max-height: 45vh;
   overflow: hidden;
   cursor: pointer;
   max-width: 1200px;
