@@ -471,7 +471,7 @@ ul { list-style: none; }
 @media (max-width: 1024px) {
   .featured-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 2px;
     overflow-x: visible;
     padding: 0 12px 8px;
   }
