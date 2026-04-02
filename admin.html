@@ -3549,7 +3549,7 @@
   };
 
   // ─ File upload ─
-  document.getElementById('uploadFeaturFile').addEventListener('change', async (e) => {
+  document.getElementById('uploadFeaturedFiles').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -3587,8 +3587,8 @@
     document.getElementById('uploadFeatured').classList.remove('dragging');
     const file = e.dataTransfer.files[0];
     if (file) {
-      document.getElementById('uploadFeaturFile').files = e.dataTransfer.files;
-      document.getElementById('uploadFeaturFile').dispatchEvent(new Event('change', { bubbles: true }));
+      document.getElementById('uploadFeaturedFiles').files = e.dataTransfer.files;
+      document.getElementById('uploadFeaturedFiles').dispatchEvent(new Event('change', { bubbles: true }));
     }
   });
 
