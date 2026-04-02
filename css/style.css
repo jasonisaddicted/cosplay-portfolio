@@ -1219,6 +1219,8 @@ ul { list-style: none; }
   pointer-events: none;
   transition: opacity 0.3s ease;
   visibility: hidden;
+  flex-direction: row;
+  gap: 0;
 }
 .lightbox.active {
   opacity: 1;
@@ -1227,15 +1229,14 @@ ul { list-style: none; }
 }
 .lightbox__inner {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: padding-right 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
               padding-bottom 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
-  max-width: 90vw;
-  margin: 0 auto;
+  max-width: calc(65vw + 352px + 40px);
 }
 .lightbox__img-wrap {
   max-width: 65vw;
@@ -1254,9 +1255,9 @@ ul { list-style: none; }
    Fully data-driven from CONFIG — add/edit cosers in config.js only.
    ─────────────────────────────────────────────────────────────── */
 .lightbox__info-panel {
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
+  position: relative;
   width: 352px;
+  height: 100vh;
   background: rgba(14, 14, 14, 0.98);
   border-left: 1px solid var(--border);
   transform: translateX(110%);
@@ -1266,20 +1267,21 @@ ul { list-style: none; }
   z-index: 10;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  flex-shrink: 0;
 }
 .lightbox.panel-open .lightbox__info-panel {
   transform: translateX(0);
 }
 /* Shift image area left to make room for panel */
 .lightbox.panel-open .lightbox__inner {
-  padding-right: 352px;
+  padding-right: 0;
 }
 .lightbox.panel-open .lightbox__img-wrap,
 .lightbox.panel-open .lightbox__img-wrap img {
-  max-width: calc(65vw - 20px);
+  max-width: 65vw;
 }
 /* Move next arrow away from panel */
-.lightbox.panel-open .lightbox__next { right: 372px; }
+.lightbox.panel-open .lightbox__next { right: 20px; }
 
 /* ── Panel internals ───────────────────────────────────────── */
 .info-panel__scroll {
