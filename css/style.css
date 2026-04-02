@@ -57,15 +57,18 @@ ul { list-style: none; }
 .nav {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 100;
   height: var(--nav-height);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   background: transparent;
   transition: background var(--transition), border-bottom var(--transition);
+  width: 100vw;
+  max-width: clamp(280px, 90vw, 55vw);
+  padding: 0 40px;
 }
 .nav::before {
   content: '';
@@ -84,12 +87,12 @@ ul { list-style: none; }
   z-index: 1;
 }
 .nav__brand {
-  margin-right: auto;
+  margin-right: 0;
   padding-left: 0;
 }
 .nav__hamburger,
 .nav__links {
-  padding-right: 40px;
+  padding-right: 0;
 }
 .nav.scrolled {
   background: rgba(18, 18, 18, 0.97);
