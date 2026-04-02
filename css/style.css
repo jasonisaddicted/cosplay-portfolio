@@ -154,8 +154,8 @@ ul { list-style: none; }
 .hero {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;  /* Desktop: landscape */
-  min-height: 480px;
+  aspect-ratio: 4/3;  /* Desktop: landscape 4:3 */
+  min-height: 400px;
   max-height: 90vh;
   overflow: hidden;
   cursor: pointer;
@@ -392,22 +392,28 @@ ul { list-style: none; }
 /* Featured Grid */
 .featured-grid-wrapper {
   padding: 0 40px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 @media (max-width: 768px) {
   .featured-grid-wrapper {
     padding: 0 10px 40px;
+    max-width: 100%;
   }
 }
 
 .featured-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 @media (max-width: 768px) {
   .featured-grid {
     grid-template-columns: 1fr;
     gap: 10px;
+    overflow-x: visible;
   }
 }
 
