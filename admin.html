@@ -3548,155 +3548,6 @@
     }
   };
 
-  // ─ File upload ─
-  try {
-    document.getElementById('uploadFeaturedFiles').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const status = document.getElementById('uploadFeatureStatus');
-    status.textContent = 'Uploading...';
-
-    try {
-      const storageRef = ref(storage, `photos/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      document.getElementById('featuredSrc').value = url;
-      status.textContent = '✓ Uploaded!';
-      status.className = 'success';
-      setTimeout(() => { status.textContent = ''; }, 2000);
-    } catch (err) {
-      status.textContent = 'Upload failed: ' + err.message;
-      status.className = 'error';
-    }
-  });
-
-  // ─ Drag & drop ─
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    document.getElementById('uploadFeatured').addEventListener(evt, e => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
-  });
-  document.getElementById('uploadFeatured').addEventListener('dragover', () => {
-    document.getElementById('uploadFeatured').classList.add('dragging');
-  });
-  document.getElementById('uploadFeatured').addEventListener('dragleave', () => {
-    document.getElementById('uploadFeatured').classList.remove('dragging');
-  });
-  document.getElementById('uploadFeatured').addEventListener('drop', (e) => {
-    document.getElementById('uploadFeatured').classList.remove('dragging');
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      document.getElementById('uploadFeaturedFiles').files = e.dataTransfer.files;
-      document.getElementById('uploadFeaturedFiles').dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  });
-
-  // Batch upload drag & drop - Studio
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    document.getElementById('uploadStudioBatch').addEventListener(evt, e => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
-  });
-  document.getElementById('uploadStudioBatch').addEventListener('dragover', () => {
-    document.getElementById('uploadStudioBatch').classList.add('dragging');
-  });
-  document.getElementById('uploadStudioBatch').addEventListener('dragleave', () => {
-    document.getElementById('uploadStudioBatch').classList.remove('dragging');
-  });
-  document.getElementById('uploadStudioBatch').addEventListener('drop', (e) => {
-    document.getElementById('uploadStudioBatch').classList.remove('dragging');
-    if (e.dataTransfer.files.length) {
-      document.getElementById('uploadStudioFiles').files = e.dataTransfer.files;
-    }
-  });
-
-  // Batch upload drag & drop - Featured
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    document.getElementById('uploadFeaturedBatch').addEventListener(evt, e => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
-  });
-  document.getElementById('uploadFeaturedBatch').addEventListener('dragover', () => {
-    document.getElementById('uploadFeaturedBatch').classList.add('dragging');
-  });
-  document.getElementById('uploadFeaturedBatch').addEventListener('dragleave', () => {
-    document.getElementById('uploadFeaturedBatch').classList.remove('dragging');
-  });
-  document.getElementById('uploadFeaturedBatch').addEventListener('drop', (e) => {
-    document.getElementById('uploadFeaturedBatch').classList.remove('dragging');
-    if (e.dataTransfer.files.length) {
-      document.getElementById('uploadFeaturedFiles').files = e.dataTransfer.files;
-    }
-  });
-
-  // Batch upload drag & drop - Events
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    document.getElementById('uploadEventBatch').addEventListener(evt, e => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
-  });
-  document.getElementById('uploadEventBatch').addEventListener('dragover', () => {
-    document.getElementById('uploadEventBatch').classList.add('dragging');
-  });
-  document.getElementById('uploadEventBatch').addEventListener('dragleave', () => {
-    document.getElementById('uploadEventBatch').classList.remove('dragging');
-  });
-  document.getElementById('uploadEventBatch').addEventListener('drop', (e) => {
-    document.getElementById('uploadEventBatch').classList.remove('dragging');
-    if (e.dataTransfer.files.length) {
-      document.getElementById('uploadEventFiles').files = e.dataTransfer.files;
-    }
-  });
-
-  // Batch upload drag & drop - Collabs
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    document.getElementById('uploadCollabBatch').addEventListener(evt, e => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
-  });
-  document.getElementById('uploadCollabBatch').addEventListener('dragover', () => {
-    document.getElementById('uploadCollabBatch').classList.add('dragging');
-  });
-  document.getElementById('uploadCollabBatch').addEventListener('dragleave', () => {
-    document.getElementById('uploadCollabBatch').classList.remove('dragging');
-  });
-  document.getElementById('uploadCollabBatch').addEventListener('drop', (e) => {
-    document.getElementById('uploadCollabBatch').classList.remove('dragging');
-    if (e.dataTransfer.files.length) {
-      document.getElementById('uploadCollabFiles').files = e.dataTransfer.files;
-    }
-  });
-
-  // Batch upload drag & drop - Outdoor
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    document.getElementById('uploadOutdoorBatch').addEventListener(evt, e => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
-  });
-  document.getElementById('uploadOutdoorBatch').addEventListener('dragover', () => {
-    document.getElementById('uploadOutdoorBatch').classList.add('dragging');
-  });
-  document.getElementById('uploadOutdoorBatch').addEventListener('dragleave', () => {
-    document.getElementById('uploadOutdoorBatch').classList.remove('dragging');
-  });
-  document.getElementById('uploadOutdoorBatch').addEventListener('drop', (e) => {
-    document.getElementById('uploadOutdoorBatch').classList.remove('dragging');
-    if (e.dataTransfer.files.length) {
-      document.getElementById('uploadOutdoorFiles').files = e.dataTransfer.files;
-    }
-  });
-  } catch (err) {
-    console.error('Error setting up event listeners:', err);
-  }
-
-
   // ─ Banner Photo Edit Modal ─
   window.openBannerEditModal = async () => {
     const configDoc = await getDoc(doc(db, 'site', 'config'));
@@ -3720,6 +3571,7 @@
   window.closeBannerEditModal = () => {
     document.getElementById('bannerEditModal').style.display = 'none';
   };
+
 
   window.saveBannerEdit = async () => {
     const character = document.getElementById('editBannerChar').value.trim();
@@ -4190,9 +4042,76 @@
     }
   };
 
-  // Load banner photo on page load
+  // Load banner photo and setup event listeners on page load
   document.addEventListener('DOMContentLoaded', () => {
-    loadBannerPhoto();
+    window.loadBannerPhoto();
+
+    // ─ File upload ─
+    const uploadFeaturedFiles = document.getElementById('uploadFeaturedFiles');
+    if (uploadFeaturedFiles) {
+      uploadFeaturedFiles.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const status = document.getElementById('uploadFeatureStatus');
+        status.textContent = 'Uploading...';
+
+        try {
+          const storageRef = ref(storage, `photos/${Date.now()}_${file.name}`);
+          await uploadBytes(storageRef, file);
+          const url = await getDownloadURL(storageRef);
+          document.getElementById('featuredSrc').value = url;
+          status.textContent = '✓ Uploaded!';
+          status.className = 'success';
+          setTimeout(() => { status.textContent = ''; }, 2000);
+        } catch (err) {
+          status.textContent = 'Upload failed: ' + err.message;
+          status.className = 'error';
+        }
+      });
+    }
+
+    // ─ Drag & drop ─
+    const uploadAreas = [
+      { id: 'uploadFeatured', fileInputId: 'uploadFeaturedFiles' },
+      { id: 'uploadStudioBatch', fileInputId: 'uploadStudioFiles' },
+      { id: 'uploadFeaturedBatch', fileInputId: 'uploadFeaturedFiles' },
+      { id: 'uploadEventBatch', fileInputId: 'uploadEventFiles' },
+      { id: 'uploadCollabBatch', fileInputId: 'uploadCollabFiles' },
+      { id: 'uploadOutdoorBatch', fileInputId: 'uploadOutdoorFiles' }
+    ];
+
+    uploadAreas.forEach(area => {
+      const uploadArea = document.getElementById(area.id);
+      const fileInput = document.getElementById(area.fileInputId);
+
+      if (uploadArea && fileInput) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+          uploadArea.addEventListener(evt, e => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        });
+
+        uploadArea.addEventListener('dragover', () => {
+          uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+          uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+          uploadArea.classList.remove('dragging');
+          if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            if (area.fileInputId === 'uploadFeaturedFiles' && area.id === 'uploadFeatured') {
+              fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
+        });
+      }
+    });
   });
 
 </script>
