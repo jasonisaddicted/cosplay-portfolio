@@ -2607,9 +2607,12 @@
 
   window.dragStudioAlbumStart = (e) => {
     draggedStudioAlbum = e.target.closest('[data-studio-album-id]');
-    draggedStudioAlbum.style.opacity = '0.5';
-    draggedStudioAlbum.style.borderStyle = 'dashed';
-    e.dataTransfer.effectAllowed = 'move';
+    if (draggedStudioAlbum) {
+      console.log('🎬 Dragging studio album:', draggedStudioAlbum.dataset.studioAlbumId);
+      draggedStudioAlbum.style.opacity = '0.5';
+      draggedStudioAlbum.style.borderStyle = 'dashed';
+      e.dataTransfer.effectAllowed = 'move';
+    }
   };
 
   window.dragStudioAlbumOver = (e) => {
@@ -2628,14 +2631,36 @@
 
     const container = document.getElementById('studioAlbumGrid');
     const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
+    const draggedIdx = allAlbums.indexOf(draggedStudioAlbum);
     const targetAlbum = container.querySelector(`[data-studio-album-id="${albumId}"]`);
 
-    if (draggedStudioAlbum !== targetAlbum && targetAlbum) {
-      // Reorder: insert dragged element before target
-      targetAlbum.parentNode.insertBefore(draggedStudioAlbum, targetAlbum);
+    console.log(`📤 Drop detected: dragged=${draggedStudioAlbum.dataset.studioAlbumId}, target=${albumId}, draggedIdx=${draggedIdx}, targetIdx=${targetIdx}`);
 
+    if (draggedStudioAlbum !== targetAlbum && targetAlbum !== null && draggedIdx !== -1) {
+      // Get the actual current target index in the DOM
+      const currentTargetIdx = allAlbums.indexOf(targetAlbum);
+      console.log(`   Actual indices: draggedIdx=${draggedIdx}, currentTargetIdx=${currentTargetIdx}`);
+
+      // Reorder the elements in DOM
+      if (draggedIdx < currentTargetIdx) {
+        // Moving down: insert after target
+        console.log('   → Moving DOWN (inserting after target)');
+        if (targetAlbum.nextSibling) {
+          container.insertBefore(draggedStudioAlbum, targetAlbum.nextSibling);
+        } else {
+          container.appendChild(draggedStudioAlbum);
+        }
+      } else {
+        // Moving up: insert before target
+        console.log('   → Moving UP (inserting before target)');
+        container.insertBefore(draggedStudioAlbum, targetAlbum);
+      }
+
+      console.log('   ✓ DOM reordered, saving to Firebase...');
       // Save new order to Firebase
       await window.saveStudioAlbumOrder();
+    } else {
+      console.log('   ⚠ Drop cancelled: same element or target not found');
     }
 
     draggedStudioAlbum.style.opacity = '1';
@@ -2659,13 +2684,17 @@
       const container = document.getElementById('studioAlbumGrid');
       const allAlbums = Array.from(container.querySelectorAll('[data-studio-album-id]'));
 
+      console.log('📍 Saving studio album order. Current DOM order:');
       const updatePromises = allAlbums.map((albumEl, newIdx) => {
         const albumId = albumEl.dataset.studioAlbumId;
+        console.log(`  Position ${newIdx + 1}: ${albumId}`);
         return updateDoc(doc(db, 'studio', albumId), { order: newIdx + 1 });
       });
 
       await Promise.all(updatePromises);
-      console.log('✓ Studio album order updated');
+      console.log('✓ Studio album order saved to Firebase');
+
+      // Refresh the display to show the new order
       await window.displayStudioAlbumOrderPanel();
       await window.loadStudio();
     } catch (err) {
