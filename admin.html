@@ -169,6 +169,17 @@
     @media (max-width: 600px) {
       .event-photo-grid { grid-template-columns: repeat(2, 1fr) !important; }
     }
+
+    /* Studio & Collab Photo Grid Responsive (3 columns base) */
+    @media (max-width: 1400px) {
+      .studio-photo-grid, .collab-photo-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+    @media (max-width: 900px) {
+      .studio-photo-grid, .collab-photo-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+    @media (max-width: 600px) {
+      .studio-photo-grid, .collab-photo-grid { grid-template-columns: repeat(1, 1fr) !important; }
+    }
   </style>
 </head>
 <body>
@@ -574,8 +585,8 @@
           </div>
         </div>
 
-        <h3 style="margin-bottom:15px;">Manage Photos in This Session</h3>
-        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (6 columns) — Edit position numbers and drag photos to reorder</p>
+        <h3 style="margin-bottom:15px;">Manage Photos in This Studio Session</h3>
+        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (3 columns) — Edit position numbers and drag photos to reorder</p>
         <div id="studioPhotosList" style="margin-bottom:15px;"></div>
         <div id="studioPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
         <button onclick="applyStudioPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Apply Position Changes</button>
@@ -644,8 +655,8 @@
           </div>
         </div>
 
-        <h3 style="margin-bottom:15px;">Manage Photos for This Collaborator</h3>
-        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (6 columns) — Edit position numbers and drag photos to reorder</p>
+        <h3 style="margin-bottom:15px;">Manage Photos in This Collab Session</h3>
+        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (3 columns) — Edit position numbers and drag photos to reorder</p>
         <div id="collabPhotosList" style="margin-bottom:15px;"></div>
         <div id="collabPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
         <button onclick="applyCollabPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
@@ -1772,7 +1783,7 @@
             ${coser.handle} (${photos.length} photos) — Click to expand/collapse
           </h4>
           <div class="coser-photos-group" style="display:block; padding:10px;">
-            <div class="event-photo-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:15px;">`;
+            <div class="studio-photo-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px;">`;
 
       photos.forEach((p, photoIdx) => {
         html += `
@@ -2670,7 +2681,7 @@
             ${handle} (${coserPhotos.length} photos) — Click to expand/collapse
           </h4>
           <div class="coser-photos-group" style="display:block; padding:10px;">
-            <div class="event-photo-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:15px;">`;
+            <div class="collab-photo-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px;">`;
 
       coserPhotos.forEach(p => {
         html += `
