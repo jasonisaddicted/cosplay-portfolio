@@ -451,8 +451,8 @@
         <div class="form-group">
           <label>Outdoor Session</label>
           <div style="display:flex; gap:10px;">
-            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="new" checked onchange="toggleOutdoorMode('new')"> <span style="margin-left:5px;">Create New</span></label>
-            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="existing" onchange="toggleOutdoorMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
+            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="new" checked onchange="window.toggleOutdoorMode('new')"> <span style="margin-left:5px;">Create New</span></label>
+            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="existing" onchange="window.toggleOutdoorMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
           </div>
         </div>
         <div id="newOutdoorFields">
@@ -493,7 +493,7 @@
           <label>Cosplayer Handle</label>
           <input type="text" id="batchOutdoorHandle" placeholder="e.g., @sakurahime_cos">
         </div>
-        <button onclick="saveBatchOutdoor()" style="width:100%;">Upload & Create/Add Session</button>
+        <button onclick="window.saveBatchOutdoor()" style="width:100%;">Upload & Create/Add Session</button>
         <div id="batchOutdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
@@ -516,7 +516,7 @@
         <label>Description</label>
         <textarea id="outdoorSessionDesc" placeholder="Session description..."></textarea>
       </div>
-      <button id="saveOutdoorBtn" onclick="saveOutdoor()" style="max-width:400px; width:100%;">Create Outdoor Session</button>
+      <button id="saveOutdoorBtn" onclick="window.saveOutdoor()" style="max-width:400px; width:100%;">Create Outdoor Session</button>
       <div id="outdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
 
       <!-- Outdoor Photo Management Section -->
@@ -535,7 +535,7 @@
         <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (6 columns) — Edit position numbers and drag photos to reorder</p>
         <div id="outdoorPhotosList" style="margin-bottom:15px;"></div>
         <div id="outdoorPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
-        <button onclick="applyOutdoorPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
+        <button onclick="window.applyOutdoorPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
 
       </div>
 
@@ -2832,7 +2832,7 @@
       document.getElementById('outdoorSessionDate').value = '';
       document.getElementById('outdoorSessionLoc').value = '';
       document.getElementById('outdoorSessionDesc').value = '';
-      loadOutdoor();
+      window.loadOutdoor();
       setTimeout(() => { document.getElementById('outdoorMsg').textContent = ''; }, 3000);
     } catch (err) {
       document.getElementById('outdoorMsg').textContent = 'Error: ' + err.message;
@@ -2852,8 +2852,8 @@
               <div style="font-size:0.8rem; color:#666;">${d.date} · ${d.location}</div>
             </div>
             <div class="item-actions">
-              <button onclick="editOutdoor('${doc.id}')">Edit</button>
-              <button onclick="deleteOutdoor('${doc.id}')">Delete</button>
+              <button onclick="window.editOutdoor('${doc.id}')">Edit</button>
+              <button onclick="window.deleteOutdoor('${doc.id}')">Delete</button>
             </div>
           </div>
         </div>
@@ -2871,13 +2871,13 @@
     document.getElementById('outdoorSessionDesc').value = d.description || '';
     document.getElementById('outdoorMsg').textContent = '';
     document.getElementById('saveOutdoorBtn').textContent = 'Update Session';
-    document.getElementById('saveOutdoorBtn').onclick = () => updateOutdoor(id);
+    document.getElementById('saveOutdoorBtn').onclick = () => window.updateOutdoor(id);
     document.getElementById('outdoorSessionName').focus();
 
     // Show photo management section
     document.getElementById('outdoorPhotosSection').style.display = 'block';
     window.currentEditingOutdoorId = id;
-    displayOutdoorPhotos(id);
+    window.displayOutdoorPhotos(id);
   };
 
   window.updateOutdoor = async (id) => {
@@ -2901,8 +2901,8 @@
       document.getElementById('outdoorSessionLoc').value = '';
       document.getElementById('outdoorSessionDesc').value = '';
       document.getElementById('saveOutdoorBtn').textContent = 'Create Outdoor Session';
-      document.getElementById('saveOutdoorBtn').onclick = saveOutdoor;
-      loadOutdoor();
+      document.getElementById('saveOutdoorBtn').onclick = window.saveOutdoor;
+      window.loadOutdoor();
       setTimeout(() => { document.getElementById('outdoorMsg').textContent = ''; }, 3000);
     } catch (err) {
       document.getElementById('outdoorMsg').textContent = 'Error: ' + err.message;
@@ -2913,7 +2913,7 @@
   window.deleteOutdoor = async (id) => {
     if (confirm('Delete this outdoor session?')) {
       await deleteDoc(doc(db, 'outdoor', id));
-      loadOutdoor();
+      window.loadOutdoor();
     }
   };
 
@@ -2961,7 +2961,7 @@
     });
 
     document.getElementById('outdoorPhotosList').innerHTML = html || '<p style="color:#666;">No photos yet</p>';
-    setupOutdoorPhotoListeners();
+    window.setupOutdoorPhotoListeners();
   };
 
   window.setupOutdoorPhotoListeners = () => {
@@ -3024,7 +3024,7 @@
     try {
       await updateDoc(doc(db, 'outdoor', sessionId), { photos: newPhotos });
       document.getElementById('outdoorPhotosError').style.display = 'none';
-      await displayOutdoorPhotos(sessionId);
+      await window.displayOutdoorPhotos(sessionId);
     } catch (err) {
       document.getElementById('outdoorPhotosError').textContent = 'Error: ' + err.message;
       document.getElementById('outdoorPhotosError').style.display = 'block';
@@ -3038,7 +3038,7 @@
     } else {
       document.getElementById('newOutdoorFields').style.display = 'none';
       document.getElementById('existingOutdoorFields').style.display = 'block';
-      loadExistingOutdoorSessions();
+      window.loadExistingOutdoorSessions();
     }
   };
 
@@ -3549,7 +3549,8 @@
   };
 
   // ─ File upload ─
-  document.getElementById('uploadFeaturedFiles').addEventListener('change', async (e) => {
+  try {
+    document.getElementById('uploadFeaturedFiles').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -3691,6 +3692,9 @@
       document.getElementById('uploadOutdoorFiles').files = e.dataTransfer.files;
     }
   });
+  } catch (err) {
+    console.error('Error setting up event listeners:', err);
+  }
 
 
   // ─ Banner Photo Edit Modal ─
