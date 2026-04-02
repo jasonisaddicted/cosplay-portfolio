@@ -1234,14 +1234,16 @@ ul { list-style: none; }
   justify-content: center;
   transition: padding-right 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
               padding-bottom 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  max-width: 90vw;
+  margin: 0 auto;
 }
 .lightbox__img-wrap {
-  max-width: 99vw;
+  max-width: 65vw;
   max-height: 99vh;
   position: relative;
 }
 .lightbox__img-wrap img {
-  max-width: 99vw;
+  max-width: 65vw;
   max-height: 97vh;
   width: auto;
   height: auto;
@@ -1274,7 +1276,7 @@ ul { list-style: none; }
 }
 .lightbox.panel-open .lightbox__img-wrap,
 .lightbox.panel-open .lightbox__img-wrap img {
-  max-width: calc(100vw - 392px);
+  max-width: calc(65vw - 20px);
 }
 /* Move next arrow away from panel */
 .lightbox.panel-open .lightbox__next { right: 372px; }
