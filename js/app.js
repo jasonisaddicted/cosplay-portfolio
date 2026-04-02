@@ -599,10 +599,10 @@ const Lightbox = (() => {
     if (backBtn && backCallback) backBtn.style.display = 'flex';
     buildInfoPanel(p);
 
-    // Push history state so browser back button closes lightbox
+    // Replace history state so browser back button closes lightbox
     if (!historyState) {
       historyState = { lightbox: true };
-      window.history.pushState(historyState, '', window.location.href);
+      window.history.replaceState(historyState, '', window.location.href);
     }
   }
 
