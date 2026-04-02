@@ -56,7 +56,9 @@ ul { list-style: none; }
 /* ── Navigation ─────────────────────────────────────────────── */
 .nav {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 100;
   height: var(--nav-height);
   display: flex;
@@ -64,9 +66,8 @@ ul { list-style: none; }
   justify-content: center;
   background: transparent;
   transition: background var(--transition), border-bottom var(--transition);
+  width: 100vw;
   max-width: clamp(280px, 90vw, 55vw);
-  left: 50%;
-  transform: translateX(-50%);
 }
 .nav::before {
   content: '';
