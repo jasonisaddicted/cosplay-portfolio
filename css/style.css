@@ -130,9 +130,14 @@ ul { list-style: none; }
   gap: 5px;
   background: none;
   border: none;
+  outline: none;
+  box-shadow: none;
   cursor: pointer;
   padding: 8px;
   z-index: 101;
+}
+.nav__hamburger:focus {
+  outline: none;
 }
 .nav__hamburger span {
   width: 24px;
