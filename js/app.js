@@ -599,9 +599,10 @@ const Lightbox = (() => {
     if (backBtn && backCallback) backBtn.style.display = 'flex';
     buildInfoPanel(p);
 
-    // Mark lightbox as open and push state so browser back button closes it
+    // Mark lightbox as open and push state with URL hash so back button works
     historyState = { lightbox: true };
-    window.history.pushState({ lightbox: true }, '', window.location.href);
+    const urlWithHash = window.location.href.split('#')[0] + '#lightbox';
+    window.history.pushState({ lightbox: true }, '', urlWithHash);
   }
 
   function hide(fromPopstate = false) {
@@ -647,6 +648,7 @@ const Lightbox = (() => {
       } else {
         hide();
       }
+      // The popstate already removed the #lightbox hash from the URL, so we're done
     }
   });
 
