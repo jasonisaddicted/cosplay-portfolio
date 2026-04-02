@@ -330,21 +330,13 @@ ul { list-style: none; }
 
 /* ── Section Header ─────────────────────────────────────────── */
 .section-header {
-  padding: 24px 0 12px;
+  padding: 24px 40px 12px;
   display: flex;
   align-items: baseline;
   gap: 20px;
-  width: 100vw;
-  margin: 0;
-}
-
-@media (min-width: 1024px) {
-  .section-header {
-    padding: 24px 40px 12px;
-    width: 100%;
-    max-width: clamp(280px, 90vw, 55vw);
-    margin: 0 auto;
-  }
+  width: 100%;
+  margin: 0 auto;
+  max-width: clamp(280px, 90vw, 55vw);
 }
 .section-header__label {
   font-size: 0.65rem;
@@ -849,6 +841,8 @@ ul { list-style: none; }
   border-bottom: 1px solid var(--border);
   position: relative;
   overflow: hidden;
+  margin: 0 auto;
+  max-width: clamp(280px, 90vw, 55vw);
 }
 .page-hero__bg {
   position: absolute;
@@ -882,10 +876,12 @@ ul { list-style: none; }
 /* ── Album Cards Grid ───────────────────────────────────────── */
 .albums-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   background: var(--border);
-  margin-bottom: 80px;
+  margin: 0 auto 80px;
+  max-width: clamp(280px, 90vw, 55vw);
+  padding: 0 40px;
 }
 .album-card {
   position: relative;
