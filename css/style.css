@@ -126,8 +126,6 @@ ul { list-style: none; }
 }
 .nav__hamburger {
   display: none;
-  flex-direction: column;
-  gap: 5px;
   background: none;
   border: none;
   outline: none;
@@ -135,27 +133,33 @@ ul { list-style: none; }
   cursor: pointer;
   padding: 8px;
   z-index: 101;
+  width: 40px;
+  height: 40px;
+  position: relative;
 }
 .nav__hamburger:focus {
   outline: none;
 }
-.nav__hamburger span {
+.nav__hamburger svg {
   width: 24px;
-  height: 2px;
-  background: var(--text);
-  transition: all 0.3s ease;
-  display: block;
-  transform-origin: center;
+  height: 24px;
+  transition: opacity 0.3s ease;
+  stroke: var(--text);
 }
-.nav__hamburger[aria-expanded="true"] span:nth-child(1) {
-  transform: rotate(45deg) translate(3px, 3px);
+.nav__hamburger-icon {
+  opacity: 1;
 }
-.nav__hamburger[aria-expanded="true"] span:nth-child(2) {
+.nav__hamburger-close {
   opacity: 0;
-  visibility: hidden;
+  position: absolute;
+  top: 8px;
+  left: 8px;
 }
-.nav__hamburger[aria-expanded="true"] span:nth-child(3) {
-  transform: rotate(-45deg) translate(3px, -3px);
+.nav__hamburger[aria-expanded="true"] .nav__hamburger-icon {
+  opacity: 0;
+}
+.nav__hamburger[aria-expanded="true"] .nav__hamburger-close {
+  opacity: 1;
 }
 .nav__links a {
   font-size: 0.72rem;
