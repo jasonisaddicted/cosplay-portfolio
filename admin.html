@@ -209,6 +209,7 @@
       <button class="tab" onclick="switchTab('outdoor')">Outdoor</button>
       <button class="tab" onclick="switchTab('studio')">Studio</button>
       <button class="tab" onclick="switchTab('collabs')">Collabs</button>
+      <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
     </div>
 
     <!-- Featured Picks -->
@@ -737,6 +738,62 @@
 
       <div class="items-list" id="collabList"></div>
     </div>
+
+    <!-- Analytics Dashboard -->
+    <div id="analytics" class="content">
+      <h2 style="margin-bottom:20px;">📊 Analytics Dashboard</h2>
+      <p style="color:#999; margin-bottom:20px;">Album engagement metrics across all events</p>
+
+      <!-- Loading State -->
+      <div id="analyticsLoading" style="text-align:center; padding:40px; color:#999;">
+        <p>Loading analytics...</p>
+      </div>
+
+      <!-- Analytics Table -->
+      <div id="analyticsContent" style="display:none;">
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:2px solid #2e2e2e;">
+                <th style="text-align:left; padding:12px 8px; color:#c8a46e; font-weight:600;">Event Name</th>
+                <th style="text-align:center; padding:12px 8px; color:#c8a46e; font-weight:600;">Photos</th>
+                <th style="text-align:center; padding:12px 8px; color:#c8a46e; font-weight:600;">Album Likes</th>
+                <th style="text-align:center; padding:12px 8px; color:#c8a46e; font-weight:600;">Total Photo Likes</th>
+              </tr>
+            </thead>
+            <tbody id="analyticsTableBody">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Summary Stats -->
+        <div style="margin-top:40px; padding:20px; background:#181818; border:1px solid #2e2e2e; border-radius:3px;">
+          <h3 style="margin-bottom:15px; color:#c8a46e;">Summary</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+            <div style="padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:2px;">
+              <div style="color:#999; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Total Events</div>
+              <div style="font-size:1.8rem; font-weight:bold; color:#c8a46e;" id="totalEvents">0</div>
+            </div>
+            <div style="padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:2px;">
+              <div style="color:#999; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Total Photos</div>
+              <div style="font-size:1.8rem; font-weight:bold; color:#c8a46e;" id="totalPhotos">0</div>
+            </div>
+            <div style="padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:2px;">
+              <div style="color:#999; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Total Album Likes</div>
+              <div style="font-size:1.8rem; font-weight:bold; color:#c8a46e;" id="totalAlbumLikes">0</div>
+            </div>
+            <div style="padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:2px;">
+              <div style="color:#999; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Total Photo Likes</div>
+              <div style="font-size:1.8rem; font-weight:bold; color:#c8a46e;" id="totalPhotoLikes">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="analyticsError" style="display:none; padding:15px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
+    </div>
   </div>
 
   <!-- Global Photo Edit Modal -->
@@ -854,6 +911,11 @@
       loadFeatured();
       displayFeaturedRowPanel();
       loadAlbumPhotos('events');
+    }
+
+    // Load analytics when analytics tab is opened
+    if (tab === 'analytics') {
+      loadAnalytics();
     }
   };
 
@@ -1558,6 +1620,80 @@
     } catch (err) {
       document.getElementById('eventMsg').textContent = 'Error: ' + err.message;
       document.getElementById('eventMsg').className = 'error';
+    }
+  };
+
+  // ─ Analytics Dashboard ─
+  window.loadAnalytics = async () => {
+    try {
+      document.getElementById('analyticsLoading').style.display = 'block';
+      document.getElementById('analyticsContent').style.display = 'none';
+      document.getElementById('analyticsError').style.display = 'none';
+
+      const snap = await getDocs(collection(db, 'events'));
+      const events = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      if (events.length === 0) {
+        document.getElementById('analyticsLoading').style.display = 'none';
+        document.getElementById('analyticsContent').style.display = 'none';
+        document.getElementById('analyticsError').style.display = 'block';
+        document.getElementById('analyticsError').textContent = 'No events found';
+        return;
+      }
+
+      // Calculate statistics
+      let totalPhotos = 0;
+      let totalAlbumLikes = 0;
+      let totalPhotoLikes = 0;
+
+      const analyticsData = events.map(event => {
+        const photoCount = event.photos ? event.photos.length : 0;
+        const albumLikes = event.albumLikes || 0;
+
+        // Sum up photo likes from the photoLikes map
+        let photoLikesSum = 0;
+        if (event.photoLikes && typeof event.photoLikes === 'object') {
+          photoLikesSum = Object.values(event.photoLikes).reduce((sum, count) => sum + (count || 0), 0);
+        }
+
+        totalPhotos += photoCount;
+        totalAlbumLikes += albumLikes;
+        totalPhotoLikes += photoLikesSum;
+
+        return {
+          name: event.name,
+          photoCount,
+          albumLikes,
+          photoLikes: photoLikesSum
+        };
+      }).sort((a, b) => b.albumLikes - a.albumLikes); // Sort by album likes descending
+
+      // Render table
+      const tableHtml = analyticsData.map((item, idx) => `
+        <tr style="border-bottom:1px solid #2e2e2e; ${idx % 2 === 0 ? 'background:#0d0d0d;' : ''}">
+          <td style="padding:12px 8px; text-align:left;">${item.name}</td>
+          <td style="padding:12px 8px; text-align:center; color:#c8a46e; font-weight:600;">${item.photoCount}</td>
+          <td style="padding:12px 8px; text-align:center; color:#c8a46e; font-weight:600;">${item.albumLikes}</td>
+          <td style="padding:12px 8px; text-align:center; color:#c8a46e; font-weight:600;">${item.photoLikes}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('analyticsTableBody').innerHTML = tableHtml;
+
+      // Update summary stats
+      document.getElementById('totalEvents').textContent = events.length;
+      document.getElementById('totalPhotos').textContent = totalPhotos;
+      document.getElementById('totalAlbumLikes').textContent = totalAlbumLikes;
+      document.getElementById('totalPhotoLikes').textContent = totalPhotoLikes;
+
+      // Show content
+      document.getElementById('analyticsLoading').style.display = 'none';
+      document.getElementById('analyticsContent').style.display = 'block';
+    } catch (err) {
+      console.error('Error loading analytics:', err);
+      document.getElementById('analyticsLoading').style.display = 'none';
+      document.getElementById('analyticsError').style.display = 'block';
+      document.getElementById('analyticsError').textContent = 'Error loading analytics: ' + err.message;
     }
   };
 
