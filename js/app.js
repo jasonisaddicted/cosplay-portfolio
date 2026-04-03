@@ -90,9 +90,11 @@ function initSiteIdentity() {
 // Overlapping fade-out and fade-in for smooth 2-second cross-fade
 function fadeUpdateImage(imgElement, newSrc) {
   imgElement.classList.add('fade-out');
-  imgElement.src = newSrc;
-  // Remove fade-out immediately so fade-in starts, creating smooth overlap
-  imgElement.classList.remove('fade-out');
+  // Force browser to register the fade-out transition before removing the class
+  requestAnimationFrame(() => {
+    imgElement.src = newSrc;
+    imgElement.classList.remove('fade-out');
+  });
   // Both fade out and fade in happen over 2s, creating a dissolve effect
 }
 
