@@ -2086,7 +2086,7 @@ footer {
   /* Mobile/Tablet banner: 4:3 aspect ratio (landscape) */
   .banner { aspect-ratio: 4/3; max-height: none; }
   .banner__content { left: 24px; bottom: 36px; }
-  .section-header { padding: 40px 20px 24px; flex-wrap: wrap; }
+  .section-header { padding: 40px 20px 24px; flex-wrap: wrap; max-width: 100%; }
   .picks-grid { display: none; }
   .picks-carousel.active { display: block; }
   /* Mobile always gets exactly 3 columns */
@@ -2094,7 +2094,7 @@ footer {
   .photo-grid__item:hover { transform: scale(1.06); }
   .albums-grid { grid-template-columns: 1fr; max-width: 100%; }
   .album-header { padding: calc(var(--nav-height) + 28px) 20px 28px; }
-  footer { padding: 28px 20px; }
+  footer { padding: 28px 20px; max-width: 100%; }
 }
 @media (max-width: 480px) {
   .nav__brand { font-size: 0.75rem; letter-spacing: 0.1em; }
