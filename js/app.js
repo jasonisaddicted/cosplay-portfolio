@@ -114,7 +114,7 @@ const Lightbox = (() => {
     setTimeout(() => {
       imgElement.src = newSrc;
       imgElement.classList.remove('fade-out');
-    }, 100);
+    }, 1000);
   }
 
   function clearPanelTimers() {
