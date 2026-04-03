@@ -1441,19 +1441,28 @@ async function initOutdoor() {
   document.title = `Outdoor · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
 
   try {
+    console.log('🏞️ Loading outdoor albums from Firebase...');
+    console.log('getDocs available?', typeof getDocs !== 'undefined');
+    console.log('query available?', typeof query !== 'undefined');
+
     // Load outdoor albums from Firebase
     const snap = await getDocs(query(collection(db, 'outdoor'), orderBy('order', 'asc')));
+    console.log('Firebase returned documents:', snap.docs.length);
+
     const outdoorAlbums = snap.docs.map(doc => ({
       id: doc.id,
       order: doc.data().order || 0,
       ...doc.data()
     }));
 
+    console.log('Outdoor albums loaded:', outdoorAlbums);
     renderAlbumGrid(outdoorAlbums, document.getElementById('albums-grid'));
     document.querySelector('.section-header__count').textContent =
       `${outdoorAlbums.length} session${outdoorAlbums.length !== 1 ? 's' : ''}`;
+    console.log('✅ Outdoor page rendered with', outdoorAlbums.length, 'albums');
   } catch (err) {
-    console.error('Error loading outdoor albums:', err);
+    console.error('❌ Error loading outdoor albums:', err);
+    console.log('Falling back to CONFIG.outdoor...');
     // Fallback to CONFIG.outdoor if Firebase fails
     renderAlbumGrid(CONFIG.outdoor, document.getElementById('albums-grid'));
     document.querySelector('.section-header__count').textContent =
