@@ -67,7 +67,7 @@ ul { list-style: none; }
   background: transparent;
   transition: background var(--transition), border-bottom var(--transition);
   width: 100vw;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
   padding: 0 40px;
 }
 .nav::before {
@@ -338,7 +338,7 @@ ul { list-style: none; }
   gap: 20px;
   width: 100%;
   margin: 0 auto;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
 }
 .section-header__label {
   font-size: 0.65rem;
@@ -844,7 +844,7 @@ ul { list-style: none; }
   position: relative;
   overflow: hidden;
   margin: 0 auto;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
 }
 .page-hero__bg {
   position: absolute;
@@ -882,7 +882,7 @@ ul { list-style: none; }
   gap: 1px;
   background: var(--border);
   margin: 0 auto 80px;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
   padding: 0;
 }
 .album-card {
@@ -1996,7 +1996,7 @@ footer {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
   margin: 0 auto;
 }
 .footer__brand {
