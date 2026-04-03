@@ -17,6 +17,17 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
+  <!-- Script to dynamically update og:image with first album photo -->
+  <script>
+    // Get album ID and type from URL
+    const params = new URLSearchParams(window.location.search);
+    const albumId = params.get('id');
+    const albumType = params.get('type') || 'events';
+
+    // Store for later use when Firebase loads
+    window.albumParams = { albumId, albumType };
+  </script>
+
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Cosplay Portfolio Album">

@@ -21,26 +21,27 @@ function getQueryParam(param) {
 
 /**
  * Update Open Graph meta tags
+ * Note: Social media bots don't execute JavaScript, so they won't see these updates.
+ * The album link will still work when clicked, just without automatic preview images.
  */
 function updateOpenGraphTags(title, description, imageUrl) {
-  // Basic meta tags
+  // Basic page title and description
   document.title = `${title} — Cosplay Portfolio`;
   document.querySelector('meta[name="description"]').setAttribute('content', description);
 
-  // Open Graph
+  // Open Graph tags (for browsers that do execute JS, or for reference)
   document.querySelector('meta[property="og:title"]').setAttribute('content', title);
   document.querySelector('meta[property="og:description"]').setAttribute('content', description);
   document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
+
   if (imageUrl) {
     document.querySelector('meta[property="og:image"]').setAttribute('content', imageUrl);
+    document.querySelector('meta[name="twitter:image"]').setAttribute('content', imageUrl);
   }
 
   // Twitter Card
   document.querySelector('meta[name="twitter:title"]').setAttribute('content', title);
   document.querySelector('meta[name="twitter:description"]').setAttribute('content', description);
-  if (imageUrl) {
-    document.querySelector('meta[name="twitter:image"]').setAttribute('content', imageUrl);
-  }
 }
 
 /**
