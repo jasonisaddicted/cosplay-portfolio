@@ -1430,6 +1430,15 @@ async function initEvents() {
   document.title = `Events · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
 
   try {
+    // Wait for Firebase to be ready
+    if (typeof db === 'undefined') {
+      console.warn('Firebase not ready yet, using CONFIG.events only');
+      renderAlbumGrid(CONFIG.events, document.getElementById('albums-grid'));
+      document.querySelector('.section-header__count').textContent =
+        `${CONFIG.events.length} event${CONFIG.events.length !== 1 ? 's' : ''}`;
+      return;
+    }
+
     // Fetch Firestore albums (like Cosmic 2025)
     const snap = await db.collection('albums').get();
     const firestoreAlbums = snap.docs.map(doc => ({
