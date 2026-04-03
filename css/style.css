@@ -1105,7 +1105,7 @@ ul { list-style: none; }
 .photo-grid.photo-grid--studio {
   display: block;
   padding: 0 3px;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
   margin: 0 auto 80px;
 }
 
@@ -1115,7 +1115,7 @@ ul { list-style: none; }
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 3px;
   padding: 3px;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
   margin: 0 auto 80px;
 }
 .photo-grid__item {
