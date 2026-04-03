@@ -1433,8 +1433,8 @@ async function initEvents() {
     // Wait for Firebase to be ready
     await (window.firebaseReady || Promise.resolve());
 
-    // Fetch Firestore albums (like Cosmic 2025)
-    const snap = await db.collection('albums').get();
+    // Fetch Firestore albums (like Cosmic 2025) using modular SDK
+    const snap = await getDocs(collection(db, 'albums'));
     const firestoreAlbums = snap.docs.map(doc => ({
       id: doc.id,
       type: 'events',
@@ -1630,7 +1630,10 @@ async function initAlbum() {
       const photosSnap = await getDocs(collection(db, 'albums', id, 'photos'));
       album.photos = photosSnap.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        src: doc.data().src,
+        coser: doc.data().coser || '',
+        character: doc.data().character || 'Unknown',
+        series: doc.data().series || ''
       }));
     } catch (err) {
       console.error('Error loading album photos:', err);
