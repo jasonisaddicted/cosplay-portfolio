@@ -85,19 +85,7 @@ async function loadFirebaseConfig() {
       window.CONFIG.collaborators.push({ id: doc.id, ...doc.data() });
     });
 
-    console.log("✅ Firebase CONFIG loaded:", window.CONFIG);
-    console.log("📸 Banner Photo:", window.CONFIG.bannerPhoto);
-
-    if (window.CONFIG.bannerPhoto) {
-      console.log("✓ Banner found:", {
-        character: window.CONFIG.bannerPhoto.character,
-        series: window.CONFIG.bannerPhoto.series,
-        coser: window.CONFIG.bannerPhoto.coser,
-        hasSrc: !!window.CONFIG.bannerPhoto.src
-      });
-    } else {
-      console.warn("⚠ No banner photo in config");
-    }
+    console.log("✅ Firebase CONFIG loaded");
 
     // Dispatch custom event so pages can initialize
     window.dispatchEvent(new CustomEvent('firebase-config-loaded'));
