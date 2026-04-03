@@ -23,7 +23,7 @@ const db = admin.firestore();
  * Main handler: Generate meta tags for album
  * Usage: /api/album?id=DrKhPEqp00W2Ci09542j&type=events
  */
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -97,4 +97,4 @@ export default async function handler(req, res) {
     console.error('Error:', error);
     res.status(500).json({ error: error.message });
   }
-}
+};
