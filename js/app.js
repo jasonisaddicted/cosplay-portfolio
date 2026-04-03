@@ -87,15 +87,19 @@ function initSiteIdentity() {
 
 // ── Global fade transition helper ────────────────────────────
 // Used for slideshows across lightbox, album cards, and other carousel elements
-// Blends current image into new image over 2 seconds
+// Photo 1 fades out, Photo 2 fades in (both over 2 seconds)
 function fadeUpdateImage(imgElement, newSrc) {
   imgElement.classList.add('fade-out');
-  // Wait for fade-out to progress halfway (1000ms of 2000ms) before changing src
-  // This ensures visible fade-out before transitioning back to fade-in
+  // Wait for opacity to reach 0, then swap image and fade back in
   setTimeout(() => {
     imgElement.src = newSrc;
     imgElement.classList.remove('fade-out');
-  }, 1000);
+    imgElement.classList.add('fade-in');
+    // Remove fade-in after transition completes
+    setTimeout(() => {
+      imgElement.classList.remove('fade-in');
+    }, 2000);
+  }, 2000);
 }
 
 // ── Lightbox ─────────────────────────────────────────────────
