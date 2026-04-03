@@ -2048,8 +2048,8 @@ footer {
   .nav__links {
     position: fixed;
     top: var(--nav-height);
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
     flex-direction: column;
     gap: 0;
     background: rgba(18, 18, 18, 0.98);
@@ -2057,14 +2057,15 @@ footer {
     padding: 16px 0;
     max-height: calc(100vh - var(--nav-height));
     overflow-y: auto;
-    transform: translateY(-100%);
+    width: 100vw;
+    max-width: var(--max-width);
     opacity: 0;
     visibility: hidden;
     transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
     z-index: 99;
   }
   .nav__links.active {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
     opacity: 1;
     visibility: visible;
   }
