@@ -1538,29 +1538,17 @@ function renderAlbumGrid(albums, container) {
       </div>
     `;
 
-    // ── Event/Outdoor card: simple photo cycling without fade ──────────
-    if ((isEvents || isOutdoor) && album.photos && album.photos.length > 1) {
-      const imgEl      = card.querySelector('img');
+    // ── Event/Outdoor card: show first photo + coser overlay info ──────────
+    if ((isEvents || isOutdoor) && album.photos && album.photos.length > 0) {
       const elName     = card.querySelector('.album-card__coser-name');
       const elChar     = card.querySelector('.album-card__coser-character');
       const elSeries   = card.querySelector('.album-card__coser-series');
+      const firstPhoto = album.photos[0];
 
-      // Shuffle photos for random slideshow order
-      const pool = [...album.photos].sort(() => Math.random() - 0.5);
-      let idx = 0;
-
-      // Simple slideshow: just cycle through photos every 5 seconds
-      const slideTimer = setInterval(() => {
-        idx = (idx + 1) % pool.length;
-        const p = pool[idx];
-        imgEl.src = p.src;
-        if (elName)   elName.textContent   = p.coser     || '';
-        if (elChar)   elChar.textContent   = p.character || '';
-        if (elSeries) elSeries.textContent = p.series    || '';
-      }, 5000);
-
-      // Stop timer when navigating away
-      card.addEventListener('click', () => clearInterval(slideTimer), { once: true });
+      // Display first photo's coser info
+      if (elName)   elName.textContent   = firstPhoto.coser     || '';
+      if (elChar)   elChar.textContent   = firstPhoto.character || '';
+      if (elSeries) elSeries.textContent = firstPhoto.series    || '';
     }
 
     container.appendChild(card);
