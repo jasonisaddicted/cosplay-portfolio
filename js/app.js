@@ -1425,12 +1425,33 @@ function buildBannerPanelContent(banner) {
 }
 
 // ── Page: Events ─────────────────────────────────────────────
-function initEvents() {
+async function initEvents() {
   if (!document.body.classList.contains('page-events')) return;
   document.title = `Events · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
-  renderAlbumGrid(CONFIG.events, document.getElementById('albums-grid'));
-  document.querySelector('.section-header__count').textContent =
-    `${CONFIG.events.length} event${CONFIG.events.length !== 1 ? 's' : ''}`;
+
+  try {
+    // Fetch Firestore albums (like Cosmic 2025)
+    const db = firebase.firestore();
+    const snap = await db.collection('albums').get();
+    const firestoreAlbums = snap.docs.map(doc => ({
+      id: doc.id,
+      type: 'events',
+      ...doc.data()
+    }));
+
+    // Merge Firestore albums with CONFIG.events
+    const allAlbums = [...CONFIG.events, ...firestoreAlbums];
+
+    renderAlbumGrid(allAlbums, document.getElementById('albums-grid'));
+    document.querySelector('.section-header__count').textContent =
+      `${allAlbums.length} event${allAlbums.length !== 1 ? 's' : ''}`;
+  } catch (err) {
+    console.error('Error loading events:', err);
+    // Fallback to CONFIG.events if Firebase fails
+    renderAlbumGrid(CONFIG.events, document.getElementById('albums-grid'));
+    document.querySelector('.section-header__count').textContent =
+      `${CONFIG.events.length} event${CONFIG.events.length !== 1 ? 's' : ''}`;
+  }
 }
 
 // ── Page: Studio ─────────────────────────────────────────────
@@ -1574,6 +1595,21 @@ async function initAlbum() {
     }
   } else if (type === 'collab') {
     album = CONFIG.collaborators?.find(a => a.id === id);
+  } else if (type === 'events') {
+    // Try Firebase first (for Cosmic 2025 and dynamic albums)
+    try {
+      const docSnap = await getDoc(doc(db, 'albums', id));
+      if (docSnap.exists()) {
+        album = { id: docSnap.id, ...docSnap.data() };
+      } else {
+        // Fallback to CONFIG.events
+        album = CONFIG.events?.find(a => a.id === id);
+      }
+    } catch (err) {
+      console.error('Error loading events album from Firebase:', err);
+      // Fallback to CONFIG.events
+      album = CONFIG.events?.find(a => a.id === id);
+    }
   } else {
     album = CONFIG.events?.find(a => a.id === id);
   }
@@ -1585,6 +1621,20 @@ async function initAlbum() {
   const photoGrid = document.getElementById('photo-grid');
 
   if (!album) { titleEl.textContent = 'Album not found'; return; }
+
+  // Load photos from Firestore subcollection if this is a Firebase album
+  if (type === 'events' && !album.photos) {
+    try {
+      const photosSnap = await getDocs(collection(db, 'albums', id, 'photos'));
+      album.photos = photosSnap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (err) {
+      console.error('Error loading album photos:', err);
+      album.photos = [];
+    }
+  }
 
   // Clear previous content
   photoGrid.innerHTML = '';
