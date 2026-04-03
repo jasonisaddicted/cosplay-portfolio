@@ -1,0 +1,9 @@
+{
+  "name": "cosplay-portfolio",
+  "version": "1.0.0",
+  "description": "Cosplay portfolio website with OG service",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
