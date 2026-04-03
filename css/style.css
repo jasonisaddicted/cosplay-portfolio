@@ -2038,14 +2038,6 @@ footer {
   .picks-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 1344px) {
-  .nav {
-    left: 0;
-    right: 0;
-    transform: none;
-    width: 100%;
-    max-width: none;
-    padding: 0 20px;
-  }
   .nav__hamburger {
     display: flex;
     flex-direction: column;
