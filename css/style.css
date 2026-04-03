@@ -1262,6 +1262,11 @@ img.fade-out {
   opacity: 0 !important;
   transition: opacity 2s ease-out !important;
 }
+/* Fade-in for new images after src change */
+img.fade-in {
+  opacity: 1 !important;
+  transition: opacity 1s ease-in !important;
+}
 /* ── Lightbox Info Panel ────────────────────────────────────────
    Slides in from the right (desktop) or bottom (mobile).
    Fully data-driven from CONFIG — add/edit cosers in config.js only.

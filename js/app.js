@@ -114,6 +114,10 @@ const Lightbox = (() => {
     setTimeout(() => {
       imgElement.src = newSrc;
       imgElement.classList.remove('fade-out');
+      imgElement.classList.add('fade-in');
+      setTimeout(() => {
+        imgElement.classList.remove('fade-in');
+      }, 1000);
     }, 1000);
   }
 
