@@ -2107,6 +2107,70 @@ footer {
   }
 }
 
+/* ── Like & Share Buttons ──────────────────────────────────────── */
+.like-btn {
+  transition: all var(--transition);
+}
+
+.like-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.like-btn.liked {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.like-btn.liked .like-icon {
+  fill: var(--accent);
+}
+
+.share-btn {
+  transition: all var(--transition);
+}
+
+.share-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.share-menu {
+  position: absolute;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 0;
+  z-index: 1001;
+  min-width: 200px;
+}
+
+.share-menu button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all var(--transition);
+}
+
+.share-menu button:hover {
+  background: #1a1a1a;
+  color: var(--accent);
+}
+
+.album-card__actions {
+  position: relative;
+}
+
+.album-card__actions .like-btn,
+.album-card__actions .share-btn {
+  font-size: 0.85rem;
+}
+
 @media (max-width: 768px) {
   :root { --nav-height: 56px; }
   /* Mobile/Tablet banner: 4:3 aspect ratio (landscape) */

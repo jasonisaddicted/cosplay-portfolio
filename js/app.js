@@ -98,6 +98,33 @@ function fadeUpdateImage(imgElement, newSrc) {
   // Both fade out and fade in happen over 2s, creating a dissolve effect
 }
 
+// ── Like & Share: localStorage Anti-Spam Helpers ────────────────
+// Generate or retrieve a unique device ID (persisted in localStorage)
+window.getDeviceId = () => {
+  let deviceId = localStorage.getItem('portfolio_device_id');
+  if (!deviceId) {
+    deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('portfolio_device_id', deviceId);
+  }
+  return deviceId;
+};
+
+// Check if user (device) has already liked a specific item
+window.hasUserLiked = (likeKey) => {
+  const deviceId = getDeviceId();
+  const liked = localStorage.getItem(`like_${deviceId}_${likeKey}`);
+  return !!liked;
+};
+
+// Mark an item as liked by this device
+window.markAsLiked = (likeKey) => {
+  const deviceId = getDeviceId();
+  localStorage.setItem(`like_${deviceId}_${likeKey}`, Date.now());
+};
+
+// Global context for tracking current photo in lightbox
+window.currentPhotoContext = null;
+
 // ── Lightbox ─────────────────────────────────────────────────
 // Fully CONFIG-driven. To add cosers/albums/photos: edit config.js only.
 // handle in event photos (photo.coser) must match cosplayer handle in studio
@@ -1558,6 +1585,35 @@ function renderAlbumGrid(albums, container) {
           ${album.location ? `<span class="dot">·</span><span>${album.location}</span>` : ''}
         </div>
         <div class="album-card__count">${count} photo${count !== 1 ? 's' : ''}</div>
+        <div class="album-card__actions" data-album-id="${album.id}" style="display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid #2e2e2e; justify-content:center;">
+          <button class="like-btn" onclick="event.stopPropagation(); likeAlbum('${album.id}', '${album.name}', '${type}')" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
+            <svg class="like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span class="album-like-count">0</span>
+          </button>
+          <button class="share-btn" onclick="event.stopPropagation(); toggleAlbumShareMenu(event)" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span>Share</span>
+          </button>
+          <div class="share-menu" style="display:none; position:absolute; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:3px; padding:8px 0; z-index:1001; min-width:200px; margin-top:5px; margin-left:-100px;">
+            <button onclick="event.stopPropagation(); shareToTwitter('${album.name.replace(/'/g, "&apos;")}')" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
+              𝕏 Share to Twitter
+            </button>
+            <button onclick="event.stopPropagation(); shareToInstagram()" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
+              📷 Share to Instagram
+            </button>
+            <button onclick="event.stopPropagation(); copyShareLink()" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
+              🔗 Copy Link
+            </button>
+          </div>
+        </div>
       </div>
       <div class="album-card__arrow">
         <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M7 7h10v10"/></svg>
@@ -1565,6 +1621,26 @@ function renderAlbumGrid(albums, container) {
     `;
 
     container.appendChild(card);
+
+    // Load like count from Firebase
+    card.querySelectorAll('.like-btn').forEach(btn => {
+      const albumId = btn.closest('[data-album-id]')?.dataset.albumId;
+      if (albumId && window.db) {
+        getDoc(doc(db, type, albumId)).then(docSnap => {
+          if (docSnap.exists()) {
+            const likeCount = docSnap.data().albumLikes || 0;
+            const countEl = btn.querySelector('.album-like-count');
+            if (countEl) countEl.textContent = likeCount;
+
+            // Check if user already liked
+            const likeKey = `album_${albumId}`;
+            if (hasUserLiked(likeKey)) {
+              btn.classList.add('liked');
+            }
+          }
+        }).catch(err => console.error('Error loading like count:', err));
+      }
+    });
   });
 }
 
@@ -1843,6 +1919,101 @@ function initCollabs() {
     list.appendChild(entry);
   });
 }
+
+// ── Like & Share Event Handlers ───────────────────────────────
+// Like an album by eventId
+window.likeAlbum = async (eventId, eventName, type = 'events') => {
+  const likeKey = `album_${eventId}`;
+
+  if (hasUserLiked(likeKey)) {
+    console.log('Already liked this album');
+    return;
+  }
+
+  try {
+    const docRef = doc(db, type, eventId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      console.error('Album not found');
+      return;
+    }
+
+    const newLikeCount = (docSnap.data().albumLikes || 0) + 1;
+    await updateDoc(docRef, { albumLikes: newLikeCount });
+
+    markAsLiked(likeKey);
+
+    // Visual feedback - find and update the button
+    const likeBtns = document.querySelectorAll(`[data-album-id="${eventId}"] .like-btn`);
+    likeBtns.forEach(btn => {
+      const countEl = btn.querySelector('.album-like-count');
+      if (countEl) {
+        countEl.textContent = newLikeCount;
+        btn.classList.add('liked');
+      }
+    });
+
+    console.log('Album liked successfully');
+  } catch (err) {
+    console.error('Error liking album:', err);
+  }
+};
+
+// Share album to social media
+window.shareAlbum = (albumName) => {
+  const shareText = encodeURIComponent(`Check out this album: ${albumName}`);
+  const currentUrl = window.location.href;
+  const menu = event.target.closest('.share-menu') || document.getElementById('albumShareMenu');
+
+  if (menu) menu.style.display = 'none';
+};
+
+// Share to Twitter
+window.shareToTwitter = (albumName) => {
+  const shareText = encodeURIComponent(`Check out ${albumName}\n\n`);
+  const url = window.location.href;
+  window.open(`https://twitter.com/intent/tweet?text=${shareText}url=${encodeURIComponent(url)}`, '_blank');
+};
+
+// Share to Instagram (open profile if available, or just the site)
+window.shareToInstagram = () => {
+  const igHandle = document.querySelector('[data-ig-handle]');
+  if (igHandle && igHandle.dataset.igHandle) {
+    window.open(`https://instagram.com/${igHandle.dataset.igHandle.replace('@', '')}`, '_blank');
+  } else {
+    window.open('https://instagram.com/', '_blank');
+  }
+};
+
+// Copy share link to clipboard
+window.copyShareLink = () => {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    console.log('Link copied to clipboard');
+  }).catch(err => {
+    console.error('Failed to copy link:', err);
+  });
+};
+
+// Toggle album share menu
+window.toggleAlbumShareMenu = (event) => {
+  event.stopPropagation();
+  const menu = event.target.closest('.album-actions').querySelector('.share-menu');
+  const allMenus = document.querySelectorAll('.share-menu');
+  allMenus.forEach(m => {
+    if (m !== menu) m.style.display = 'none';
+  });
+  if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+};
+
+// Close share menus when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.share-btn') && !e.target.closest('.share-menu')) {
+    document.querySelectorAll('.share-menu').forEach(m => {
+      m.style.display = 'none';
+    });
+  }
+});
 
 // ── Responsive Crop Adjustment ─────────────────────────────────
 // Re-apply crop when window is resized (for responsive desktop/mobile switch)
