@@ -1523,7 +1523,7 @@ function renderAlbumGrid(albums, container) {
     ` : '';
 
     card.innerHTML = `
-      <img src="${album.cover}" alt="${album.name}" loading="lazy">
+      ${album.cover ? `<img src="${album.cover}" alt="${album.name}" loading="lazy">` : '<div class="album-card__no-cover"></div>'}
       ${coserOverlayHtml}
       <div class="album-card__info">
         <div class="album-card__name">${album.name}</div>
