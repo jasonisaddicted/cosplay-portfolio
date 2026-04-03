@@ -140,15 +140,6 @@ ul { list-style: none; }
 .nav__hamburger:focus {
   outline: none;
 }
-.nav__hamburger span {
-  display: block !important;
-  width: 28px;
-  height: 3px;
-  background-color: #e4e4e4 !important;
-  margin: 5px 0;
-  transition: all 0.3s ease;
-  border-radius: 2px;
-}
 .nav__hamburger svg {
   width: 24px;
   height: 24px;
