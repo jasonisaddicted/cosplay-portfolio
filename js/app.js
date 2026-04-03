@@ -1804,11 +1804,19 @@ function initCollabs() {
 // ── Init ─────────────────────────────────────────────────────
 // Wait for Firebase to load, then initialize
 window.addEventListener('firebase-config-loaded', () => {
+  console.log('🔧 firebase-config-loaded event received, initializing pages...');
+  console.log('Page classes:', document.body.className);
+
   initSiteIdentity();
   initHome();
   initEvents();
+
+  console.log('About to call initOutdoor...');
   initOutdoor();
+
   initStudio();
   initAlbum();
   initCollabs();
+
+  console.log('✅ All init functions called');
 });
