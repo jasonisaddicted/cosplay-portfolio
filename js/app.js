@@ -1120,6 +1120,7 @@ window.showFeaturedPhotoModal = (photo) => {
 function initHome() {
   console.log('🏠 initHome called');
   if (!document.body.classList.contains('page-home')) return;
+  document.title = `${window.CONFIG.photographer || 'Cosplay'} · ${window.CONFIG.tagline || 'Portfolio'}`;
   console.log('🏠 page-home class found, initializing...');
 
   const cfg = CONFIG;
@@ -1403,6 +1404,7 @@ function buildBannerPanelContent(banner) {
 // ── Page: Events ─────────────────────────────────────────────
 function initEvents() {
   if (!document.body.classList.contains('page-events')) return;
+  document.title = `Events · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
   renderAlbumGrid(CONFIG.events, document.getElementById('albums-grid'));
   document.querySelector('.section-header__count').textContent =
     `${CONFIG.events.length} event${CONFIG.events.length !== 1 ? 's' : ''}`;
@@ -1411,6 +1413,7 @@ function initEvents() {
 // ── Page: Studio ─────────────────────────────────────────────
 async function initStudio() {
   if (!document.body.classList.contains('page-studio')) return;
+  document.title = `Studio · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
 
   try {
     // Load studio albums from Firebase with current order
@@ -1705,6 +1708,7 @@ async function initAlbum() {
 // ── Page: Collabs ─────────────────────────────────────────────
 function initCollabs() {
   if (!document.body.classList.contains('page-collabs')) return;
+  document.title = `Collaborators · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
 
   const list = document.getElementById('collab-list');
   const collabs = CONFIG.collaborators || [];
