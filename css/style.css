@@ -145,6 +145,8 @@ ul { list-style: none; }
   height: 24px;
   transition: opacity 0.3s ease;
   stroke: var(--text);
+  stroke-width: 2;
+  fill: none;
 }
 .nav__hamburger-icon {
   opacity: 1;
