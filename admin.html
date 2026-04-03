@@ -1013,7 +1013,7 @@
       loadFeatured();
     } catch (err) {
       console.error('Error saving order:', err);
-      alert('Error saving order: ' + err.message);
+      console.log('Error saving order: ' + err.message);
     }
   };
 
@@ -1026,7 +1026,7 @@
       loadFeatured();
     } catch (err) {
       console.error('Error updating order:', err);
-      alert('Error updating position: ' + err.message);
+      console.log('Error updating position: ' + err.message);
     }
   };
 
@@ -1245,7 +1245,7 @@
       await displayFeaturedRowPanel();
     } catch (err) {
       console.error('Error saving featured order:', err);
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -1743,7 +1743,7 @@
 
     if (newPosition === original) return;
     if (newPosition < 1 || newPosition > 100) {
-      alert('Position must be between 1 and 100');
+      console.log('Position must be between 1 and 100');
       return;
     }
 
@@ -1764,9 +1764,9 @@
 
       await updateDoc(doc(db, 'events', eventId), { photos });
       await displayEventPhotos(eventId);
-      alert('✓ Photo position updated!');
+      console.log('✓ Photo position updated!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
       input.value = original;
     }
   };
@@ -1846,7 +1846,7 @@
     const sourceId = document.getElementById('photoEditSourceId').value;
 
     if (!character || !series || (type !== 'collab' && !handle)) {
-      alert('Please fill in all fields');
+      console.log('Please fill in all fields');
       return;
     }
 
@@ -1885,7 +1885,7 @@
       }
       closePhotoModal();
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -1908,16 +1908,16 @@
 
       await updateDoc(doc(db, 'events', eventId), { photos });
       await displayEventPhotos(eventId);
-      alert('✓ Photo deleted!');
+      console.log('✓ Photo deleted!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
   window.applyEventPhotoReorder = async () => {
     const eventId = window.currentEditingEventId;
     if (!eventId) {
-      alert('No event selected');
+      console.log('No event selected');
       return;
     }
 
@@ -1978,7 +1978,7 @@
       await displayEventPhotos(eventId);
 
       errorDiv.style.display = 'none';
-      alert('✓ Photos reordered successfully!');
+      console.log('✓ Photos reordered successfully!');
     } catch (err) {
       errorDiv.textContent = 'Error: ' + err.message;
       errorDiv.style.display = 'block';
@@ -2135,7 +2135,7 @@
 
     if (newPosition === original) return;
     if (newPosition < 1 || newPosition > 100) {
-      alert('Position must be between 1 and 100');
+      console.log('Position must be between 1 and 100');
       return;
     }
 
@@ -2157,9 +2157,9 @@
 
       await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
       await displayStudioPhotos(sessionId);
-      alert('✓ Photo position updated!');
+      console.log('✓ Photo position updated!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
       input.value = original;
     }
   };
@@ -2193,7 +2193,7 @@
     const series = document.getElementById('studioPhotoEditSeries').value;
 
     if (!handle || !character || !series) {
-      alert('Please fill in all fields');
+      console.log('Please fill in all fields');
       return;
     }
 
@@ -2212,9 +2212,9 @@
       await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
       document.getElementById('studioPhotoEditForm').style.display = 'none';
       await displayStudioPhotos(sessionId);
-      alert('✓ Photo updated!');
+      console.log('✓ Photo updated!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -2237,16 +2237,16 @@
 
       await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
       await displayStudioPhotos(sessionId);
-      alert('✓ Photo deleted!');
+      console.log('✓ Photo deleted!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
   window.applyStudioPhotoReorder = async () => {
     const sessionId = window.currentEditingStudioId;
     if (!sessionId) {
-      alert('No session selected');
+      console.log('No session selected');
       return;
     }
 
@@ -2314,7 +2314,7 @@
       await displayStudioPhotos(sessionId);
 
       errorDiv.style.display = 'none';
-      alert('✓ Photos reordered successfully!');
+      console.log('✓ Photos reordered successfully!');
     } catch (err) {
       errorDiv.textContent = 'Error: ' + err.message;
       errorDiv.style.display = 'block';
@@ -2752,7 +2752,7 @@
     } catch (err) {
       console.error('Error saving studio album order:', err);
       if (debug) debug.innerHTML = `❌ Error: ${err.message}`;
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -3552,7 +3552,7 @@
 
     if (newPosition === original) return;
     if (newPosition < 1 || newPosition > 100) {
-      alert('Position must be between 1 and 100');
+      console.log('Position must be between 1 and 100');
       return;
     }
 
@@ -3573,9 +3573,9 @@
 
       await updateDoc(doc(db, 'collaborators', collabId), { photos });
       await displayCollabPhotos(collabId);
-      alert('✓ Photo position updated!');
+      console.log('✓ Photo position updated!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
       input.value = original;
     }
   };
@@ -3588,7 +3588,7 @@
     const series = document.getElementById('collabPhotoEditSeries').value;
 
     if (!character || !series) {
-      alert('Please fill in all fields');
+      console.log('Please fill in all fields');
       return;
     }
 
@@ -3606,9 +3606,9 @@
       await updateDoc(doc(db, 'collaborators', collabId), { photos });
       document.getElementById('collabPhotoEditForm').style.display = 'none';
       await displayCollabPhotos(collabId);
-      alert('✓ Photo updated!');
+      console.log('✓ Photo updated!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -3628,16 +3628,16 @@
 
       await updateDoc(doc(db, 'collaborators', collabId), { photos });
       await displayCollabPhotos(collabId);
-      alert('✓ Photo deleted!');
+      console.log('✓ Photo deleted!');
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
   window.applyCollabPhotoReorder = async () => {
     const collabId = window.currentEditingCollabId;
     if (!collabId) {
-      alert('No collaborator selected');
+      console.log('No collaborator selected');
       return;
     }
 
@@ -3698,7 +3698,7 @@
       await displayCollabPhotos(collabId);
 
       errorDiv.style.display = 'none';
-      alert('✓ Photos reordered successfully!');
+      console.log('✓ Photos reordered successfully!');
     } catch (err) {
       errorDiv.textContent = 'Error: ' + err.message;
       errorDiv.style.display = 'block';
@@ -3774,7 +3774,7 @@
     const banner = configDoc.data()?.bannerPhoto;
 
     if (!banner) {
-      alert('No banner photo to edit');
+      console.log('No banner photo to edit');
       return;
     }
 
@@ -3800,7 +3800,7 @@
     const description = document.getElementById('editBannerDesc').value.trim();
 
     if (!character || !series || !coser) {
-      alert('Please fill in all required fields');
+      console.log('Please fill in all required fields');
       return;
     }
 
@@ -3818,11 +3818,11 @@
         }
       });
 
-      alert('✓ Banner updated!');
+      console.log('✓ Banner updated!');
       closeBannerEditModal();
       loadBannerPhoto();
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -3957,7 +3957,7 @@
       await displayEventPhotos(eventId);
     } catch (err) {
       console.error('Error saving cosplayer order:', err);
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -3974,7 +3974,7 @@
     );
 
     if (coserPhotos.length === 0) {
-      alert('No photos found for this cosplayer');
+      console.log('No photos found for this cosplayer');
       return;
     }
 
@@ -4016,7 +4016,7 @@
       const series = document.getElementById('editCoserSeries').value.trim();
 
       if (!newCoser || !character || !series) {
-        alert('Please fill in all fields');
+        console.log('Please fill in all fields');
         return;
       }
 
@@ -4043,11 +4043,11 @@
         const affectedCount = photos.filter(p =>
           p.coser === oldCoser && (p.day === oldDay || (!p.day && oldDay === 'Unknown'))
         ).length;
-        alert('✓ Updated ' + affectedCount + ' photos!');
+        console.log('✓ Updated ' + affectedCount + ' photos!');
         closeCoserEditModal();
         await displayEventPhotos(eventId);
       } catch (err) {
-        alert('Error: ' + err.message);
+        console.log('Error: ' + err.message);
       }
     }
   };
@@ -4071,10 +4071,10 @@
       const deletedCount = photos.length - filteredPhotos.length;
 
       await updateDoc(doc(db, 'events', eventId), { photos: filteredPhotos });
-      alert('✓ Deleted ' + deletedCount + ' photos!');
+      console.log('✓ Deleted ' + deletedCount + ' photos!');
       await displayEventPhotos(eventId);
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -4158,7 +4158,7 @@
     const character = document.getElementById('editCoserCharacter').value.trim();
 
     if (!newHandle || !character) {
-      alert('Please fill in all fields');
+      console.log('Please fill in all fields');
       return;
     }
 
@@ -4171,11 +4171,11 @@
       cosplayers[cosplayerIdx].name = character;
 
       await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
-      alert('✓ Updated cosplayer details!');
+      console.log('✓ Updated cosplayer details!');
       closeCoserEditModal();
       await displayStudioPhotos(sessionId);
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
@@ -4260,7 +4260,7 @@
     const series = document.getElementById('editCoserSeries').value.trim();
 
     if (!newHandle || !character || !series) {
-      alert('Please fill in all fields');
+      console.log('Please fill in all fields');
       return;
     }
 
@@ -4277,11 +4277,11 @@
       });
 
       await updateDoc(doc(db, 'collaborators', collabId), { photos: updatedPhotos });
-      alert('✓ Updated ' + photos.filter(p => p.coser === oldHandle).length + ' photos!');
+      console.log('✓ Updated ' + photos.filter(p => p.coser === oldHandle).length + ' photos!');
       closeCoserEditModal();
       await displayCollabPhotos(collabId);
     } catch (err) {
-      alert('Error: ' + err.message);
+      console.log('Error: ' + err.message);
     }
   };
 
