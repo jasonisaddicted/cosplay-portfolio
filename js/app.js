@@ -481,7 +481,7 @@ const Lightbox = (() => {
           let idx = 0;
           const t = setInterval(() => {
             idx = (idx + 1) % album.photos.length;
-            thumb.src = album.photos[idx].src;
+            fadeUpdateImage(thumb, album.photos[idx].src);
           }, 5000);
           panelTimers.push(t);
         }
