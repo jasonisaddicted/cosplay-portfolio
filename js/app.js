@@ -90,11 +90,12 @@ function initSiteIdentity() {
 // Blends current image into new image over 2 seconds
 function fadeUpdateImage(imgElement, newSrc) {
   imgElement.classList.add('fade-out');
-  // Wait briefly for fade-out transition to start, then change src and remove fade-out
+  // Wait for fade-out to progress halfway (1000ms of 2000ms) before changing src
+  // This ensures visible fade-out before transitioning back to fade-in
   setTimeout(() => {
     imgElement.src = newSrc;
     imgElement.classList.remove('fade-out');
-  }, 50);
+  }, 1000);
 }
 
 // ── Lightbox ─────────────────────────────────────────────────
@@ -1567,6 +1568,7 @@ function renderAlbumGrid(albums, container) {
       function scheduleNextSlide() {
         slideTimer = setTimeout(() => {
           idx = (idx + 1) % pool.length;
+          console.log('Album card fadeUpdateImage called, idx:', idx);
           fadeUpdateImage(imgEl, pool[idx].src);
           if (elName)   elName.textContent   = pool[idx].coser     || '';
           if (elChar)   elChar.textContent   = pool[idx].character || '';
