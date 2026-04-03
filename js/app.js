@@ -1431,7 +1431,6 @@ async function initEvents() {
 
   try {
     // Fetch Firestore albums (like Cosmic 2025)
-    const db = firebase.firestore();
     const snap = await db.collection('albums').get();
     const firestoreAlbums = snap.docs.map(doc => ({
       id: doc.id,
