@@ -2086,6 +2086,7 @@ footer {
   /* Mobile/Tablet banner: 4:3 aspect ratio (landscape) */
   .banner { aspect-ratio: 4/3; max-height: none; }
   .banner__content { left: 24px; bottom: 36px; }
+  .page-hero { max-width: 100%; }
   .section-header { padding: 40px 20px 24px; flex-wrap: wrap; max-width: 100%; }
   .picks-grid { display: none; }
   .picks-carousel.active { display: block; }
