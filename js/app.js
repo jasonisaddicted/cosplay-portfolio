@@ -1538,8 +1538,8 @@ function renderAlbumGrid(albums, container) {
       </div>
     `;
 
-    // ── Event/Outdoor card: slideshow + hover coser overlay ──────────
-    if ((isEvents || isOutdoor) && album.photos && album.photos.length > 0) {
+    // ── Event/Outdoor card: simple photo cycling without fade ──────────
+    if ((isEvents || isOutdoor) && album.photos && album.photos.length > 1) {
       const imgEl      = card.querySelector('img');
       const elName     = card.querySelector('.album-card__coser-name');
       const elChar     = card.querySelector('.album-card__coser-character');
@@ -1549,36 +1549,18 @@ function renderAlbumGrid(albums, container) {
       const pool = [...album.photos].sort(() => Math.random() - 0.5);
       let idx = 0;
 
-      function updateSlide(useFade = false) {
+      // Simple slideshow: just cycle through photos every 5 seconds
+      const slideTimer = setInterval(() => {
+        idx = (idx + 1) % pool.length;
         const p = pool[idx];
-        if (useFade) {
-          fadeUpdateImage(imgEl, p.src);
-        } else {
-          imgEl.src = p.src;
-        }
+        imgEl.src = p.src;
         if (elName)   elName.textContent   = p.coser     || '';
         if (elChar)   elChar.textContent   = p.character || '';
         if (elSeries) elSeries.textContent = p.series    || '';
-      }
-
-      updateSlide(); // show first photo immediately
-
-      // Slideshow: 3s display + 2s cross-fade = 5s cycle
-      let slideTimer = null;
-      function scheduleNextSlide() {
-        slideTimer = setTimeout(() => {
-          idx = (idx + 1) % pool.length;
-          fadeUpdateImage(imgEl, pool[idx].src);
-          if (elName)   elName.textContent   = pool[idx].coser     || '';
-          if (elChar)   elChar.textContent   = pool[idx].character || '';
-          if (elSeries) elSeries.textContent = pool[idx].series    || '';
-          scheduleNextSlide(); // Schedule next fade in 5s (3s display + 2s fade)
-        }, 5000);
-      }
-      scheduleNextSlide();
+      }, 5000);
 
       // Stop timer when navigating away
-      card.addEventListener('click', () => clearTimeout(slideTimer), { once: true });
+      card.addEventListener('click', () => clearInterval(slideTimer), { once: true });
     }
 
     container.appendChild(card);
