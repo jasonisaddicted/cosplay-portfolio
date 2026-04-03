@@ -87,16 +87,13 @@ function initSiteIdentity() {
 
 // ── Global fade transition helper ────────────────────────────
 // Used for slideshows across lightbox, album cards, and other carousel elements
+// Blends current image into new image over 2 seconds
 function fadeUpdateImage(imgElement, newSrc) {
   imgElement.classList.add('fade-out');
-  setTimeout(() => {
-    imgElement.src = newSrc;
-    imgElement.classList.remove('fade-out');
-    imgElement.classList.add('fade-in');
-    setTimeout(() => {
-      imgElement.classList.remove('fade-in');
-    }, 1000);
-  }, 1000);
+  // Change src immediately while fading out, so new image loads during fade
+  imgElement.src = newSrc;
+  // Remove fade-out immediately to start fading back in, creating cross-fade effect
+  imgElement.classList.remove('fade-out');
 }
 
 // ── Lightbox ─────────────────────────────────────────────────
@@ -477,14 +474,19 @@ const Lightbox = (() => {
         const header = acc.querySelector('.info-panel__accordion-header');
         const thumb  = acc.querySelector('.info-panel__accordion-thumb img');
 
-        // Cycling slideshow on the thumbnail
+        // Cycling slideshow on the thumbnail (3s display + 2s fade)
         if (album.photos.length > 1) {
           let idx = 0;
-          const t = setInterval(() => {
-            idx = (idx + 1) % album.photos.length;
-            fadeUpdateImage(thumb, album.photos[idx].src);
-          }, 5000);
-          panelTimers.push(t);
+          let slideTimer = null;
+          function scheduleNextThumbSlide() {
+            slideTimer = setTimeout(() => {
+              idx = (idx + 1) % album.photos.length;
+              fadeUpdateImage(thumb, album.photos[idx].src);
+              scheduleNextThumbSlide();
+            }, 3000);
+          }
+          scheduleNextThumbSlide();
+          panelTimers.push(slideTimer);
         }
 
         // Toggle open/close (only one open at a time)
@@ -526,11 +528,16 @@ const Lightbox = (() => {
 
         if (album.photos.length > 1) {
           let idx = 0;
-          const t = setInterval(() => {
-            idx = (idx + 1) % album.photos.length;
-            fadeUpdateImage(img, album.photos[idx].src);
-          }, 5000);
-          panelTimers.push(t);
+          let slideTimer = null;
+          function scheduleNextCardSlide() {
+            slideTimer = setTimeout(() => {
+              idx = (idx + 1) % album.photos.length;
+              fadeUpdateImage(img, album.photos[idx].src);
+              scheduleNextCardSlide();
+            }, 3000);
+          }
+          scheduleNextCardSlide();
+          panelTimers.push(slideTimer);
         }
 
         // Click opens album photos inline — no navigation away from current photo
@@ -1554,13 +1561,22 @@ function renderAlbumGrid(albums, container) {
 
       updateSlide(); // show first photo immediately
 
-      const timer = setInterval(() => {
-        idx = (idx + 1) % pool.length;
-        updateSlide(true); // use fade for subsequent slides
-      }, 5000);
+      // Slideshow: 3s display + 2s cross-fade = 5s cycle
+      let slideTimer = null;
+      function scheduleNextSlide() {
+        slideTimer = setTimeout(() => {
+          idx = (idx + 1) % pool.length;
+          fadeUpdateImage(imgEl, pool[idx].src);
+          if (elName)   elName.textContent   = pool[idx].coser     || '';
+          if (elChar)   elChar.textContent   = pool[idx].character || '';
+          if (elSeries) elSeries.textContent = pool[idx].series    || '';
+          scheduleNextSlide(); // Schedule next fade in 3s (+ 2s fade = 5s cycle)
+        }, 3000);
+      }
+      scheduleNextSlide();
 
       // Stop timer when navigating away
-      card.addEventListener('click', () => clearInterval(timer), { once: true });
+      card.addEventListener('click', () => clearTimeout(slideTimer), { once: true });
     }
 
     container.appendChild(card);
