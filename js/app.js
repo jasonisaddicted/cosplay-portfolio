@@ -143,6 +143,7 @@ const Lightbox = (() => {
   const capEl   = lb.querySelector('.lightbox__caption');
   const counter = lb.querySelector('.lightbox__counter');
   const backBtn = lb.querySelector('.lightbox__back');
+  const likeBtn = lb.querySelector('.lightbox__like-btn');
 
   const infoPanel = document.createElement('div');
   infoPanel.className = 'lightbox__info-panel';
@@ -649,6 +650,36 @@ const Lightbox = (() => {
     if (backBtn && backCallback) backBtn.style.display = 'flex';
     buildInfoPanel(p);
 
+    // Update like button for current photo
+    if (likeBtn && window.db && p.eventId) {
+      const likeKey = `photo_${p.eventId}_${current}`;
+      const countEl = likeBtn.querySelector('.lightbox__like-count');
+
+      // Load like count from Firestore
+      window.getDoc(window.doc(window.db, 'events', p.eventId))
+        .then(docSnap => {
+          if (docSnap.exists()) {
+            const event = docSnap.data();
+            const photoLikes = event.photoLikes || {};
+            const likeCount = photoLikes[current] || 0;
+
+            if (countEl) countEl.textContent = likeCount;
+
+            // Check if user already liked
+            if (window.hasUserLiked(likeKey)) {
+              likeBtn.style.borderColor = '#c8a46e';
+              likeBtn.style.color = '#c8a46e';
+              likeBtn.querySelector('.lightbox__like-icon').style.fill = '#c8a46e';
+            } else {
+              likeBtn.style.borderColor = '#e4e4e4';
+              likeBtn.style.color = '#e4e4e4';
+              likeBtn.querySelector('.lightbox__like-icon').style.fill = 'none';
+            }
+          }
+        })
+        .catch(err => console.error('Error loading like count:', err));
+    }
+
     // Mark lightbox as open and push state with URL hash so back button works
     historyState = { lightbox: true };
     const urlWithHash = window.location.href.split('#')[0] + '#lightbox';
@@ -674,6 +705,64 @@ const Lightbox = (() => {
       }
     });
   }
+
+  // Like button for current photo
+  if (likeBtn) {
+    likeBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!window.db || photos.length === 0) return;
+
+      const photo = photos[current];
+      if (!photo || !photo.eventId) {
+        console.log('Cannot like: missing event context');
+        return;
+      }
+
+      const likeKey = `photo_${photo.eventId}_${current}`;
+
+      if (window.hasUserLiked(likeKey)) {
+        console.log('Already liked this photo');
+        return;
+      }
+
+      try {
+        const docRef = window.doc(window.db, 'events', photo.eventId);
+        const docSnap = await window.getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          console.error('Event not found');
+          return;
+        }
+
+        const event = docSnap.data();
+        const photoLikes = event.photoLikes || {};
+        const photoIndex = current;
+
+        photoLikes[photoIndex] = (photoLikes[photoIndex] || 0) + 1;
+
+        await window.updateDoc(docRef, { photoLikes });
+
+        window.markAsLiked(likeKey);
+
+        // Update button
+        const countEl = likeBtn.querySelector('.lightbox__like-count');
+        if (countEl) {
+          countEl.textContent = photoLikes[photoIndex];
+        }
+
+        likeBtn.style.borderColor = '#c8a46e';
+        likeBtn.style.color = '#c8a46e';
+        likeBtn.querySelector('.lightbox__like-icon').style.fill = '#c8a46e';
+
+        console.log('✓ Photo liked');
+      } catch (err) {
+        console.error('Error liking photo:', err);
+      }
+    });
+  }
+
   lb.querySelector('.lightbox__prev').addEventListener('click', () => show(current - 1));
   lb.querySelector('.lightbox__next').addEventListener('click', () => show(current + 1));
 
