@@ -4,6 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Album — Cosplay Portfolio</title>
+
+  <!-- Base metadata (will be updated by JavaScript) -->
+  <meta name="description" content="Cosplay portfolio album">
+
+  <!-- Open Graph Meta Tags (for social media previews) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="">
+  <meta property="og:title" content="Cosplay Portfolio Album">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cosplay Portfolio Album">
+  <meta name="twitter:description" content="">
+  <meta name="twitter:image" content="">
+
   <link rel="stylesheet" href="css/style.css?v=68">
 </head>
 <body class="page-album">
@@ -43,6 +62,59 @@
     <h1 class="album-header__title" id="album-title">Loading…</h1>
     <div class="album-header__meta" id="album-meta"></div>
     <p class="album-header__desc" id="album-desc"></p>
+
+    <!-- Like and Share Buttons -->
+    <div class="album-header__actions" style="display:flex; gap:15px; justify-content:center; margin-top:20px;">
+      <button class="album-like-btn" id="albumLikeBtn" onclick="likeCurrentAlbum()" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:10px 20px; cursor:pointer; border-radius:3px; transition:all 0.22s ease; font-size:0.9rem;">
+        <svg class="like-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+        <span class="album-like-count" id="albumLikeCount">0</span>
+      </button>
+
+      <button class="album-share-btn" id="albumShareBtn" onclick="toggleAlbumShareMenu()" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:10px 20px; cursor:pointer; border-radius:3px; transition:all 0.22s ease; font-size:0.9rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        <span>Share</span>
+      </button>
+
+      <!-- Share Menu -->
+      <div class="album-share-menu" id="albumShareMenu" style="display:none; position:fixed; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:3px; padding:8px 0; z-index:1001; min-width:220px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+        <button onclick="shareAlbumTo('x')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:10px; transition:all 0.22s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.6l-5.17-6.763-5.91 6.763h-3.308l7.678-8.876-8.156-10.624h6.589l4.69 6.197 5.37-6.197zM16.17 19.75h1.83L5.996 4.094H4.05L16.17 19.75z"/></svg>
+          X (Twitter)
+        </button>
+        <button onclick="shareAlbumTo('instagram')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:10px; transition:all 0.22s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><defs><linearGradient id="instagramGradient" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#feda75;stop-opacity:1" /><stop offset="5%" style="stop-color:#fa7e1e;stop-opacity:1" /><stop offset="45%" style="stop-color:#d92e7f;stop-opacity:1" /><stop offset="60%" style="stop-color:#9b36b7;stop-opacity:1" /><stop offset="90%" style="stop-color:#515bd4;stop-opacity:1" /></linearGradient></defs><rect width="24" height="24" fill="url(#instagramGradient)" rx="4"/><path d="M12 2.16c2.175 0 2.432.01 3.286.048 1.504.073 2.318.332 2.86.551.718.278 1.228.646 1.769 1.187.54.54.909 1.051 1.187 1.769.219.542.478 1.356.55 2.86.04.854.049 1.11.049 3.286 0 2.176-.01 2.432-.049 3.286-.072 1.504-.331 2.318-.55 2.86-.278.718-.647 1.228-1.187 1.769-.541.541-1.051.909-1.769 1.187-.542.219-1.356.478-2.86.55-1.854.09-2.111.099-3.286.099-1.176 0-1.432-.01-3.286-.099-1.504-.072-2.318-.331-2.86-.55-.719-.278-1.228-.646-1.769-1.187-.541-.541-.909-1.051-1.187-1.769-.219-.542-.478-1.356-.55-2.86-.039-.854-.049-1.11-.049-3.286 0-2.176.01-2.432.049-3.286.072-1.504.331-2.318.55-2.86.278-.719.646-1.228 1.187-1.769.541-.541 1.051-.909 1.769-1.187.542-.219 1.356-.478 2.86-.55.854-.04 1.11-.049 3.286-.049m0-2.16c-2.209 0-2.486.01-3.354.048-2.787.131-4.311 1.666-4.442 4.44-.037.868-.048 1.145-.048 3.354 0 2.209.01 2.486.048 3.354.131 2.774 1.655 4.309 4.44 4.44.868.038 1.145.048 3.354.048s2.486-.01 3.354-.048c2.787-.131 4.309-1.666 4.44-4.44.038-.868.048-1.145.048-3.354 0-2.209-.01-2.486-.048-3.354-.131-2.774-1.655-4.309-4.44-4.44C14.486 2.01 14.209 2 12 2z" fill="white"/><circle cx="12" cy="12" r="3.305" fill="none" stroke="white" stroke-width="0.6"/></svg>
+          Instagram Story
+        </button>
+        <button onclick="shareAlbumTo('facebook')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:10px; transition:all 0.22s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook
+        </button>
+        <button onclick="shareAlbumTo('threads')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:10px; transition:all 0.22s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.215-3.523C2.685 18.891 2 16.572 2 13.857c0-2.716.685-5.034 1.964-6.620 1.881-2.318 4.634-3.499 8.215-3.523h.007c2.392.017 4.521.742 6.022 2.096.956.838 1.735 1.886 2.333 3.128.019.047.037.081.056.119l-2.224 1.084c-.148-.37-.326-.72-.526-1.052-1.147-1.947-2.844-3.028-5.66-3.05h-.007c-2.763.024-4.926.856-6.227 2.466-1.302 1.61-1.957 3.752-1.957 6.342 0 2.59.655 4.733 1.957 6.343 1.301 1.61 3.464 2.442 6.227 2.466h.007c1.499 0 2.84-.27 3.986-.804 1.072-.507 1.937-1.226 2.591-2.141.33-.483.601-1.026.81-1.614l2.18 1.102c-.24.75-.596 1.465-1.062 2.127-1.556 2.195-4.045 3.637-7.515 3.702zm8.618-9.75h-6.572v-2h6.572v2z"/></svg>
+          Threads
+        </button>
+        <button onclick="shareAlbumTo('xhs')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:10px; transition:all 0.22s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" fill="#FFE01B" rx="4"/><text x="12" y="14" font-size="10" font-weight="bold" text-anchor="middle" fill="#000">小</text></svg>
+          XiaoHongShu
+        </button>
+        <button onclick="shareAlbumTo('wechat')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:10px; transition:all 0.22s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#09B83E"><path d="M8.691 2.188C3.891 2.188 0 5.896 0 10.581c0 2.25.889 4.438 2.516 6.039.427 3.882 3.797 6.512 7.796 6.512.528 0 1.038-.057 1.534-.128 1.596 1.694 3.894 2.76 6.41 2.76 4.8 0 8.691-3.708 8.691-8.281 0-.522-.036-1.039-.107-1.553 1.669-1.602 2.516-3.79 2.516-6.039C24 5.896 20.109 2.188 15.309 2.188zM8.691 4.188h.026c2.208 0 4.004 1.679 4.004 3.75 0 2.071-1.796 3.75-4.03 3.75-2.208 0-4.003-1.679-4.003-3.75 0-2.071 1.795-3.75 4.003-3.75zm6.326 0h.026c.533 0 .975.477.975 1.063 0 .586-.442 1.063-.975 1.063-.533 0-.974-.477-.974-1.063.001-.586.441-1.063.948-1.063zm2.867 0h.026c.533 0 .975.477.975 1.063 0 .586-.442 1.063-.975 1.063-.533 0-.974-.477-.974-1.063 0-.586.441-1.063.948-1.063zm2.867 0h.026c.533 0 .975.477.975 1.063 0 .586-.442 1.063-.975 1.063-.533 0-.974-.477-.974-1.063 0-.586.441-1.063.948-1.063z"/></svg>
+          WeChat
+        </button>
+        <button onclick="copyAlbumLink()" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:10px; transition:all 0.22s ease; border-top:1px solid #2e2e2e;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          Copy Link
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Photo Masonry Grid -->
@@ -96,6 +168,7 @@
   <script src="js/protect.js?v=68"></script>
   <script type="module" src="js/firebase-init.js?v=68"></script>
   <script src="js/app.js?v=68"></script>
+  <script src="js/album.js?v=68"></script>
   <script>
     // Sync breadcrumb title after album loads
     document.addEventListener('DOMContentLoaded', () => {
