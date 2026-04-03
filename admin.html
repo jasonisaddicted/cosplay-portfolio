@@ -1638,6 +1638,47 @@
     }
   };
 
+  // ─ Cosplayer Name Extraction from Filename ─
+  // Extracts cosplayer name from filenames like: web_cosername_#-post-vfx-edr
+  window.extractCoserFromFilename = (filename) => {
+    // Remove file extension
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+
+    // Match pattern: web_[cosername]_ or just extract text between underscores
+    const match = nameWithoutExt.match(/web_([^_]+)_/);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+
+    // Fallback: if no match, try to extract first part before underscore
+    const parts = nameWithoutExt.split('_');
+    if (parts.length > 1 && parts[1] !== '#') {
+      return parts[1].trim();
+    }
+
+    return null;
+  };
+
+  // Auto-fill cosplayer handle when files are selected
+  window.setupCoserAutoFill = (fileInputId, handleInputId) => {
+    const fileInput = document.getElementById(fileInputId);
+    if (!fileInput) return;
+
+    fileInput.addEventListener('change', (e) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        const coser = extractCoserFromFilename(files[0].name);
+        if (coser) {
+          const handleInput = document.getElementById(handleInputId);
+          if (handleInput && !handleInput.value) {
+            handleInput.value = `@${coser}`;
+            console.log(`✓ Auto-filled cosplayer: @${coser}`);
+          }
+        }
+      }
+    });
+  };
+
   // ─ Composite Key Helpers for Multi-Day Cosplayer Support ─
   window.parseCoserKey = (key) => {
     const [coser, day] = key.split('|');
@@ -4298,6 +4339,14 @@
     window.loadBannerPhoto();
     window.loadStudio();
     window.loadOutdoor();
+
+    // ─ Setup auto-fill cosplayer names from filenames ─
+    // Auto-fill when batch uploading (creating new albums)
+    window.setupCoserAutoFill('uploadEventFiles', 'batchEventHandle');
+    window.setupCoserAutoFill('uploadStudioFiles', 'batchHandle');
+    window.setupCoserAutoFill('uploadCollabFiles', 'batchCollabHandle');
+    window.setupCoserAutoFill('uploadOutdoorFiles', 'batchOutdoorHandle');
+    window.setupCoserAutoFill('addMoreCollabFiles', 'collabHandle');
 
     // ─ File upload ─
     const uploadFeaturedFiles = document.getElementById('uploadFeaturedFiles');
