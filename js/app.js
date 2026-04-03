@@ -87,19 +87,13 @@ function initSiteIdentity() {
 
 // ── Global fade transition helper ────────────────────────────
 // Used for slideshows across lightbox, album cards, and other carousel elements
-// Photo 1 fades out, Photo 2 fades in (both over 2 seconds)
+// Overlapping fade-out and fade-in for smooth 2-second cross-fade
 function fadeUpdateImage(imgElement, newSrc) {
   imgElement.classList.add('fade-out');
-  // Wait for opacity to reach 0, then swap image and fade back in
-  setTimeout(() => {
-    imgElement.src = newSrc;
-    imgElement.classList.remove('fade-out');
-    imgElement.classList.add('fade-in');
-    // Remove fade-in after transition completes
-    setTimeout(() => {
-      imgElement.classList.remove('fade-in');
-    }, 2000);
-  }, 2000);
+  imgElement.src = newSrc;
+  // Remove fade-out immediately so fade-in starts, creating smooth overlap
+  imgElement.classList.remove('fade-out');
+  // Both fade out and fade in happen over 2s, creating a dissolve effect
 }
 
 // ── Lightbox ─────────────────────────────────────────────────
@@ -489,7 +483,7 @@ const Lightbox = (() => {
               idx = (idx + 1) % album.photos.length;
               fadeUpdateImage(thumb, album.photos[idx].src);
               scheduleNextThumbSlide();
-            }, 3000);
+            }, 5000);
           }
           scheduleNextThumbSlide();
           panelTimers.push(slideTimer);
@@ -540,7 +534,7 @@ const Lightbox = (() => {
               idx = (idx + 1) % album.photos.length;
               fadeUpdateImage(img, album.photos[idx].src);
               scheduleNextCardSlide();
-            }, 3000);
+            }, 5000);
           }
           scheduleNextCardSlide();
           panelTimers.push(slideTimer);
@@ -1572,13 +1566,12 @@ function renderAlbumGrid(albums, container) {
       function scheduleNextSlide() {
         slideTimer = setTimeout(() => {
           idx = (idx + 1) % pool.length;
-          console.log('Album card fadeUpdateImage called, idx:', idx);
           fadeUpdateImage(imgEl, pool[idx].src);
           if (elName)   elName.textContent   = pool[idx].coser     || '';
           if (elChar)   elChar.textContent   = pool[idx].character || '';
           if (elSeries) elSeries.textContent = pool[idx].series    || '';
-          scheduleNextSlide(); // Schedule next fade in 3s (+ 2s fade = 5s cycle)
-        }, 3000);
+          scheduleNextSlide(); // Schedule next fade in 5s (3s display + 2s fade)
+        }, 5000);
       }
       scheduleNextSlide();
 
