@@ -1522,11 +1522,8 @@ function renderAlbumGrid(albums, container) {
       </div>
     ` : '';
 
-    // Use first photo as cover if available, otherwise use album.cover
-    const coverSrc = (album.photos && album.photos.length > 0) ? album.photos[0].src : album.cover;
-
     card.innerHTML = `
-      <img src="${coverSrc}" alt="${album.name}" loading="lazy">
+      <img src="${album.cover}" alt="${album.name}" loading="lazy">
       ${coserOverlayHtml}
       <div class="album-card__info">
         <div class="album-card__name">${album.name}</div>
@@ -1540,19 +1537,6 @@ function renderAlbumGrid(albums, container) {
         <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M7 7h10v10"/></svg>
       </div>
     `;
-
-    // ── Event/Outdoor card: show first photo + coser overlay info ──────────
-    if ((isEvents || isOutdoor) && album.photos && album.photos.length > 0) {
-      const elName     = card.querySelector('.album-card__coser-name');
-      const elChar     = card.querySelector('.album-card__coser-character');
-      const elSeries   = card.querySelector('.album-card__coser-series');
-      const firstPhoto = album.photos[0];
-
-      // Display first photo's coser info
-      if (elName)   elName.textContent   = firstPhoto.coser     || '';
-      if (elChar)   elChar.textContent   = firstPhoto.character || '';
-      if (elSeries) elSeries.textContent = firstPhoto.series    || '';
-    }
 
     container.appendChild(card);
   });
