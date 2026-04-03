@@ -3,21 +3,32 @@
  * Generates proper og:image for album shares on social media
  */
 
-const admin = require('firebase-admin');
+let db = null;
 
-// Initialize Firebase (use environment variables for credentials)
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS || '{}');
+function initializeFirebase() {
+  if (db) return;
 
-  if (Object.keys(serviceAccount).length > 0) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.FIREBASE_PROJECT_ID,
-    });
+  try {
+    const admin = require('firebase-admin');
+
+    if (!admin.apps.length) {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS || '{}');
+
+      if (Object.keys(serviceAccount).length > 0) {
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+          projectId: process.env.FIREBASE_PROJECT_ID,
+        });
+        db = admin.firestore();
+      }
+    } else {
+      db = admin.firestore();
+    }
+  } catch (error) {
+    console.error('Firebase initialization error:', error.message);
+    throw error;
   }
 }
-
-const db = admin.firestore();
 
 /**
  * Main handler: Generate meta tags for album
@@ -41,6 +52,13 @@ module.exports = async function handler(req, res) {
 
     if (!id || !type) {
       return res.status(400).json({ error: 'Missing id or type parameter' });
+    }
+
+    // Initialize Firebase if not already done
+    initializeFirebase();
+
+    if (!db) {
+      return res.status(500).json({ error: 'Firebase not initialized - missing credentials' });
     }
 
     // Fetch album from Firestore
