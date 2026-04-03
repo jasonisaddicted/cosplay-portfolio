@@ -114,7 +114,7 @@ const Lightbox = (() => {
     setTimeout(() => {
       imgElement.src = newSrc;
       imgElement.classList.remove('fade-out');
-    }, 200);
+    }, 2000);
   }
 
   function clearPanelTimers() {
@@ -478,7 +478,7 @@ const Lightbox = (() => {
           const t = setInterval(() => {
             idx = (idx + 1) % album.photos.length;
             thumb.src = album.photos[idx].src;
-          }, 2500);
+          }, 5000);
           panelTimers.push(t);
         }
 
@@ -524,7 +524,7 @@ const Lightbox = (() => {
           const t = setInterval(() => {
             idx = (idx + 1) % album.photos.length;
             fadeUpdateImage(img, album.photos[idx].src);
-          }, 2500);
+          }, 5000);
           panelTimers.push(t);
         }
 
@@ -1552,7 +1552,7 @@ function renderAlbumGrid(albums, container) {
       const timer = setInterval(() => {
         idx = (idx + 1) % pool.length;
         updateSlide(true); // use fade for subsequent slides
-      }, 3000);
+      }, 5000);
 
       // Stop timer when navigating away
       card.addEventListener('click', () => clearInterval(timer), { once: true });

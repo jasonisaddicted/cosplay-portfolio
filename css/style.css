@@ -1145,7 +1145,7 @@ ul { list-style: none; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: filter 0.35s ease, opacity 0.4s ease-out;
+  transition: filter 0.35s ease, opacity 2s ease-out;
   filter: brightness(0.88);
   opacity: 1;
 }
@@ -1252,7 +1252,7 @@ ul { list-style: none; }
   height: auto;
   object-fit: contain;
   opacity: 1;
-  transition: opacity 0.4s ease-out;
+  transition: opacity 2s ease-out;
 }
 .lightbox__img-wrap img.fade-out {
   opacity: 0;
@@ -1260,6 +1260,7 @@ ul { list-style: none; }
 /* Generic fade-out for all images in slideshow transitions */
 img.fade-out {
   opacity: 0 !important;
+  transition: opacity 2s ease-out !important;
 }
 /* ── Lightbox Info Panel ────────────────────────────────────────
    Slides in from the right (desktop) or bottom (mobile).
@@ -1374,7 +1375,7 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
   object-fit: cover;
   pointer-events: none;
   opacity: 1;
-  transition: transform 0.55s ease, opacity 0.4s ease-out;
+  transition: transform 0.55s ease, opacity 2s ease-out;
 }
 .info-panel__album-card:hover .info-panel__album-img { transform: scale(1.06); }
 .info-panel__album-name {
