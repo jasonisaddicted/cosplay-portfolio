@@ -32,6 +32,7 @@ window.CONFIG = {};
 window.db = db;
 window.auth = auth;
 window.storage = storage;
+window.firebaseReady = Promise.resolve(); // Signal that Firebase is ready
 
 // ── Expose Firebase functions globally for app.js ──
 window.collection = collection;
