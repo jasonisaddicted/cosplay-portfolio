@@ -2087,12 +2087,22 @@ window.copyShareLink = () => {
 // Toggle album share menu
 window.toggleAlbumShareMenu = (event) => {
   event.stopPropagation();
-  const menu = event.target.closest('.album-actions').querySelector('.share-menu');
+
+  // Find the closest parent with album-actions or album-card
+  const actionContainer = event.target.closest('.album-actions') || event.target.closest('.album-card');
+  if (!actionContainer) return;
+
+  const menu = actionContainer.querySelector('.share-menu');
+  if (!menu) return;
+
+  // Close all other menus
   const allMenus = document.querySelectorAll('.share-menu');
   allMenus.forEach(m => {
     if (m !== menu) m.style.display = 'none';
   });
-  if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+
+  // Toggle this menu
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
 };
 
 // Close share menus when clicking outside
