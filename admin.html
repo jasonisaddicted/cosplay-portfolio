@@ -1638,18 +1638,30 @@
     }
   };
 
+  // ─ Composite Key Helpers for Multi-Day Cosplayer Support ─
+  window.parseCoserKey = (key) => {
+    const [coser, day] = key.split('|');
+    return { coser, day };
+  };
+
+  window.buildCoserKey = (coser, day) => {
+    return `${coser}|${day || 'Unknown'}`;
+  };
+
   // ─ Event Photo Management ─
   window.displayEventPhotos = async (id) => {
     const docSnap = await getDoc(doc(db, 'events', id));
     const event = docSnap.data();
     const photos = event.photos || [];
 
-    // Group photos by cosplayer handle
+    // Group photos by cosplayer handle and day (composite key)
     const grouped = {};
     photos.forEach((photo, index) => {
       const handle = photo.coser || 'Unknown';
-      if (!grouped[handle]) grouped[handle] = [];
-      grouped[handle].push({ ...photo, index });
+      const day = photo.day || 'Unknown';
+      const groupKey = window.buildCoserKey(handle, day);  // Composite key
+      if (!grouped[groupKey]) grouped[groupKey] = [];
+      grouped[groupKey].push({ ...photo, index });
     });
 
     // Display cosplayer order panel
@@ -1657,11 +1669,13 @@
 
     // Build HTML for grouped photos in grid layout
     let html = '';
-    Object.entries(grouped).forEach(([handle, coserPhotos]) => {
+    Object.entries(grouped).forEach(([groupKey, coserPhotos]) => {
+      const { coser, day } = window.parseCoserKey(groupKey);
+      const displayName = `${coser} (${day})`;
       html += `
         <div style="margin-bottom:30px; padding:15px; background:#1a1a1a; border:1px solid #333; border-radius:4px;">
           <h4 style="margin:0 0 15px 0; color:#aaa; cursor:pointer; user-select:none;" onclick="window.toggleCoserPhotosGroup(this)">
-            ${handle} (${coserPhotos.length} photos) — Click to expand/collapse
+            ${displayName} (${coserPhotos.length} photos) — Click to expand/collapse
           </h4>
           <div class="coser-photos-group" style="display:block; padding:10px;">
             <div class="event-photo-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:15px;">`;
@@ -3813,25 +3827,27 @@
   };
 
   // ── Cosplayer Order Management ──────────────────────────────
-  window.displayCoserOrderPanel = (eventId, cosers) => {
+  window.displayCoserOrderPanel = (eventId, coserKeys) => {
     const container = document.getElementById('coserOrderList');
-    if (cosers.length === 0) {
+    if (coserKeys.length === 0) {
       container.innerHTML = '<p style="color:#666;">No cosplayers in this event</p>';
       return;
     }
 
     let html = '<div style="padding:10px; background:#181818; border-radius:3px;">';
-    cosers.forEach((coser, idx) => {
+    coserKeys.forEach((coserKey, idx) => {
+      const { coser, day } = window.parseCoserKey(coserKey);
+      const displayName = `${coser} (${day})`;
       html += `
-        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserDrop(event, '${eventId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser="${coser}" data-event-id="${eventId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none;">
+        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserDrop(event, '${eventId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser-key="${coserKey}" data-event-id="${eventId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none;">
           <div style="display:flex; align-items:center; flex:1;">
             <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
-            <span style="flex:1; color:#fff; font-size:0.9rem;">${coser}</span>
+            <span style="flex:1; color:#fff; font-size:0.9rem;">${displayName}</span>
             <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
           </div>
           <div style="display:flex; gap:6px;">
-            <button onclick="openCoserEditModal('${eventId}', '${coser}')" style="padding:5px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
-            <button onclick="deleteAllCoserPhotos('${eventId}', '${coser}')" style="padding:5px 10px; font-size:0.75rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete All</button>
+            <button onclick="openCoserEditModal('${eventId}', '${coserKey}')" style="padding:5px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
+            <button onclick="deleteAllCoserPhotos('${eventId}', '${coserKey}')" style="padding:5px 10px; font-size:0.75rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete All</button>
           </div>
         </div>`;
     });
@@ -3877,7 +3893,7 @@
     e.preventDefault();
     if (!draggedCoser) return;
 
-    const fromCoser = draggedCoser.getAttribute('data-coser');
+    const fromCoserKey = draggedCoser.getAttribute('data-coser-key');
     const toItem = e.target.closest('.coser-order-item');
     if (!toItem || toItem === draggedCoser) {
       draggedCoser.style.opacity = '1';
@@ -3885,19 +3901,19 @@
       return;
     }
 
-    const toCoser = toItem.getAttribute('data-coser');
+    const toCoserKey = toItem.getAttribute('data-coser-key');
 
-    // Find all cosers in order
+    // Find all coser keys in order
     const container = document.getElementById('coserOrderList');
     const allItems = Array.from(container.querySelectorAll('.coser-order-item'));
-    const coserOrder = allItems.map(item => item.getAttribute('data-coser'));
+    const coserKeyOrder = allItems.map(item => item.getAttribute('data-coser-key'));
 
     // Swap positions
-    const fromIdx = coserOrder.indexOf(fromCoser);
-    [coserOrder[fromIdx], coserOrder[targetIdx]] = [coserOrder[targetIdx], coserOrder[fromIdx]];
+    const fromIdx = coserKeyOrder.indexOf(fromCoserKey);
+    [coserKeyOrder[fromIdx], coserKeyOrder[targetIdx]] = [coserKeyOrder[targetIdx], coserKeyOrder[fromIdx]];
 
     // Save reordered cosers to Firebase (update photos order)
-    saveCoserOrder(eventId, coserOrder);
+    saveCoserOrder(eventId, coserKeyOrder);
 
     draggedCoser.style.opacity = '1';
     draggedCoser = null;
@@ -3913,22 +3929,28 @@
     });
   };
 
-  window.saveCoserOrder = async (eventId, coserOrder) => {
+  window.saveCoserOrder = async (eventId, coserKeyOrder) => {
     try {
       const docSnap = await getDoc(doc(db, 'events', eventId));
       const event = docSnap.data();
       const photos = [...event.photos];
 
-      // Group photos by cosplayer in the new order
+      // Group photos by cosplayer+day (composite key) in the new order
       const reorderedPhotos = [];
-      coserOrder.forEach(coser => {
-        const coserPhotos = photos.filter(p => p.coser === coser);
+      coserKeyOrder.forEach(coserKey => {
+        const { coser, day } = window.parseCoserKey(coserKey);
+        const coserPhotos = photos.filter(p =>
+          p.coser === coser && (p.day === day || (!p.day && day === 'Unknown'))
+        );
         reorderedPhotos.push(...coserPhotos);
       });
 
-      // Add any remaining photos (e.g., 'Unknown' cosplayer)
-      const orderedCosers = new Set(coserOrder);
-      const remainingPhotos = photos.filter(p => !orderedCosers.has(p.coser || 'Unknown'));
+      // Add any remaining photos (photos not in the coserKeyOrder)
+      const orderedCoserKeys = new Set(coserKeyOrder);
+      const remainingPhotos = photos.filter(p => {
+        const key = window.buildCoserKey(p.coser || 'Unknown', p.day || 'Unknown');
+        return !orderedCoserKeys.has(key);
+      });
       reorderedPhotos.push(...remainingPhotos);
 
       await updateDoc(doc(db, 'events', eventId), { photos: reorderedPhotos });
@@ -3940,11 +3962,16 @@
   };
 
   // ── Cosplayer Details Edit ────────────────────────────────
-  window.openCoserEditModal = async (eventId, coser) => {
+  window.openCoserEditModal = async (eventId, coserKey) => {
     // Load current cosplayer details from first photo
+    const { coser, day } = window.parseCoserKey(coserKey);
     const docSnap = await getDoc(doc(db, 'events', eventId));
     const event = docSnap.data();
-    const coserPhotos = event.photos.filter(p => p.coser === coser);
+
+    // Filter by BOTH coser AND day
+    const coserPhotos = event.photos.filter(p =>
+      p.coser === coser && (p.day === day || (!p.day && day === 'Unknown'))
+    );
 
     if (coserPhotos.length === 0) {
       alert('No photos found for this cosplayer');
@@ -3954,9 +3981,10 @@
     const firstPhoto = coserPhotos[0];
     const handleInput = document.getElementById('editCoserHandle');
     handleInput.value = coser;
-    handleInput.setAttribute('data-original', coser);
+    handleInput.setAttribute('data-original-key', coserKey);
 
     document.getElementById('editCoserEventId').value = eventId;
+    document.getElementById('editCoserDay').value = day;
     document.getElementById('editCoserCharacter').value = firstPhoto.character || '';
     document.getElementById('editCoserSeries').value = firstPhoto.series || '';
     document.getElementById('coserEditPhotoCount').textContent = coserPhotos.length;
@@ -3979,13 +4007,15 @@
     } else if (collabId) {
       return await saveCoserEditDetailsCollab();
     } else if (eventId) {
-      // Original event save logic
-      const oldHandle = handleInput.getAttribute('data-original');
-      const newHandle = handleInput.value.trim().replace('@', '');
+      // Event save logic with composite key support
+      const oldCoserKey = handleInput.getAttribute('data-original-key');
+      const { coser: oldCoser, day: oldDay } = window.parseCoserKey(oldCoserKey);
+      const newCoser = handleInput.value.trim().replace('@', '');
+      const newDay = document.getElementById('editCoserDay').value || 'Unknown';
       const character = document.getElementById('editCoserCharacter').value.trim();
       const series = document.getElementById('editCoserSeries').value.trim();
 
-      if (!newHandle || !character || !series) {
+      if (!newCoser || !character || !series) {
         alert('Please fill in all fields');
         return;
       }
@@ -3995,12 +4025,13 @@
         const event = docSnap.data();
         const photos = [...event.photos];
 
-        // Update all photos of this cosplayer
+        // Update photos matching both coser AND day
         const updatedPhotos = photos.map(p => {
-          if (p.coser === oldHandle) {
+          if (p.coser === oldCoser && (p.day === oldDay || (!p.day && oldDay === 'Unknown'))) {
             return {
               ...p,
-              coser: newHandle,
+              coser: newCoser,
+              day: newDay,
               character,
               series
             };
@@ -4009,7 +4040,9 @@
         });
 
         await updateDoc(doc(db, 'events', eventId), { photos: updatedPhotos });
-        const affectedCount = photos.filter(p => p.coser === oldHandle).length;
+        const affectedCount = photos.filter(p =>
+          p.coser === oldCoser && (p.day === oldDay || (!p.day && oldDay === 'Unknown'))
+        ).length;
         alert('✓ Updated ' + affectedCount + ' photos!');
         closeCoserEditModal();
         await displayEventPhotos(eventId);
@@ -4019,8 +4052,10 @@
     }
   };
 
-  window.deleteAllCoserPhotos = async (eventId, coser) => {
-    if (!confirm(`Delete ALL photos of cosplayer "${coser}"? This cannot be undone.`)) {
+  window.deleteAllCoserPhotos = async (eventId, coserKey) => {
+    const { coser, day } = window.parseCoserKey(coserKey);
+    const displayName = `${coser} (${day})`;
+    if (!confirm(`Delete ALL photos of "${displayName}"? This cannot be undone.`)) {
       return;
     }
 
@@ -4029,8 +4064,10 @@
       const event = docSnap.data();
       const photos = [...event.photos];
 
-      // Remove all photos of this cosplayer
-      const filteredPhotos = photos.filter(p => p.coser !== coser);
+      // Remove all photos matching both coser AND day
+      const filteredPhotos = photos.filter(p =>
+        !(p.coser === coser && (p.day === day || (!p.day && day === 'Unknown')))
+      );
       const deletedCount = photos.length - filteredPhotos.length;
 
       await updateDoc(doc(db, 'events', eventId), { photos: filteredPhotos });
@@ -4368,6 +4405,19 @@
         <label>Instagram Handle (Cosplayer) *</label>
         <input type="text" id="editCoserHandle" placeholder="e.g., sakurahime_cos (without @)" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
         <p style="font-size:0.75rem; color:#aaa; margin-top:5px;">Change handle to update all photos at once</p>
+      </div>
+
+      <div class="form-group">
+        <label>Event Day *</label>
+        <select id="editCoserDay" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+          <option value="Unknown">Unknown</option>
+          <option value="Day 1">Day 1</option>
+          <option value="Day 2">Day 2</option>
+          <option value="Day 3">Day 3</option>
+          <option value="Day 4">Day 4</option>
+          <option value="Day 5">Day 5</option>
+        </select>
+        <p style="font-size:0.75rem; color:#aaa; margin-top:5px;">Select the day this cosplayer appears</p>
       </div>
 
       <div class="form-group">
