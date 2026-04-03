@@ -881,7 +881,7 @@ ul { list-style: none; }
   background: var(--border);
   margin: 0 auto 80px;
   max-width: clamp(280px, 90vw, 55vw);
-  padding: 0 40px;
+  padding: 0;
 }
 .album-card {
   position: relative;
