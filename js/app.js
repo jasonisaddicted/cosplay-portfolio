@@ -90,10 +90,11 @@ function initSiteIdentity() {
 // Blends current image into new image over 2 seconds
 function fadeUpdateImage(imgElement, newSrc) {
   imgElement.classList.add('fade-out');
-  // Change src immediately while fading out, so new image loads during fade
-  imgElement.src = newSrc;
-  // Remove fade-out immediately to start fading back in, creating cross-fade effect
-  imgElement.classList.remove('fade-out');
+  // Wait briefly for fade-out transition to start, then change src and remove fade-out
+  setTimeout(() => {
+    imgElement.src = newSrc;
+    imgElement.classList.remove('fade-out');
+  }, 50);
 }
 
 // ── Lightbox ─────────────────────────────────────────────────
