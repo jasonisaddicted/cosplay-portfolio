@@ -1674,7 +1674,7 @@ function renderAlbumGrid(albums, container) {
           ${album.location ? `<span class="dot">·</span><span>${album.location}</span>` : ''}
         </div>
         <div class="album-card__count">${count} photo${count !== 1 ? 's' : ''}</div>
-        <div class="album-card__actions" data-album-id="${album.id}" style="display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid #2e2e2e; justify-content:center;">
+        <div class="album-card__actions" data-album-id="${album.id}" style="position:relative; display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid #2e2e2e; justify-content:center;">
           <button class="like-btn" onclick="event.preventDefault(); event.stopPropagation(); likeAlbum('${album.id}', '${album.name}', '${type}'); return false;" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
             <svg class="like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -1691,14 +1691,27 @@ function renderAlbumGrid(albums, container) {
             </svg>
             <span>Share</span>
           </button>
-          <div class="share-menu" style="display:none; position:absolute; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:3px; padding:8px 0; z-index:1001; min-width:200px; margin-top:5px; margin-left:-100px;">
-            <button onclick="event.preventDefault(); event.stopPropagation(); shareToTwitter('${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
-              𝕏 Share to Twitter
+          <div class="share-menu" style="display:none; position:fixed; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:4px; padding:8px 0; z-index:10001; min-width:220px; box-shadow:0 4px 12px rgba(0,0,0,0.5); bottom:auto; top:auto; left:auto; right:auto;">
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('x', '${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+              𝕏 X (Twitter)
             </button>
-            <button onclick="event.preventDefault(); event.stopPropagation(); shareToInstagram(); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
-              📷 Share to Instagram
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('instagram', '${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+              📷 Instagram
             </button>
-            <button onclick="event.preventDefault(); event.stopPropagation(); copyShareLink(); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('facebook', '${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+              f Facebook
+            </button>
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('threads', '${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+              🧵 Threads
+            </button>
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('xhs', '${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+              ✨ XiaoHongShu
+            </button>
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('wechat', '${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+              💬 WeChat
+            </button>
+            <hr style="border:none; border-top:1px solid #2e2e2e; margin:4px 0;">
+            <button onclick="event.preventDefault(); event.stopPropagation(); copyShareLink(); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
               🔗 Copy Link
             </button>
           </div>
@@ -2049,30 +2062,61 @@ window.likeAlbum = async (eventId, eventName, type = 'events') => {
   }
 };
 
-// Share album to social media
-window.shareAlbum = (albumName) => {
-  const shareText = encodeURIComponent(`Check out this album: ${albumName}`);
-  const currentUrl = window.location.href;
-  const menu = event.target.closest('.share-menu') || document.getElementById('albumShareMenu');
+// Share to multiple social media platforms
+window.shareToSocial = (platform, albumName) => {
+  const url = window.location.href;
+  const shareText = `${albumName}`;
 
+  switch(platform) {
+    case 'x':
+    case 'twitter':
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out: ${shareText}\n`)}&url=${encodeURIComponent(url)}`, '_blank');
+      break;
+
+    case 'instagram':
+      // Instagram doesn't support direct URL sharing from web, open Instagram app/website
+      window.open('https://instagram.com/', '_blank');
+      break;
+
+    case 'facebook':
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(`Check out: ${shareText}`)}`, '_blank');
+      break;
+
+    case 'threads':
+      window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(`Check out: ${shareText}\n${url}`)}`, '_blank');
+      break;
+
+    case 'xhs':
+      // Xiaohongshu - copy to clipboard and suggest
+      navigator.clipboard.writeText(`${shareText}\n${url}`).then(() => {
+        alert(`Link copied! You can now paste in XiaoHongShu:\n\n${shareText}\n${url}`);
+      }).catch(() => {
+        alert(`Copy this to XiaoHongShu:\n\n${shareText}\n${url}`);
+      });
+      break;
+
+    case 'wechat':
+      // WeChat - show QR code or copy link
+      navigator.clipboard.writeText(url).then(() => {
+        alert(`Link copied to clipboard! You can share in WeChat now:\n\n${shareText}\n${url}`);
+      }).catch(() => {
+        alert(`Share in WeChat:\n\n${shareText}\n${url}`);
+      });
+      break;
+  }
+
+  // Close menu
+  const menu = document.querySelector('.share-menu');
   if (menu) menu.style.display = 'none';
 };
 
-// Share to Twitter
+// Legacy functions for backward compatibility
 window.shareToTwitter = (albumName) => {
-  const shareText = encodeURIComponent(`Check out ${albumName}\n\n`);
-  const url = window.location.href;
-  window.open(`https://twitter.com/intent/tweet?text=${shareText}url=${encodeURIComponent(url)}`, '_blank');
+  window.shareToSocial('x', albumName);
 };
 
-// Share to Instagram (open profile if available, or just the site)
 window.shareToInstagram = () => {
-  const igHandle = document.querySelector('[data-ig-handle]');
-  if (igHandle && igHandle.dataset.igHandle) {
-    window.open(`https://instagram.com/${igHandle.dataset.igHandle.replace('@', '')}`, '_blank');
-  } else {
-    window.open('https://instagram.com/', '_blank');
-  }
+  window.shareToSocial('instagram', '');
 };
 
 // Copy share link to clipboard
@@ -2102,7 +2146,37 @@ window.toggleAlbumShareMenu = (event) => {
   });
 
   // Toggle this menu
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  if (menu.style.display === 'none') {
+    menu.style.display = 'block';
+
+    // Position menu relative to button
+    const shareBtn = event.target.closest('.share-btn');
+    if (shareBtn) {
+      const rect = shareBtn.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+
+      // Position above button, centered
+      let top = rect.top - menuRect.height - 10;
+      let left = rect.left + rect.width / 2 - menuRect.width / 2;
+
+      // Check if menu goes off screen
+      if (top < 0) {
+        // Position below button instead
+        top = rect.bottom + 10;
+      }
+      if (left + menuRect.width > window.innerWidth) {
+        left = window.innerWidth - menuRect.width - 10;
+      }
+      if (left < 0) {
+        left = 10;
+      }
+
+      menu.style.top = top + 'px';
+      menu.style.left = left + 'px';
+    }
+  } else {
+    menu.style.display = 'none';
+  }
 };
 
 // Close share menus when clicking outside
