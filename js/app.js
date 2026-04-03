@@ -2088,8 +2088,12 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
       break;
 
     case 'instagram':
-      // Instagram doesn't support direct URL sharing from web, open Instagram app/website
-      window.open('https://instagram.com/', '_blank');
+      // Instagram doesn't support direct URL sharing from web
+      navigator.clipboard.writeText(url).then(() => {
+        alert(`Link copied to clipboard!\n\n1. Open Instagram\n2. Go to Stories\n3. Paste the link and share`);
+      }).catch(() => {
+        alert(`Share to Instagram:\n\n1. Open Instagram\n2. Go to Stories\n3. Paste this link: ${url}`);
+      });
       break;
 
     case 'facebook':

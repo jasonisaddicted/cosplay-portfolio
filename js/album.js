@@ -448,9 +448,9 @@ window.shareAlbumTo = (platform) => {
       break;
 
     case 'instagram':
-      // Instagram doesn't support direct URL sharing, open the app
-      window.open('https://instagram.com', '_blank');
-      alert('Please share the album link to your Instagram Story or feed');
+      // Instagram doesn't support direct URL sharing from web
+      copyAlbumLink();
+      alert('Album link copied to clipboard!\n\n1. Open Instagram\n2. Go to Stories\n3. Paste the link and share');
       break;
 
     case 'facebook':
