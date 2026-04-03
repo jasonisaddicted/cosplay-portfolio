@@ -1586,13 +1586,13 @@ function renderAlbumGrid(albums, container) {
         </div>
         <div class="album-card__count">${count} photo${count !== 1 ? 's' : ''}</div>
         <div class="album-card__actions" data-album-id="${album.id}" style="display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid #2e2e2e; justify-content:center;">
-          <button class="like-btn" onclick="event.stopPropagation(); likeAlbum('${album.id}', '${album.name}', '${type}')" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
+          <button class="like-btn" onclick="event.preventDefault(); event.stopPropagation(); likeAlbum('${album.id}', '${album.name}', '${type}'); return false;" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
             <svg class="like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
             <span class="album-like-count">0</span>
           </button>
-          <button class="share-btn" onclick="event.stopPropagation(); toggleAlbumShareMenu(event)" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
+          <button class="share-btn" onclick="event.preventDefault(); event.stopPropagation(); toggleAlbumShareMenu(event); return false;" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <circle cx="18" cy="5" r="3"></circle>
               <circle cx="6" cy="12" r="3"></circle>
@@ -1603,13 +1603,13 @@ function renderAlbumGrid(albums, container) {
             <span>Share</span>
           </button>
           <div class="share-menu" style="display:none; position:absolute; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:3px; padding:8px 0; z-index:1001; min-width:200px; margin-top:5px; margin-left:-100px;">
-            <button onclick="event.stopPropagation(); shareToTwitter('${album.name.replace(/'/g, "&apos;")}')" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToTwitter('${album.name.replace(/'/g, "&apos;")}'); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
               𝕏 Share to Twitter
             </button>
-            <button onclick="event.stopPropagation(); shareToInstagram()" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToInstagram(); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
               📷 Share to Instagram
             </button>
-            <button onclick="event.stopPropagation(); copyShareLink()" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
+            <button onclick="event.preventDefault(); event.stopPropagation(); copyShareLink(); return false;" style="width:100%; text-align:left; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s;">
               🔗 Copy Link
             </button>
           </div>
