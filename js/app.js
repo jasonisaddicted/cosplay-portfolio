@@ -108,6 +108,15 @@ const Lightbox = (() => {
   infoPanel.className = 'lightbox__info-panel';
   lb.appendChild(infoPanel);
 
+  // Helper to fade out image, update src, and fade back in
+  function fadeUpdateImage(imgElement, newSrc) {
+    imgElement.classList.add('fade-out');
+    setTimeout(() => {
+      imgElement.src = newSrc;
+      imgElement.classList.remove('fade-out');
+    }, 200);
+  }
+
   function clearPanelTimers() {
     panelTimers.forEach(t => clearInterval(t));
     panelTimers = [];
@@ -495,7 +504,7 @@ const Lightbox = (() => {
           }));
           photos  = albumObjs;
           current = pi;
-          imgEl.src = album.photos[pi].src;
+          fadeUpdateImage(imgEl, album.photos[pi].src);
           if (counter) counter.textContent = `${pi + 1} / ${album.photos.length}`;
           infoPanel.querySelectorAll('.info-panel__acc-photo').forEach(d => d.classList.remove('selected'));
           div.classList.add('selected');
@@ -514,7 +523,7 @@ const Lightbox = (() => {
           let idx = 0;
           const t = setInterval(() => {
             idx = (idx + 1) % album.photos.length;
-            img.src = album.photos[idx].src;
+            fadeUpdateImage(img, album.photos[idx].src);
           }, 2500);
           panelTimers.push(t);
         }
@@ -566,7 +575,7 @@ const Lightbox = (() => {
       infoPanel.querySelector('.info-panel__back-btn').addEventListener('click', () => {
         photos  = savedPhotos;
         current = savedCurrent;
-        imgEl.src = savedPhotos[savedCurrent].src;
+        fadeUpdateImage(imgEl, savedPhotos[savedCurrent].src);
         if (counter) counter.textContent = `${savedCurrent + 1} / ${savedPhotos.length}`;
         buildInfoPanel(savedPhotos[savedCurrent]);
       });
@@ -577,7 +586,7 @@ const Lightbox = (() => {
           const i = parseInt(div.dataset.i);
           photos  = albumObjs;
           current = i;
-          imgEl.src = albumObjs[i].src;
+          fadeUpdateImage(imgEl, albumObjs[i].src);
           if (counter) counter.textContent = `${i + 1} / ${albumObjs.length}`;
           buildInfoPanel(albumObjs[i]);
           renderSubPanel(i);
@@ -591,7 +600,7 @@ const Lightbox = (() => {
   function show(index) {
     current = (index + photos.length) % photos.length;
     const p = photos[current];
-    imgEl.src = p.src;
+    fadeUpdateImage(imgEl, p.src);
     if (capEl) capEl.textContent = '';
     if (counter) counter.textContent = `${current + 1} / ${photos.length}`;
     lb.classList.add('active');
@@ -1526,9 +1535,13 @@ function renderAlbumGrid(albums, container) {
       const pool = [...album.photos].sort(() => Math.random() - 0.5);
       let idx = 0;
 
-      function updateSlide() {
+      function updateSlide(useFade = false) {
         const p = pool[idx];
-        imgEl.src = p.src;
+        if (useFade) {
+          fadeUpdateImage(imgEl, p.src);
+        } else {
+          imgEl.src = p.src;
+        }
         if (elName)   elName.textContent   = p.coser     || '';
         if (elChar)   elChar.textContent   = p.character || '';
         if (elSeries) elSeries.textContent = p.series    || '';
@@ -1538,7 +1551,7 @@ function renderAlbumGrid(albums, container) {
 
       const timer = setInterval(() => {
         idx = (idx + 1) % pool.length;
-        updateSlide();
+        updateSlide(true); // use fade for subsequent slides
       }, 3000);
 
       // Stop timer when navigating away

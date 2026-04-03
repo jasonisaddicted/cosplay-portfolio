@@ -1145,8 +1145,12 @@ ul { list-style: none; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: filter 0.35s ease;
+  transition: filter 0.35s ease, opacity 0.4s ease-out;
   filter: brightness(0.88);
+  opacity: 1;
+}
+.photo-grid__item img.fade-out {
+  opacity: 0;
 }
 .photo-grid__item:hover img {
   filter: brightness(1.05);
@@ -1247,6 +1251,11 @@ ul { list-style: none; }
   width: auto;
   height: auto;
   object-fit: contain;
+  opacity: 1;
+  transition: opacity 0.4s ease-out;
+}
+.lightbox__img-wrap img.fade-out {
+  opacity: 0;
 }
 /* ── Lightbox Info Panel ────────────────────────────────────────
    Slides in from the right (desktop) or bottom (mobile).
