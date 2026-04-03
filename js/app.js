@@ -85,6 +85,20 @@ function initSiteIdentity() {
   });
 })();
 
+// ── Global fade transition helper ────────────────────────────
+// Used for slideshows across lightbox, album cards, and other carousel elements
+function fadeUpdateImage(imgElement, newSrc) {
+  imgElement.classList.add('fade-out');
+  setTimeout(() => {
+    imgElement.src = newSrc;
+    imgElement.classList.remove('fade-out');
+    imgElement.classList.add('fade-in');
+    setTimeout(() => {
+      imgElement.classList.remove('fade-in');
+    }, 1000);
+  }, 1000);
+}
+
 // ── Lightbox ─────────────────────────────────────────────────
 // Fully CONFIG-driven. To add cosers/albums/photos: edit config.js only.
 // handle in event photos (photo.coser) must match cosplayer handle in studio
@@ -107,19 +121,6 @@ const Lightbox = (() => {
   const infoPanel = document.createElement('div');
   infoPanel.className = 'lightbox__info-panel';
   lb.appendChild(infoPanel);
-
-  // Helper to fade out image, update src, and fade back in
-  function fadeUpdateImage(imgElement, newSrc) {
-    imgElement.classList.add('fade-out');
-    setTimeout(() => {
-      imgElement.src = newSrc;
-      imgElement.classList.remove('fade-out');
-      imgElement.classList.add('fade-in');
-      setTimeout(() => {
-        imgElement.classList.remove('fade-in');
-      }, 1000);
-    }, 1000);
-  }
 
   function clearPanelTimers() {
     panelTimers.forEach(t => clearInterval(t));
