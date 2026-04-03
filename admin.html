@@ -4359,6 +4359,87 @@
     });
   });
 
+  // ── Photo Preview Modal Functions ──────────────────────────────
+  window.previewPhoto = async (eventId, photoIndex) => {
+    try {
+      const docSnap = await getDoc(doc(db, 'events', eventId));
+      const event = docSnap.data();
+      const photo = event.photos[photoIndex];
+
+      if (!photo) return;
+
+      // Set image and metadata
+      document.getElementById('previewImage').src = photo.src;
+      document.getElementById('previewCharacter').textContent = photo.character || 'Unknown Character';
+      document.getElementById('previewSeries').textContent = photo.series || 'Unknown Series';
+
+      // Show modal
+      document.getElementById('photoPreviewModal').style.display = 'flex';
+    } catch (err) {
+      console.error('Error opening photo preview:', err);
+    }
+  };
+
+  window.previewStudioPhoto = async (sessionId, cosplayerIdx, photoIdx) => {
+    try {
+      const docSnap = await getDoc(doc(db, 'studio', sessionId));
+      const session = docSnap.data();
+      const cosplayer = session.cosplayers[cosplayerIdx];
+      const photo = cosplayer.photos[photoIdx];
+
+      if (!photo) return;
+
+      // Set image and metadata
+      document.getElementById('previewImage').src = photo.src;
+      document.getElementById('previewCharacter').textContent = photo.character || 'Unknown Character';
+      document.getElementById('previewSeries').textContent = photo.series || 'Unknown Series';
+
+      // Show modal
+      document.getElementById('photoPreviewModal').style.display = 'flex';
+    } catch (err) {
+      console.error('Error opening studio photo preview:', err);
+    }
+  };
+
+  window.previewCollabPhoto = async (collabId, photoIdx) => {
+    try {
+      const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+      const collab = docSnap.data();
+      const photo = collab.photos[photoIdx];
+
+      if (!photo) return;
+
+      // Set image and metadata
+      document.getElementById('previewImage').src = photo.src;
+      document.getElementById('previewCharacter').textContent = photo.character || 'Unknown Character';
+      document.getElementById('previewSeries').textContent = photo.series || 'Unknown Series';
+
+      // Show modal
+      document.getElementById('photoPreviewModal').style.display = 'flex';
+    } catch (err) {
+      console.error('Error opening collab photo preview:', err);
+    }
+  };
+
+  window.closePhotoPreview = () => {
+    document.getElementById('photoPreviewModal').style.display = 'none';
+    document.getElementById('previewImage').src = '';
+  };
+
+  // Escape key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('photoPreviewModal').style.display === 'flex') {
+      closePhotoPreview();
+    }
+  });
+
+  // Click overlay to close
+  document.getElementById('photoPreviewModal').addEventListener('click', (e) => {
+    if (e.target.id === 'photoPreviewModal') {
+      closePhotoPreview();
+    }
+  });
+
 </script>
 
   <!-- Banner Photo Edit Modal -->
@@ -4454,92 +4535,6 @@
     </div>
   </div>
 
-  <!-- Photo Preview Modal Functions -->
-  <script>
-    // Open photo preview modal
-    window.previewPhoto = async (eventId, photoIndex) => {
-      try {
-        const docSnap = await getDoc(doc(db, 'events', eventId));
-        const event = docSnap.data();
-        const photo = event.photos[photoIndex];
-
-        if (!photo) return;
-
-        // Set image and metadata
-        document.getElementById('previewImage').src = photo.src;
-        document.getElementById('previewCharacter').textContent = photo.character || 'Unknown Character';
-        document.getElementById('previewSeries').textContent = photo.series || 'Unknown Series';
-
-        // Show modal
-        document.getElementById('photoPreviewModal').style.display = 'flex';
-      } catch (err) {
-        console.error('Error opening photo preview:', err);
-      }
-    };
-
-    // Close photo preview modal
-    window.closePhotoPreview = () => {
-      document.getElementById('photoPreviewModal').style.display = 'none';
-      document.getElementById('previewImage').src = '';
-    };
-
-    // Escape key to close
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && document.getElementById('photoPreviewModal').style.display === 'flex') {
-        closePhotoPreview();
-      }
-    });
-
-    // Click overlay to close
-    document.getElementById('photoPreviewModal').addEventListener('click', (e) => {
-      if (e.target.id === 'photoPreviewModal') {
-        closePhotoPreview();
-      }
-    });
-
-    // Studio photo preview
-    window.previewStudioPhoto = async (sessionId, cosplayerIdx, photoIdx) => {
-      try {
-        const docSnap = await getDoc(doc(db, 'studio', sessionId));
-        const session = docSnap.data();
-        const cosplayer = session.cosplayers[cosplayerIdx];
-        const photo = cosplayer.photos[photoIdx];
-
-        if (!photo) return;
-
-        // Set image and metadata
-        document.getElementById('previewImage').src = photo.src;
-        document.getElementById('previewCharacter').textContent = photo.character || 'Unknown Character';
-        document.getElementById('previewSeries').textContent = photo.series || 'Unknown Series';
-
-        // Show modal
-        document.getElementById('photoPreviewModal').style.display = 'flex';
-      } catch (err) {
-        console.error('Error opening studio photo preview:', err);
-      }
-    };
-
-    // Collab photo preview
-    window.previewCollabPhoto = async (collabId, photoIdx) => {
-      try {
-        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
-        const collab = docSnap.data();
-        const photo = collab.photos[photoIdx];
-
-        if (!photo) return;
-
-        // Set image and metadata
-        document.getElementById('previewImage').src = photo.src;
-        document.getElementById('previewCharacter').textContent = photo.character || 'Unknown Character';
-        document.getElementById('previewSeries').textContent = photo.series || 'Unknown Series';
-
-        // Show modal
-        document.getElementById('photoPreviewModal').style.display = 'flex';
-      } catch (err) {
-        console.error('Error opening collab photo preview:', err);
-      }
-    };
-  </script>
 
 </body>
 </html>
