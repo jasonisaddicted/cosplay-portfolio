@@ -2057,6 +2057,8 @@ footer {
   }
   .nav__hamburger {
     display: flex;
+    flex-direction: column;
+    justify-content: center;
     margin-right: -8px;
   }
   .nav__links {
