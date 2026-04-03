@@ -1257,6 +1257,10 @@ ul { list-style: none; }
 .lightbox__img-wrap img.fade-out {
   opacity: 0;
 }
+/* Generic fade-out for all images in slideshow transitions */
+img.fade-out {
+  opacity: 0 !important;
+}
 /* ── Lightbox Info Panel ────────────────────────────────────────
    Slides in from the right (desktop) or bottom (mobile).
    Fully data-driven from CONFIG — add/edit cosers in config.js only.
