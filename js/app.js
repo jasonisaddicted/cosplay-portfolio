@@ -1522,8 +1522,11 @@ function renderAlbumGrid(albums, container) {
       </div>
     ` : '';
 
+    // Use first photo as cover if available, otherwise use album.cover
+    const coverSrc = (album.photos && album.photos.length > 0) ? album.photos[0].src : album.cover;
+
     card.innerHTML = `
-      <img src="${album.cover}" alt="${album.name}" loading="lazy">
+      <img src="${coverSrc}" alt="${album.name}" loading="lazy">
       ${coserOverlayHtml}
       <div class="album-card__info">
         <div class="album-card__name">${album.name}</div>
