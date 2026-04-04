@@ -2088,13 +2088,13 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
       break;
 
     case 'instagram':
-      // Instagram doesn't support direct URL sharing from web
+      // Instagram Link Sticker workflow
       navigator.clipboard.writeText(url).then(() => {
         window.open('https://instagram.com/', '_blank');
-        alert(`✓ Link copied to clipboard!\n\nInstagram opened - now:\n1. Go to Stories (+ button)\n2. Long press to paste\n3. Share to Story`);
+        alert(`✓ Link copied to clipboard!\n\nTo share on Instagram Story:\n1. Create a Story (upload photo/video)\n2. Tap the Sticker icon (⭐)\n3. Select "Link Sticker"\n4. Paste the URL`);
       }).catch(() => {
         window.open('https://instagram.com/', '_blank');
-        alert(`Share to Instagram:\n\n1. Copy this link:\n${url}\n\n2. Go to Stories\n3. Paste and share`);
+        alert(`Link copied!\n\nTo share on Instagram Story:\n1. Create a Story\n2. Tap Sticker (⭐)\n3. Select Link Sticker\n4. Paste: ${url}`);
       });
       break;
 
