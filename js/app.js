@@ -2074,8 +2074,8 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
   // Construct album URL using OG service if album ID is provided
   let url;
   if (albumId && albumType) {
-    const ogServiceUrl = 'https://cosplay-portfolio-4r54sg6e4-jasonisaddicteds-projects.vercel.app';
-    url = `${ogServiceUrl}/album?id=${albumId}&type=${albumType}`;
+    const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
+    url = `${ogServiceUrl}/api/album?id=${albumId}&type=${albumType}`;
   } else {
     url = window.location.href;
   }
