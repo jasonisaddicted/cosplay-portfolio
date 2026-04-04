@@ -92,16 +92,24 @@ module.exports = async function handler(req, res) {
       });
     };
 
-    // DEBUG: Add comment to see what previewImageUrl is being set to
-    html = html.replace('<!-- Script to dynamically update og:image with first album photo -->',
-                        '<!-- DEBUG previewImageUrl=' + previewImageUrl + ' -->\n  <!-- Script to dynamically update og:image with first album photo -->');
+    console.log('[Album] previewImageUrl before replacements:', previewImageUrl);
 
     // Replace meta tags with actual album data
+    // First, find what og:image currently has
+    const ogImageMatch = html.match(/<meta property="og:image" content="([^"]*)"/);
+    console.log('[Album] Current og:image in HTML:', ogImageMatch ? ogImageMatch[1] : 'NOT FOUND');
+
     // Use simple string replacements for reliability
     html = html.replace('<meta property="og:url" content="">', '<meta property="og:url" content="' + userUrl + '">');
     html = html.replace('<meta property="og:title" content="Cosplay Portfolio Album">', '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
     html = html.replace('<meta property="og:description" content="">', '<meta property="og:description" content="' + escape(description) + '">');
+    const beforeOgReplace = html.match(/<meta property="og:image" content="([^"]*)"/)[1];
     html = html.replace('<meta property="og:image" content="">', '<meta property="og:image" content="' + previewImageUrl + '">');
+    const afterOgReplace = html.match(/<meta property="og:image" content="([^"]*)"/)[1];
+    console.log('[Album] og:image before replace:', beforeOgReplace);
+    console.log('[Album] og:image after replace:', afterOgReplace);
+    console.log('[Album] og:image expected:', previewImageUrl);
+
     html = html.replace(/<meta property="og:image:width" content="[^"]*">/g, '');
     html = html.replace(/<meta property="og:image:height" content="[^"]*">/g, '');
     html = html.replace(/<meta property="og:image:type" content="[^"]*">/g, '');
