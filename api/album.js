@@ -108,7 +108,8 @@ module.exports = async function handler(req, res) {
     console.log('[OG Service] Album found');
 
     const album = albumData;
-    const albumUrl = `https://jasonisaddicted.github.io/cosplay-portfolio/album.html?id=${id}&type=${type}`;
+    // Use production domain for og:url so it matches og:image domain (same domain = platforms trust it more)
+    const albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${id}&type=${type}`;
 
     // Use preview endpoint on our domain for og:image (more reliable for all platforms)
     // Add cache-buster to force social media platforms to re-fetch preview
