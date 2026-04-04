@@ -112,10 +112,9 @@ module.exports = async function handler(req, res) {
     // Don't point to album.html because it has empty og:meta tags (JS-updated, bots don't run JS)
     const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
 
-    // Use first album photo directly from Firebase for og:image
-    // (Some platforms like Threads have issues fetching from preview endpoint)
-    const firstPhoto = album.photos && album.photos.length > 0 ? album.photos[0].src : '';
-    const previewImageUrl = firstPhoto || 'https://via.placeholder.com/900x1200';
+    // Use preview endpoint to serve image through Vercel with proper cache headers
+    // (Threads crawler rejects Firebase URLs with private cache headers and auth tokens)
+    const previewImageUrl = `https://cosplay-portfolio.vercel.app/api/preview?id=${id}&type=${type}`;
 
     // Keep original photo URL as fallback
     const firstPhotoUrl = album.photos && album.photos.length > 0
@@ -140,8 +139,9 @@ module.exports = async function handler(req, res) {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:image" content="${previewImageUrl}">
-  <meta property="og:image:width" content="900">
-  <meta property="og:image:height" content="1200">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1600">
+  <meta property="og:image:type" content="image/jpeg">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
