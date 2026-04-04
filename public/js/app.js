@@ -1284,6 +1284,7 @@ function initHome() {
 
     // Update og:image meta tag to match banner (for social media previews)
     // First check if admin has set a custom og:image for home page
+    console.log('DEBUG: cfg.ogImages =', cfg.ogImages);
     const customOgImage = cfg.ogImages && cfg.ogImages.home;
     const ogImageUrl = customOgImage || banner.src;
 
