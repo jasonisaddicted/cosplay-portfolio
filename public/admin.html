@@ -745,6 +745,17 @@
       <h2 style="margin-bottom:20px;">⚙️ Meta Tags & OG Images</h2>
       <p style="color:#999; margin-bottom:30px;">Pick albums to use as og:image for each page preview</p>
 
+      <!-- Home/Featured Collapsible -->
+      <div style="background:#1a1a1a; border:1px solid #333; margin-bottom:20px; border-radius:3px; overflow:hidden;">
+        <button onclick="toggleCollapsible('featured-albums')" style="width:100%; padding:15px; background:#0d0d0d; border:none; color:#c8a46e; text-align:left; cursor:pointer; font-weight:600; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
+          <span>🏠 Home Page</span>
+          <span id="featured-toggle" style="transform:rotate(0deg); transition:transform 0.3s;">▼</span>
+        </button>
+        <div id="featured-albums" style="display:none; padding:15px; background:#0d0d0d; border-top:1px solid #333;">
+          <div id="featured-albums-list" style="max-height:400px; overflow-y:auto;"></div>
+        </div>
+      </div>
+
       <!-- Events Collapsible -->
       <div style="background:#1a1a1a; border:1px solid #333; margin-bottom:20px; border-radius:3px; overflow:hidden;">
         <button onclick="toggleCollapsible('events-albums')" style="width:100%; padding:15px; background:#0d0d0d; border:none; color:#c8a46e; text-align:left; cursor:pointer; font-weight:600; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
@@ -929,6 +940,23 @@
   const db = getFirestore(app);
   const auth = getAuth(app);
   const storage = getStorage(app);
+
+  // ─ Expose Firebase to window for non-module scripts ─
+  window.db = db;
+  window.auth = auth;
+  window.storage = storage;
+  window.getDocs = getDocs;
+  window.collection = collection;
+  window.doc = doc;
+  window.getDoc = getDoc;
+  window.updateDoc = updateDoc;
+  window.deleteDoc = deleteDoc;
+  window.addDoc = addDoc;
+  window.query = query;
+  window.orderBy = orderBy;
+  window.ref = ref;
+  window.uploadBytes = uploadBytes;
+  window.getDownloadURL = getDownloadURL;
 
   // ─ Global ─
   window.login = async () => {
@@ -4862,6 +4890,12 @@
         }
 
         console.log('Loading albums from:', collectionName);
+
+        // Check if Firebase functions are available
+        if (!window.getDocs || !window.collection || !window.db) {
+          throw new Error('Firebase not initialized yet. Please wait...');
+        }
+
         const snap = await window.getDocs(window.collection(window.db, collectionName));
 
         snap.forEach(doc => {
@@ -4919,9 +4953,13 @@
     window.setPageOgImage = async function(page, imageUrl, albumName) {
       try {
         console.log('Setting og:image for', page, 'to', imageUrl);
-        await window.updateDoc(window.doc(window.db, 'site', 'config'), {
-          [`ogImages.${page}`]: imageUrl
-        });
+
+        // Build nested update using dot notation for Firestore
+        const fieldPath = `ogImages.${page}`;
+        const updateObj = {};
+        updateObj[fieldPath] = imageUrl;
+
+        await window.updateDoc(window.doc(window.db, 'site', 'config'), updateObj);
 
         alert(`✓ "${albumName}" set as ${page.toUpperCase()} page preview!`);
       } catch (err) {
