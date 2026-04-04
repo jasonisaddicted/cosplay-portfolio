@@ -140,8 +140,8 @@ module.exports = async function handler(req, res) {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:image" content="${previewImageUrl}">
-  <meta property="og:image:width" content="300">
-  <meta property="og:image:height" content="400">
+  <meta property="og:image:width" content="900">
+  <meta property="og:image:height" content="1200">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
