@@ -8,16 +8,16 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/",
+      "dest": "/api/index"
+    },
+    {
       "src": "/(.*)\\.html",
       "dest": "/public/$1.html"
     },
     {
       "src": "/(.+)",
       "dest": "/public/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/public/index.html"
     }
   ],
   "headers": [
