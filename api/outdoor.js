@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     // Fetch config from Firestore REST API
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/site/config`;
 
-    let ogImageUrl = 'https://cosplay-portfolio.vercel.app/og/events-oYgXpPvdrEnzQrTqypGY.jpg';
+    let ogImageUrl = 'https://cosplay-portfolio.vercel.app/og/outdoor-default.jpg';
 
     try {
       const response = await fetch(firestoreUrl);
@@ -20,9 +20,7 @@ module.exports = async (req, res) => {
         const data = await response.json();
         const fields = data.fields || {};
         const ogImages = fields.ogImages?.mapValue?.fields || {};
-
-        // Outdoor doesn't have its own og:image, use events image as fallback
-        const outdoorImage = ogImages.outdoor?.stringValue || ogImages.events?.stringValue;
+        const outdoorImage = ogImages.outdoor?.stringValue;
 
         if (outdoorImage) {
           ogImageUrl = outdoorImage;
