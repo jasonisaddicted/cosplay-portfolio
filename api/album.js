@@ -111,7 +111,9 @@ module.exports = async function handler(req, res) {
     const albumUrl = `https://jasonisaddicted.github.io/cosplay-portfolio/album.html?id=${id}&type=${type}`;
 
     // Use preview endpoint on our domain for og:image (more reliable for all platforms)
-    const previewImageUrl = `https://cosplay-portfolio.vercel.app/api/preview?id=${id}&type=${type}`;
+    // Add cache-buster to force social media platforms to re-fetch preview
+    const cacheBuster = Math.floor(Date.now() / 3600000); // Changes every hour
+    const previewImageUrl = `https://cosplay-portfolio.vercel.app/api/preview?id=${id}&type=${type}&v=${cacheBuster}`;
 
     // Keep original photo URL as fallback
     const firstPhotoUrl = album.photos && album.photos.length > 0
