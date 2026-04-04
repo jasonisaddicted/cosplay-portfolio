@@ -92,6 +92,10 @@ module.exports = async function handler(req, res) {
       });
     };
 
+    // DEBUG: Add comment to see what previewImageUrl is being set to
+    html = html.replace('<!-- Script to dynamically update og:image with first album photo -->',
+                        '<!-- DEBUG previewImageUrl=' + previewImageUrl + ' -->\n  <!-- Script to dynamically update og:image with first album photo -->');
+
     // Replace meta tags with actual album data
     // Use simple string replacements for reliability
     html = html.replace('<meta property="og:url" content="">', '<meta property="og:url" content="' + userUrl + '">');
