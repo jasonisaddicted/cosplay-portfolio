@@ -438,8 +438,8 @@ window.shareAlbumTo = (platform) => {
   if (!currentAlbumId || !currentAlbumType) return;
 
   // Use OG service URL for proper social media previews
-  const ogServiceUrl = 'https://cosplay-portfolio-4r54sg6e4-jasonisaddicteds-projects.vercel.app';
-  const albumUrl = `${ogServiceUrl}/album?id=${currentAlbumId}&type=${currentAlbumType}`;
+  const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
+  const albumUrl = `${ogServiceUrl}/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
   const albumName = currentAlbumData.name;
   const firstPhoto = currentAlbumPhotos.length > 0 ? currentAlbumPhotos[0].src : '';
 
@@ -489,8 +489,8 @@ window.shareAlbumTo = (platform) => {
 };
 
 window.copyAlbumLink = () => {
-  const ogServiceUrl = 'https://cosplay-portfolio-4r54sg6e4-jasonisaddicteds-projects.vercel.app';
-  const albumUrl = `${ogServiceUrl}/album?id=${currentAlbumId}&type=${currentAlbumType}`;
+  const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
+  const albumUrl = `${ogServiceUrl}/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
   navigator.clipboard.writeText(albumUrl).then(() => {
     alert('Album link copied to clipboard!');
   }).catch(() => {
