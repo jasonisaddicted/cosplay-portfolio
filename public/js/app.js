@@ -1264,8 +1264,8 @@ function initHome() {
 
   const cfg = CONFIG;
 
-  // Banner Photo (uses featured[0])
-  const banner = cfg.featured && cfg.featured[0];
+  // Banner Photo (from admin panel via Firestore site/config)
+  const banner = cfg.bannerPhoto;
   if (banner && banner.src) {
     const bannerSection = document.getElementById('banner');
     if (!bannerSection) {
