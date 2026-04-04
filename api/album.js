@@ -109,6 +109,11 @@ module.exports = async function handler(req, res) {
 
     const album = albumData;
     const albumUrl = `https://jasonisaddicted.github.io/cosplay-portfolio/album.html?id=${id}&type=${type}`;
+
+    // Use preview endpoint on our domain for og:image (more reliable for all platforms)
+    const previewImageUrl = `https://cosplay-portfolio.vercel.app/api/preview?id=${id}&type=${type}`;
+
+    // Keep original photo URL as fallback
     const firstPhotoUrl = album.photos && album.photos.length > 0
       ? album.photos[0].src
       : 'https://jasonisaddicted.github.io/cosplay-portfolio/images/default-og.png';
@@ -130,7 +135,7 @@ module.exports = async function handler(req, res) {
   <meta property="og:url" content="${albumUrl}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
-  <meta property="og:image" content="${firstPhotoUrl}">
+  <meta property="og:image" content="${previewImageUrl}">
   <meta property="og:image:width" content="900">
   <meta property="og:image:height" content="1200">
 
@@ -138,7 +143,7 @@ module.exports = async function handler(req, res) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${description}">
-  <meta name="twitter:image" content="${firstPhotoUrl}">
+  <meta name="twitter:image" content="${previewImageUrl}">
 
   <!-- Redirect to actual album page -->
   <meta http-equiv="refresh" content="0; url=${albumUrl}">
