@@ -2080,8 +2080,7 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
 window.copyShareLink = (albumId, albumType) => {
   let url;
   if (albumId && albumType) {
-    const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
-    url = `${ogServiceUrl}/api/album?id=${albumId}&type=${albumType}`;
+    url = `https://cosplay-portfolio.vercel.app/album.html?id=${albumId}&type=${albumType}`;
   } else {
     url = window.location.href;
   }

@@ -461,8 +461,7 @@ window.shareAlbumTo = (platform) => {
 };
 
 window.copyAlbumLink = () => {
-  const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
-  const albumUrl = `${ogServiceUrl}/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
+  const albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${currentAlbumId}&type=${currentAlbumType}`;
   navigator.clipboard.writeText(albumUrl).then(() => {
     alert('Album link copied to clipboard!');
   }).catch(() => {
