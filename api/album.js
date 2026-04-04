@@ -112,10 +112,10 @@ module.exports = async function handler(req, res) {
     // Don't point to album.html because it has empty og:meta tags (JS-updated, bots don't run JS)
     const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
 
-    // Use preview endpoint on our domain for og:image (more reliable for all platforms)
-    // Add cache-buster to force social media platforms to re-fetch preview
-    const cacheBuster = Math.floor(Date.now() / 3600000); // Changes every hour
-    const previewImageUrl = `https://cosplay-portfolio.vercel.app/api/preview?id=${id}&type=${type}&v=${cacheBuster}`;
+    // Use first album photo directly from Firebase for og:image
+    // (Some platforms like Threads have issues fetching from preview endpoint)
+    const firstPhoto = album.photos && album.photos.length > 0 ? album.photos[0].src : '';
+    const previewImageUrl = firstPhoto || 'https://via.placeholder.com/900x1200';
 
     // Keep original photo URL as fallback
     const firstPhotoUrl = album.photos && album.photos.length > 0
