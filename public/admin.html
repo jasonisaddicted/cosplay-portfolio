@@ -4976,16 +4976,20 @@
     // Set page og:image
     window.setPageOgImage = async function(page, imageUrl, albumName) {
       try {
-        console.log('Setting og:image for', page, 'to', imageUrl);
+        console.log('Setting og:image for', page);
+        console.log('Album name:', albumName);
+        console.log('Image URL:', imageUrl);
 
         // Build nested update using dot notation for Firestore
         const fieldPath = `ogImages.${page}`;
         const updateObj = {};
         updateObj[fieldPath] = imageUrl;
 
+        console.log('Saving to Firestore field:', fieldPath);
         await window.updateDoc(window.doc(window.db, 'site', 'config'), updateObj);
 
         alert(`✓ "${albumName}" set as ${page.toUpperCase()} page preview!`);
+        console.log('✓ Successfully saved to Firestore');
       } catch (err) {
         console.error('Error setting og:image:', err);
         alert('❌ Error: ' + err.message);
