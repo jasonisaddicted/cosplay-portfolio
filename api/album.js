@@ -98,7 +98,7 @@ module.exports = async function handler(req, res) {
     console.log(`[OG Service] Querying Firestore: collection="${type}", doc="${id}"`);
     const docSnap = await db.collection(type).doc(id).get();
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       console.log('[OG Service] Album not found');
       return res.status(404).json({ error: 'Album not found' });
     }
