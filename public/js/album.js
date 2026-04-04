@@ -199,6 +199,14 @@ function openPhotoLightbox(index) {
   updateLightboxCounter();
   updateLightboxLikeCount(index);
 
+  // Set share context for this photo
+  window.currentPhotoShare = {
+    character: photo.character || 'Unknown Character',
+    series: photo.series || 'Unknown Series',
+    coser: photo.coser ? `@${photo.coser}` : '',
+    photoUrl: photo.src
+  };
+
   lightbox.classList.add('active');
   document.body.style.overflow = 'hidden';
 

@@ -2174,4 +2174,89 @@ window.addEventListener('firebase-config-loaded', () => {
   initStudio();
   initAlbum();
   initCollabs();
+
+  // ── Lightbox Photo Sharing ───────────────────────────────────
+  // Store current photo context when opening lightbox
+  window.currentPhotoShare = null;
+
+  // Setup lightbox share button
+  const shareBtn = document.getElementById('lightboxShareBtn');
+  const shareMenu = document.getElementById('lightboxShareMenu');
+  if (shareBtn && shareMenu) {
+    shareBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      shareMenu.style.display = shareMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.lightbox__share-btn') && !e.target.closest('.lightbox__share-menu')) {
+        shareMenu.style.display = 'none';
+      }
+    });
+
+    // Close menu on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && shareMenu.style.display === 'block') {
+        shareMenu.style.display = 'none';
+      }
+    });
+  }
+
+  // Share to Facebook
+  window.sharePhotoTo = function(platform) {
+    if (!window.currentPhotoShare) return;
+    const { character, series, coser, photoUrl } = window.currentPhotoShare;
+    const shareText = `Check out this ${character} cosplay${series ? ` from ${series}` : ''}${coser ? ` by ${coser}` : ''}`;
+    const currentUrl = window.location.href;
+
+    if (platform === 'facebook') {
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
+      window.open(facebookUrl, '_blank', 'width=600,height=400');
+    } else if (platform === 'threads') {
+      // Threads doesn't have a direct share API, so provide link share
+      const threadsText = `${shareText}\n\n${currentUrl}`;
+      window.open(`https://www.threads.net/`, '_blank');
+      // Copy to clipboard as fallback
+      navigator.clipboard.writeText(threadsText).then(() => {
+        console.log('Share text copied to clipboard');
+      });
+    }
+
+    // Close menu
+    const shareMenu = document.getElementById('lightboxShareMenu');
+    if (shareMenu) shareMenu.style.display = 'none';
+  };
+
+  // Copy photo link to clipboard
+  window.copyPhotoLink = function() {
+    const currentUrl = window.location.href;
+    navigator.clipboard.writeText(currentUrl).then(() => {
+      // Show confirmation
+      const shareBtn = document.getElementById('lightboxShareBtn');
+      if (shareBtn) {
+        const originalText = shareBtn.querySelector('span').textContent;
+        shareBtn.querySelector('span').textContent = '✓ Copied!';
+        setTimeout(() => {
+          shareBtn.querySelector('span').textContent = originalText;
+        }, 2000);
+      }
+    }).catch(err => {
+      console.error('Failed to copy link:', err);
+      alert('Failed to copy link. Please try again.');
+    });
+
+    // Close menu
+    const shareMenu = document.getElementById('lightboxShareMenu');
+    if (shareMenu) shareMenu.style.display = 'none';
+  };
+
+  // Update lightbox share context when a photo is opened
+  // This runs after the lightbox shows a photo
+  const originalLightboxOpen = Lightbox.open;
+  Lightbox.open = function(index) {
+    originalLightboxOpen.call(this, index);
+    // Update share context with current photo info
+    // (This will be set by the calling function with photo details)
+  };
 });

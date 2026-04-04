@@ -137,6 +137,31 @@
       <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
     </button>
     <div class="lightbox__counter"></div>
+
+    <!-- Share Button & Menu -->
+    <button class="lightbox__share-btn" id="lightboxShareBtn" aria-label="Share photo" title="Share this photo" style="position:absolute; bottom:30px; right:20px; background:none; border:1px solid #e4e4e4; color:#e4e4e4; padding:10px 16px; cursor:pointer; border-radius:3px; display:flex; align-items:center; gap:8px; transition:all 0.22s ease; font-size:0.9rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="18" cy="5" r="3"></circle>
+        <circle cx="6" cy="12" r="3"></circle>
+        <circle cx="18" cy="19" r="3"></circle>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+      </svg>
+      <span>Share</span>
+    </button>
+
+    <!-- Share Menu -->
+    <div class="lightbox__share-menu" id="lightboxShareMenu" style="display:none; position:absolute; bottom:75px; right:20px; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:3px; padding:8px 0; z-index:1001; min-width:200px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+      <button onclick="sharePhotoTo('facebook')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s ease;">
+        Facebook
+      </button>
+      <button onclick="sharePhotoTo('threads')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s ease;">
+        Threads
+      </button>
+      <button onclick="copyPhotoLink()" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s ease; border-top:1px solid #2e2e2e;">
+        Copy Link
+      </button>
+    </div>
   </div>
 
   <!-- Mobile Preview Button -->
