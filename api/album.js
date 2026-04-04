@@ -4,10 +4,13 @@
  * Uses Firestore REST API (no credentials needed)
  */
 
+const fs = require('fs');
+const path = require('path');
+
 const PROJECT_ID = 'jianshencosvisual-328dc';
 
 /**
- * Main handler: Generate meta tags for album
+ * Main handler: Serve album page with injected og:image meta tags
  * Usage: /api/album?id=DrKhPEqp00W2Ci09542j&type=events
  */
 module.exports = async function handler(req, res) {
@@ -30,12 +33,11 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Missing id or type parameter' });
     }
 
-    console.log(`[OG Service] Fetching album - id: ${id}, type: ${type}`);
+    console.log(`[Album] Fetching album - id: ${id}, type: ${type}`);
 
     // Fetch album from Firestore REST API
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${type}/${id}`;
 
-    let albumData = null;
     let previewImageUrl = 'https://cosplay-portfolio.vercel.app/og/events-oYgXpPvdrEnzQrTqypGY.jpg';
     let title = 'Cosplay Album';
     let description = 'Professional cosplay photography album';
@@ -46,7 +48,7 @@ module.exports = async function handler(req, res) {
         const data = await response.json();
         const fields = data.fields || {};
 
-        console.log('[OG Service] Album found in Firestore');
+        console.log('[Album] Album found in Firestore');
 
         // Extract album data from Firestore REST format
         title = fields.name?.stringValue || fields.title?.stringValue || 'Cosplay Album';
@@ -67,17 +69,19 @@ module.exports = async function handler(req, res) {
           previewImageUrl = fields.coverImageUrl.stringValue;
         }
       } else {
-        console.log('[OG Service] Album not found - using defaults');
+        console.log('[Album] Album not found - using defaults');
       }
     } catch (fetchError) {
-      console.error('[OG Service] Error fetching from Firestore:', fetchError.message);
+      console.error('[Album] Error fetching from Firestore:', fetchError.message);
       // Continue with defaults
     }
 
-    // API endpoint serves HTML with proper meta tags for crawlers
-    // Redirect users to album.html for actual viewing experience
-    const apiUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
-    const userUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${id}&type=${type}`;
+    // Read the album.html template
+    const htmlPath = path.join(process.cwd(), 'public', 'album.html');
+    let html = fs.readFileSync(htmlPath, 'utf-8');
+
+    // Build the album URL for users (without /api/ path)
+    const userUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
 
     // Escape HTML special characters
     const escape = (str) => {
@@ -88,44 +92,32 @@ module.exports = async function handler(req, res) {
       });
     };
 
-    // Generate HTML with proper Open Graph meta tags
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escape(title)} — Cosplay Portfolio</title>
-  <meta name="description" content="${escape(description)}">
-
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="${apiUrl}">
-  <meta property="og:title" content="${escape(title)}">
-  <meta property="og:description" content="${escape(description)}">
-  <meta property="og:image" content="${previewImageUrl}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="1600">
-  <meta property="og:image:type" content="image/jpeg">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${escape(title)}">
-  <meta name="twitter:description" content="${escape(description)}">
-  <meta name="twitter:image" content="${previewImageUrl}">
-
-  <!-- Redirect to actual album page for users -->
-  <meta http-equiv="refresh" content="0; url=${userUrl}">
-</head>
-<body>
-  <p>Redirecting to <a href="${userUrl}">${escape(title)}</a>...</p>
-</body>
-</html>`;
+    // Replace meta tags with actual album data
+    html = html
+      .replace(/<meta property="og:url" content="">/,'<meta property="og:url" content="' + userUrl + '">')
+      .replace(/<meta property="og:title" content="[^"]*">/,'<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">')
+      .replace(/<meta property="og:description" content="[^"]*">/,'<meta property="og:description" content="' + escape(description) + '">')
+      .replace(/<meta property="og:image" content="[^"]*">/g,'<meta property="og:image" content="' + previewImageUrl + '">')
+      .replace(/<meta name="twitter:title" content="[^"]*">/,'<meta name="twitter:title" content="' + escape(title) + '">')
+      .replace(/<meta name="twitter:description" content="[^"]*">/,'<meta name="twitter:description" content="' + escape(description) + '">')
+      .replace(/<meta name="twitter:image" content="[^"]*">/,'<meta name="twitter:image" content="' + previewImageUrl + '">')
+      .replace(/<title>[^<]*<\/title>/,'<title>' + escape(title) + ' — Cosplay Portfolio</title>');
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
     res.status(200).send(html);
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: error.message });
+    // Fallback to static album.html on error
+    try {
+      const htmlPath = path.join(process.cwd(), 'public', 'album.html');
+      const html = fs.readFileSync(htmlPath, 'utf-8');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.status(200).send(html);
+    } catch (fallbackError) {
+      console.error('Fallback failed:', fallbackError);
+      return res.status(500).json({ error: error.message });
+    }
   }
 };
 
