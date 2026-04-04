@@ -12,7 +12,29 @@ function initializeFirebase() {
     const admin = require('firebase-admin');
 
     if (!admin.apps.length) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS || '{}');
+      let credentials = process.env.FIREBASE_CREDENTIALS;
+
+      if (!credentials) {
+        throw new Error('FIREBASE_CREDENTIALS environment variable not set');
+      }
+
+      let serviceAccount;
+      try {
+        // Try parsing as JSON
+        serviceAccount = JSON.parse(credentials);
+      } catch (parseError) {
+        console.error('Failed to parse FIREBASE_CREDENTIALS as JSON:', parseError.message);
+        // If JSON parsing fails, try to clean up the credentials
+        // Remove any leading/trailing whitespace or quotes
+        credentials = credentials.trim().replace(/^["']|["']$/g, '');
+        try {
+          serviceAccount = JSON.parse(credentials);
+        } catch (retryError) {
+          console.error('Failed again:', retryError.message);
+          console.error('Raw credentials:', credentials.substring(0, 100));
+          throw new Error(`Invalid Firebase credentials JSON: ${parseError.message}`);
+        }
+      }
 
       if (Object.keys(serviceAccount).length > 0) {
         admin.initializeApp({
@@ -20,6 +42,8 @@ function initializeFirebase() {
           projectId: process.env.FIREBASE_PROJECT_ID,
         });
         db = admin.firestore();
+      } else {
+        throw new Error('Firebase credentials are empty');
       }
     } else {
       db = admin.firestore();
@@ -54,19 +78,32 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Missing id or type parameter' });
     }
 
+    console.log(`[OG Service] Fetching album - id: ${id}, type: ${type}`);
+
     // Initialize Firebase if not already done
-    initializeFirebase();
+    try {
+      initializeFirebase();
+    } catch (initError) {
+      console.error('[OG Service] Firebase initialization failed:', initError.message);
+      return res.status(500).json({ error: 'Firebase initialization failed', detail: initError.message });
+    }
 
     if (!db) {
       return res.status(500).json({ error: 'Firebase not initialized - missing credentials' });
     }
 
+    console.log('[OG Service] Firebase initialized successfully');
+
     // Fetch album from Firestore
+    console.log(`[OG Service] Querying Firestore: collection="${type}", doc="${id}"`);
     const docSnap = await db.collection(type).doc(id).get();
 
     if (!docSnap.exists()) {
+      console.log('[OG Service] Album not found');
       return res.status(404).json({ error: 'Album not found' });
     }
+
+    console.log('[OG Service] Album found');
 
     const album = docSnap.data();
     const albumUrl = `https://jasonisaddicted.github.io/cosplay-portfolio/album.html?id=${id}&type=${type}`;
