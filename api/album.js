@@ -112,9 +112,9 @@ module.exports = async function handler(req, res) {
     // Don't point to album.html because it has empty og:meta tags (JS-updated, bots don't run JS)
     const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
 
-    // Use first photo directly from Firebase
-    const firstPhoto = album.photos && album.photos.length > 0 ? album.photos[0].src : '';
-    const previewImageUrl = firstPhoto || 'https://via.placeholder.com/1200x1600';
+    // Use static cover image if available, otherwise Firebase
+    const previewImageUrl = album.coverImageUrl ||
+      (album.photos && album.photos.length > 0 ? album.photos[0].src : 'https://via.placeholder.com/1200x1600');
 
     // Keep original photo URL as fallback
     const firstPhotoUrl = album.photos && album.photos.length > 0
