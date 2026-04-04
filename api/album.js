@@ -108,8 +108,9 @@ module.exports = async function handler(req, res) {
     console.log('[OG Service] Album found');
 
     const album = albumData;
-    // Use production domain for og:url so it matches og:image domain (same domain = platforms trust it more)
-    const albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${id}&type=${type}`;
+    // Point og:url to this API endpoint (which serves proper og:meta tags)
+    // Don't point to album.html because it has empty og:meta tags (JS-updated, bots don't run JS)
+    const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
 
     // Use preview endpoint on our domain for og:image (more reliable for all platforms)
     // Add cache-buster to force social media platforms to re-fetch preview
