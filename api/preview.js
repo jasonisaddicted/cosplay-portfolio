@@ -53,6 +53,13 @@ module.exports = async (req, res) => {
   try {
     initializeFirebase();
 
+    if (!db) {
+      console.error('[Preview API] Database not initialized');
+      return res.status(500).json({ error: 'Database initialization failed' });
+    }
+
+    console.log(`[Preview API] Fetching album: id=${id}, type=${type}`);
+
     // Fetch album from Firestore
     const docRef = db.collection(type).doc(id);
     const docSnap = await docRef.get();
