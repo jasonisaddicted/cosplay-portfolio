@@ -32,7 +32,7 @@ const CONFIG = {
   //   series    — game / anime / series name
   //   credit    — cosplayer @handle
   featured: [
-    { src: "https://picsum.photos/seed/hero2025/1600/900",  character: "Hu Tao",          series: "Genshin Impact",         credit: "@sakurahime_cos"  },
+    { src: "https://cosplay-portfolio.vercel.app/og/events-oYgXpPvdrEnzQrTqypGY.jpg",  character: "Hu Tao",          series: "Genshin Impact",         credit: "@sakurahime_cos"  },
     { src: "https://picsum.photos/seed/fp01/800/1000",      character: "2B",               series: "NieR: Automata",          credit: "@voidvessel_cos"  },
     { src: "https://picsum.photos/seed/fp02/800/1000",      character: "Ganyu",            series: "Genshin Impact",         credit: "@luminacraft"     },
     { src: "https://picsum.photos/seed/fp03/800/1000",      character: "Makima",           series: "Chainsaw Man",            credit: "@mirrorshade_x"   },

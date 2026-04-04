@@ -1264,8 +1264,8 @@ function initHome() {
 
   const cfg = CONFIG;
 
-  // Banner Photo (new system - separate from featured)
-  const banner = cfg.bannerPhoto;
+  // Banner Photo (uses featured[0])
+  const banner = cfg.featured && cfg.featured[0];
   if (banner && banner.src) {
     const bannerSection = document.getElementById('banner');
     if (!bannerSection) {
@@ -1281,6 +1281,13 @@ function initHome() {
 
     bannerImg.src = banner.src;
     bannerImg.alt = banner.character || '';
+
+    // Update og:image meta tag to match banner (for social media previews)
+    const ogImageMeta = document.querySelector('meta[property="og:image"]');
+    if (ogImageMeta) {
+      ogImageMeta.setAttribute('content', banner.src);
+      console.log('✓ Updated og:image to:', banner.src);
+    }
 
     // Image displays at 4:3 aspect ratio with object-fit: cover
     // (CSS handles aspect-ratio, image fits edge-to-edge with center crop)
