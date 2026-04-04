@@ -108,9 +108,10 @@ module.exports = async function handler(req, res) {
     console.log('[OG Service] Album found');
 
     const album = albumData;
-    // Point og:url to this API endpoint (which serves proper og:meta tags)
-    // Don't point to album.html because it has empty og:meta tags (JS-updated, bots don't run JS)
-    const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
+    // API endpoint serves HTML with proper meta tags for crawlers
+    // Redirect users to album.html for actual viewing experience
+    const apiUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
+    const userUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${id}&type=${type}`;
 
     // Use static cover image if available, otherwise Firebase
     const previewImageUrl = album.coverImageUrl ||
@@ -135,7 +136,7 @@ module.exports = async function handler(req, res) {
 
   <!-- Open Graph Meta Tags -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="${albumUrl}">
+  <meta property="og:url" content="${apiUrl}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:image" content="${previewImageUrl}">
@@ -149,11 +150,11 @@ module.exports = async function handler(req, res) {
   <meta name="twitter:description" content="${description}">
   <meta name="twitter:image" content="${previewImageUrl}">
 
-  <!-- Redirect to actual album page -->
-  <meta http-equiv="refresh" content="0; url=${albumUrl}">
+  <!-- Redirect to actual album page for users -->
+  <meta http-equiv="refresh" content="0; url=${userUrl}">
 </head>
 <body>
-  <p>Redirecting to <a href="${albumUrl}">${title}</a>...</p>
+  <p>Redirecting to <a href="${userUrl}">${title}</a>...</p>
 </body>
 </html>`;
 
