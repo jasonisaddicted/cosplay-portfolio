@@ -98,14 +98,16 @@ module.exports = async function handler(req, res) {
     console.log(`[OG Service] Querying Firestore: collection="${type}", doc="${id}"`);
     const docSnap = await db.collection(type).doc(id).get();
 
-    if (!docSnap.exists) {
+    // Check if document exists - handle different SDK versions
+    const albumData = docSnap.data();
+    if (!albumData) {
       console.log('[OG Service] Album not found');
       return res.status(404).json({ error: 'Album not found' });
     }
 
     console.log('[OG Service] Album found');
 
-    const album = docSnap.data();
+    const album = albumData;
     const albumUrl = `https://jasonisaddicted.github.io/cosplay-portfolio/album.html?id=${id}&type=${type}`;
     const firstPhotoUrl = album.photos && album.photos.length > 0
       ? album.photos[0].src
