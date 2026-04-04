@@ -3109,6 +3109,9 @@
 
         await updateDoc(newEventRef, { photos: photosWithSource });
 
+        // Auto-save cover image for new event
+        await updateCoverImage(newEventRef.id, 'events');
+
         document.getElementById('batchEventMsg').textContent = `✓ Event created with ${files.length} photos!`;
       } else {
         const eventId = document.getElementById('batchEventSelect').value;
@@ -3204,6 +3207,9 @@
       }));
 
       await updateDoc(newCollabRef, { photos: photosWithSource });
+
+      // Auto-save cover image for new collaborator
+      await updateCoverImage(newCollabRef.id, 'collaborators');
 
       document.getElementById('batchCollabMsg').textContent = `✓ Collaborator added with ${files.length} photos!`;
       document.getElementById('batchCollabMsg').className = 'success';
@@ -3537,6 +3543,10 @@
       }
 
       await updateDoc(doc(db, 'outdoor', sessionId), { photos: newPhotos });
+
+      // Auto-save cover image for outdoor album
+      await updateCoverImage(sessionId, 'outdoor');
+
       document.getElementById('batchOutdoorMsg').textContent = `✓ ${uploaded} photos uploaded!`;
       document.getElementById('batchOutdoorMsg').className = 'success';
       document.getElementById('uploadOutdoorFiles').value = '';
