@@ -92,18 +92,19 @@ module.exports = async function handler(req, res) {
       });
     };
 
-    // Replace meta tags with actual album data using explicit replacements
-    html = html.replace(/(<meta property="og:url" content=")[^"]*(">)/, '$1' + userUrl + '$2');
-    html = html.replace(/(<meta property="og:title" content=")[^"]*(">)/, '$1' + escape(title) + ' — Cosplay Portfolio$2');
-    html = html.replace(/(<meta property="og:description" content=")[^"]*(">)/, '$1' + escape(description) + '$2');
-    html = html.replace(/(<meta property="og:image" content=")[^"]*(">)/g, '$1' + previewImageUrl + '$2');
+    // Replace meta tags with actual album data
+    // Use simple string replacements for reliability
+    html = html.replace('<meta property="og:url" content="">', '<meta property="og:url" content="' + userUrl + '">');
+    html = html.replace('<meta property="og:title" content="Cosplay Portfolio Album">', '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
+    html = html.replace('<meta property="og:description" content="">', '<meta property="og:description" content="' + escape(description) + '">');
+    html = html.replace('<meta property="og:image" content="">', '<meta property="og:image" content="' + previewImageUrl + '">');
     html = html.replace(/<meta property="og:image:width" content="[^"]*">/g, '');
     html = html.replace(/<meta property="og:image:height" content="[^"]*">/g, '');
     html = html.replace(/<meta property="og:image:type" content="[^"]*">/g, '');
-    html = html.replace(/(<meta name="twitter:title" content=")[^"]*(">)/, '$1' + escape(title) + '$2');
-    html = html.replace(/(<meta name="twitter:description" content=")[^"]*(">)/, '$1' + escape(description) + '$2');
-    html = html.replace(/(<meta name="twitter:image" content=")[^"]*(">)/, '$1' + previewImageUrl + '$2');
-    html = html.replace(/(<title>)[^<]*(< \/title>)/, '$1' + escape(title) + ' — Cosplay Portfolio$2');
+    html = html.replace('<meta name="twitter:title" content="Album Title">', '<meta name="twitter:title" content="' + escape(title) + '">');
+    html = html.replace('<meta name="twitter:description" content="">', '<meta name="twitter:description" content="' + escape(description) + '">');
+    html = html.replace('<meta name="twitter:image" content="">', '<meta name="twitter:image" content="' + previewImageUrl + '">');
+    html = html.replace(/<title>Album — Cosplay Portfolio<\/title>/, '<title>' + escape(title) + ' — Cosplay Portfolio</title>');
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
