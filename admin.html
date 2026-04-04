@@ -962,6 +962,22 @@
     }
   };
 
+  /**
+   * Auto-update cover image after photo reordering
+   * Called whenever photos are reordered - keeps cover image in sync with first photo
+   */
+  window.updateCoverImage = async (albumId, type) => {
+    try {
+      const response = await fetch(`/api/save-cover-image?albumId=${albumId}&type=${type}`);
+      if (response.ok) {
+        console.log(`✓ Cover image updated for ${type}/${albumId}`);
+      }
+    } catch (err) {
+      console.warn(`Could not update cover image: ${err.message}`);
+      // Don't fail the whole operation if cover update fails
+    }
+  };
+
   window.loadFeatured = async () => {
     const q = query(collection(db, 'featured'), orderBy('order'));
     const snap = await getDocs(q);
@@ -2154,6 +2170,10 @@
 
       // Update Firestore
       await updateDoc(doc(db, 'events', eventId), { photos: reorderedPhotos });
+
+      // Auto-update cover image (first photo may have changed)
+      await updateCoverImage(eventId, 'events');
+
       await displayEventPhotos(eventId);
 
       errorDiv.style.display = 'none';
@@ -3421,6 +3441,10 @@
 
     try {
       await updateDoc(doc(db, 'outdoor', sessionId), { photos: newPhotos });
+
+      // Auto-update cover image (first photo may have changed)
+      await updateCoverImage(sessionId, 'outdoor');
+
       document.getElementById('outdoorPhotosError').style.display = 'none';
       await window.displayOutdoorPhotos(sessionId);
     } catch (err) {
@@ -3880,6 +3904,10 @@
 
       // Update Firestore
       await updateDoc(doc(db, 'collaborators', collabId), { photos: reorderedPhotos });
+
+      // Auto-update cover image (first photo may have changed)
+      await updateCoverImage(collabId, 'collaborators');
+
       await displayCollabPhotos(collabId);
 
       errorDiv.style.display = 'none';
