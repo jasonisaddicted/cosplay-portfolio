@@ -1283,10 +1283,14 @@ function initHome() {
     bannerImg.alt = banner.character || '';
 
     // Update og:image meta tag to match banner (for social media previews)
+    // First check if admin has set a custom og:image for home page
+    const customOgImage = cfg.ogImages && cfg.ogImages.home;
+    const ogImageUrl = customOgImage || banner.src;
+
     const ogImageMeta = document.querySelector('meta[property="og:image"]');
     if (ogImageMeta) {
-      ogImageMeta.setAttribute('content', banner.src);
-      console.log('✓ Updated og:image to:', banner.src);
+      ogImageMeta.setAttribute('content', ogImageUrl);
+      console.log('✓ Updated og:image to:', ogImageUrl, customOgImage ? '(from admin setting)' : '(from banner)');
     }
 
     // Image displays at 4:3 aspect ratio with object-fit: cover
