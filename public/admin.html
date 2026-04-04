@@ -4885,7 +4885,9 @@
         const pageType = sectionId.replace('-albums', '');
         let collectionName = pageType;
 
-        if (pageType === 'collabs') {
+        if (pageType === 'home') {
+          collectionName = 'featured';
+        } else if (pageType === 'collabs') {
           collectionName = 'collaborators';
         }
 
