@@ -47,10 +47,12 @@ module.exports = async (req, res) => {
     let html = fs.readFileSync(htmlPath, 'utf-8');
 
     // Replace the og:image meta tag with the one from Firestore
-    html = html.replace(
-      /<meta property="og:image" content="[^"]*"/,
-      `<meta property="og:image" content="${ogImageUrl}"`
-    );
+    // Remove hardcoded dimensions so Facebook auto-detects actual image aspect ratio
+    html = html
+      .replace(/<meta property="og:image" content="[^"]*"/, `<meta property="og:image" content="${ogImageUrl}"`)
+      .replace(/<meta property="og:image:width" content="[^"]*">/g, '')
+      .replace(/<meta property="og:image:height" content="[^"]*">/g, '')
+      .replace(/<meta property="og:image:type" content="[^"]*">/g, '');
 
     // Set proper cache headers
     res.setHeader('Content-Type', 'text/html; charset=utf-8');

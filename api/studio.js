@@ -35,11 +35,12 @@ module.exports = async (req, res) => {
     const htmlPath = path.join(process.cwd(), 'public', 'studio.html');
     let html = fs.readFileSync(htmlPath, 'utf-8');
 
-    // Replace the og:image meta tag
-    html = html.replace(
-      /<meta property="og:image" content="[^"]*"/,
-      `<meta property="og:image" content="${ogImageUrl}"`
-    );
+    // Replace the og:image meta tag and remove hardcoded dimensions
+    html = html
+      .replace(/<meta property="og:image" content="[^"]*"/, `<meta property="og:image" content="${ogImageUrl}"`)
+      .replace(/<meta property="og:image:width" content="[^"]*">/g, '')
+      .replace(/<meta property="og:image:height" content="[^"]*">/g, '')
+      .replace(/<meta property="og:image:type" content="[^"]*">/g, '');
 
     // Set proper cache headers
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
