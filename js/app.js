@@ -2082,22 +2082,6 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
   const shareText = `${albumName}`;
 
   switch(platform) {
-    case 'x':
-    case 'twitter':
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out: ${shareText}\n`)}&url=${encodeURIComponent(url)}`, '_blank');
-      break;
-
-    case 'instagram':
-      // Instagram Link Sticker workflow
-      navigator.clipboard.writeText(url).then(() => {
-        window.open('https://instagram.com/', '_blank');
-        alert(`✓ Link copied to clipboard!\n\nTo share on Instagram Story:\n1. Create a Story (upload photo/video)\n2. Tap the Sticker icon (⭐)\n3. Select "Link Sticker"\n4. Paste the URL`);
-      }).catch(() => {
-        window.open('https://instagram.com/', '_blank');
-        alert(`Link copied!\n\nTo share on Instagram Story:\n1. Create a Story\n2. Tap Sticker (⭐)\n3. Select Link Sticker\n4. Paste: ${url}`);
-      });
-      break;
-
     case 'facebook':
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(`Check out: ${shareText}`)}`, '_blank');
       break;
@@ -2105,38 +2089,11 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
     case 'threads':
       window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(`Check out: ${shareText}\n${url}`)}`, '_blank');
       break;
-
-    case 'xhs':
-      // Xiaohongshu - copy to clipboard and suggest
-      navigator.clipboard.writeText(`${shareText}\n${url}`).then(() => {
-        alert(`Link copied! You can now paste in XiaoHongShu:\n\n${shareText}\n${url}`);
-      }).catch(() => {
-        alert(`Copy this to XiaoHongShu:\n\n${shareText}\n${url}`);
-      });
-      break;
-
-    case 'wechat':
-      // WeChat - show QR code or copy link
-      navigator.clipboard.writeText(url).then(() => {
-        alert(`Link copied to clipboard! You can share in WeChat now:\n\n${shareText}\n${url}`);
-      }).catch(() => {
-        alert(`Share in WeChat:\n\n${shareText}\n${url}`);
-      });
-      break;
   }
 
   // Close menu
   const menu = document.querySelector('.share-menu');
   if (menu) menu.style.display = 'none';
-};
-
-// Legacy functions for backward compatibility
-window.shareToTwitter = (albumName) => {
-  window.shareToSocial('x', albumName);
-};
-
-window.shareToInstagram = () => {
-  window.shareToSocial('instagram', '');
 };
 
 // Copy share link to clipboard

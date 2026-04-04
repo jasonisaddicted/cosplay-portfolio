@@ -446,40 +446,12 @@ window.shareAlbumTo = (platform) => {
   const shareText = `Check out this cosplay album: ${albumName}`;
 
   switch (platform) {
-    case 'x':
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(albumUrl)}`, '_blank', 'width=550,height=420');
-      break;
-
-    case 'instagram':
-      // Instagram Link Sticker workflow
-      const igUrl = albumUrl;
-      navigator.clipboard.writeText(igUrl).then(() => {
-        window.open('https://instagram.com/', '_blank');
-        alert(`✓ Album link copied to clipboard!\n\nTo share on Instagram Story:\n1. Create a Story (upload photo/video)\n2. Tap the Sticker icon (⭐)\n3. Select "Link Sticker"\n4. Paste the URL`);
-      }).catch(() => {
-        window.open('https://instagram.com/', '_blank');
-        alert(`Album link copied!\n\nTo share on Instagram Story:\n1. Create a Story\n2. Tap Sticker (⭐)\n3. Select Link Sticker\n4. Paste: ${igUrl}`);
-      });
-      break;
-
     case 'facebook':
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(albumUrl)}`, '_blank', 'width=550,height=420');
       break;
 
     case 'threads':
       window.open(`https://www.threads.net/intent/compose?text=${encodeURIComponent(shareText + ' ' + albumUrl)}`, '_blank', 'width=550,height=420');
-      break;
-
-    case 'xhs':
-      // XiaoHongShu doesn't support direct web sharing
-      copyAlbumLink();
-      alert('Album link copied to clipboard. Open XiaoHongShu and paste it in a new post.');
-      break;
-
-    case 'wechat':
-      // WeChat doesn't support direct web sharing
-      copyAlbumLink();
-      alert('Album link copied to clipboard. Open WeChat and share it with your contacts.');
       break;
   }
 
