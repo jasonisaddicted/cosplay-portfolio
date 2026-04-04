@@ -1,33 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-let db = null;
-
-function initializeFirebase() {
-  if (db) return;
-
-  try {
-    const admin = require('firebase-admin');
-
-    if (!admin.apps.length) {
-      let credentials = process.env.FIREBASE_CREDENTIALS;
-
-      if (!credentials) {
-        throw new Error('FIREBASE_CREDENTIALS environment variable not set');
-      }
-
-      let serviceAccount = JSON.parse(credentials);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-      });
-    }
-
-    db = admin.firestore();
-  } catch (error) {
-    console.error('Firebase initialization error:', error);
-    throw error;
-  }
-}
+const PROJECT_ID = 'jianshencosvisual-328dc';
 
 module.exports = async (req, res) => {
   // Only intercept GET requests to root path
@@ -36,16 +10,36 @@ module.exports = async (req, res) => {
   }
 
   try {
-    initializeFirebase();
+    // Fetch config from Firestore REST API
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/site/config`;
 
-    // Get the config from Firestore to find the og:image
-    const configDoc = await db.collection('site').doc('config').get();
     let ogImageUrl = 'https://cosplay-portfolio.vercel.app/og/events-oYgXpPvdrEnzQrTqypGY.jpg';
 
-    if (configDoc.exists) {
-      const config = configDoc.data();
-      ogImageUrl = config.ogImages?.home || config.bannerPhoto?.src || ogImageUrl;
-      console.log('Using og:image from Firestore:', ogImageUrl);
+    try {
+      const response = await fetch(firestoreUrl);
+      if (response.ok) {
+        const data = await response.json();
+        const fields = data.fields || {};
+
+        // Extract ogImages.home or bannerPhoto.src
+        const ogImages = fields.ogImages?.mapValue?.fields || {};
+        const homeImage = ogImages.home?.stringValue;
+
+        if (homeImage) {
+          ogImageUrl = homeImage;
+          console.log('Using og:image from Firestore:', ogImageUrl);
+        } else {
+          const bannerPhoto = fields.bannerPhoto?.mapValue?.fields || {};
+          const bannerSrc = bannerPhoto.src?.stringValue;
+          if (bannerSrc) {
+            ogImageUrl = bannerSrc;
+            console.log('Using og:image from bannerPhoto:', ogImageUrl);
+          }
+        }
+      }
+    } catch (fetchError) {
+      console.error('Error fetching from Firestore:', fetchError);
+      // Continue with default if fetch fails
     }
 
     // Read the static HTML file
