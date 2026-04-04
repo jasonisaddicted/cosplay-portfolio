@@ -4902,18 +4902,22 @@
           const data = doc.data();
           let src = '';
 
-          if (collectionName === 'studio') {
+          if (collectionName === 'featured') {
+            // Featured collection has src at top level
+            src = data.src || '';
+          } else if (collectionName === 'studio') {
             const firstCoser = (data.cosplayers || [])[0];
             const firstPhoto = firstCoser ? (firstCoser.photos || [])[0] : null;
             src = firstPhoto ? firstPhoto.src : '';
           } else {
+            // Events, Outdoor, Collaborators have src in photos array
             const firstPhoto = (data.photos || [])[0];
             src = firstPhoto ? firstPhoto.src : '';
           }
 
           albums.push({
             id: doc.id,
-            name: data.name,
+            name: data.name || data.character || 'Untitled',
             src: src,
             type: pageType
           });
@@ -4925,17 +4929,35 @@
           html = '<p style="color:#999;">No albums found</p>';
         } else {
           albums.forEach(album => {
-            html += `
-              <div style="background:#181818; border:1px solid #333; padding:12px; margin-bottom:10px; border-radius:2px; cursor:pointer; transition:all 0.22s ease;" onmouseover="this.style.borderColor='#c8a46e'" onmouseout="this.style.borderColor='#333'" onclick="setPageOgImage('${pageType}', '${album.src.replace(/'/g, "\\'")}', '${album.name.replace(/'/g, "\\'")}')">
-                <div style="display:flex; gap:10px; align-items:center;">
-                  ${album.src ? `<img src="${album.src}" alt="${album.name}" style="width:50px; height:50px; object-fit:cover; border-radius:2px;">` : `<div style="width:50px; height:50px; background:#333; border-radius:2px;"></div>`}
-                  <div style="flex:1;">
-                    <div style="color:#c8a46e; font-weight:600;">${album.name}</div>
-                    <div style="color:#999; font-size:0.85rem;">Click to set as page preview</div>
+            const safeSrc = (album.src || '').replace(/'/g, "\\'");
+            const safeName = (album.name || '').replace(/'/g, "\\'");
+
+            // Only render if album has a src
+            if (album.src) {
+              html += `
+                <div style="background:#181818; border:1px solid #333; padding:12px; margin-bottom:10px; border-radius:2px; cursor:pointer; transition:all 0.22s ease;" onmouseover="this.style.borderColor='#c8a46e'" onmouseout="this.style.borderColor='#333'" onclick="setPageOgImage('${pageType}', '${safeSrc}', '${safeName}')">
+                  <div style="display:flex; gap:10px; align-items:center;">
+                    <img src="${album.src}" alt="${album.name}" style="width:50px; height:50px; object-fit:cover; border-radius:2px;">
+                    <div style="flex:1;">
+                      <div style="color:#c8a46e; font-weight:600;">${album.name}</div>
+                      <div style="color:#999; font-size:0.85rem;">Click to set as page preview</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            `;
+              `;
+            } else {
+              html += `
+                <div style="background:#181818; border:1px solid #333; padding:12px; margin-bottom:10px; border-radius:2px; opacity:0.6;">
+                  <div style="display:flex; gap:10px; align-items:center;">
+                    <div style="width:50px; height:50px; background:#333; border-radius:2px;"></div>
+                    <div style="flex:1;">
+                      <div style="color:#c8a46e; font-weight:600;">${album.name}</div>
+                      <div style="color:#999; font-size:0.85rem; color:#666;">No cover image</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
           });
         }
 
