@@ -4826,7 +4826,7 @@
     // Load and display og:image settings
     async function loadOgImageSettings() {
       try {
-        const configDoc = await getDoc(doc(db, 'site', 'config'));
+        const configDoc = await window.getDoc(window.doc(window.db, 'site', 'config'));
         if (configDoc.exists()) {
           const data = configDoc.data();
           const ogImages = data.ogImages || {};
@@ -4859,13 +4859,13 @@
         msgEl.textContent = '⏳ Saving...';
         msgEl.style.color = '#aaa';
 
-        const configRef = doc(db, 'site', 'config');
-        const configSnap = await getDoc(configRef);
+        const configRef = window.doc(window.db, 'site', 'config');
+        const configSnap = await window.getDoc(configRef);
         const ogImages = configSnap.exists() ? (configSnap.data().ogImages || {}) : {};
 
         ogImages[page] = url;
 
-        await updateDoc(configRef, { ogImages });
+        await window.updateDoc(configRef, { ogImages });
 
         msgEl.textContent = '✓ Saved!';
         msgEl.style.color = '#4CAF50';
