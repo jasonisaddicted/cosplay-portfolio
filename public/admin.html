@@ -743,54 +743,54 @@
     <!-- Meta Tags Settings -->
     <div id="meta-tags" class="content">
       <h2 style="margin-bottom:20px;">⚙️ Meta Tags & OG Images</h2>
-      <p style="color:#999; margin-bottom:30px;">Configure og:image for social media previews on each main page</p>
+      <p style="color:#999; margin-bottom:30px;">Pick albums to use as og:image for each page preview</p>
 
-      <div style="background:#1a1a1a; border:1px solid #333; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:20px; color:#c8a46e;">Page OG Images</h3>
-
-        <!-- Home Page -->
-        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
-          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🏠 Home Page</label>
-          <input type="text" id="ogImage-home" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
-          <button onclick="saveOgImage('home')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
-          <span id="ogImageMsg-home" style="margin-left:10px; font-size:0.85rem;"></span>
+      <!-- Events Collapsible -->
+      <div style="background:#1a1a1a; border:1px solid #333; margin-bottom:20px; border-radius:3px; overflow:hidden;">
+        <button onclick="toggleCollapsible('events-albums')" style="width:100%; padding:15px; background:#0d0d0d; border:none; color:#c8a46e; text-align:left; cursor:pointer; font-weight:600; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
+          <span>📷 Events</span>
+          <span id="events-toggle" style="transform:rotate(0deg); transition:transform 0.3s;">▼</span>
+        </button>
+        <div id="events-albums" style="display:none; padding:15px; background:#0d0d0d; border-top:1px solid #333;">
+          <div id="events-albums-list" style="max-height:400px; overflow-y:auto;"></div>
         </div>
+      </div>
 
-        <!-- Events Page -->
-        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
-          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">📷 Events Page</label>
-          <input type="text" id="ogImage-events" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
-          <button onclick="saveOgImage('events')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
-          <span id="ogImageMsg-events" style="margin-left:10px; font-size:0.85rem;"></span>
+      <!-- Outdoor Collapsible -->
+      <div style="background:#1a1a1a; border:1px solid #333; margin-bottom:20px; border-radius:3px; overflow:hidden;">
+        <button onclick="toggleCollapsible('outdoor-albums')" style="width:100%; padding:15px; background:#0d0d0d; border:none; color:#c8a46e; text-align:left; cursor:pointer; font-weight:600; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
+          <span>🌳 Outdoor</span>
+          <span id="outdoor-toggle" style="transform:rotate(0deg); transition:transform 0.3s;">▼</span>
+        </button>
+        <div id="outdoor-albums" style="display:none; padding:15px; background:#0d0d0d; border-top:1px solid #333;">
+          <div id="outdoor-albums-list" style="max-height:400px; overflow-y:auto;"></div>
         </div>
+      </div>
 
-        <!-- Studio Page -->
-        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
-          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🎬 Studio Page</label>
-          <input type="text" id="ogImage-studio" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
-          <button onclick="saveOgImage('studio')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
-          <span id="ogImageMsg-studio" style="margin-left:10px; font-size:0.85rem;"></span>
+      <!-- Studio Collapsible -->
+      <div style="background:#1a1a1a; border:1px solid #333; margin-bottom:20px; border-radius:3px; overflow:hidden;">
+        <button onclick="toggleCollapsible('studio-albums')" style="width:100%; padding:15px; background:#0d0d0d; border:none; color:#c8a46e; text-align:left; cursor:pointer; font-weight:600; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
+          <span>🎬 Studio</span>
+          <span id="studio-toggle" style="transform:rotate(0deg); transition:transform 0.3s;">▼</span>
+        </button>
+        <div id="studio-albums" style="display:none; padding:15px; background:#0d0d0d; border-top:1px solid #333;">
+          <div id="studio-albums-list" style="max-height:400px; overflow-y:auto;"></div>
         </div>
+      </div>
 
-        <!-- Outdoor Page -->
-        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
-          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🌳 Outdoor Page</label>
-          <input type="text" id="ogImage-outdoor" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
-          <button onclick="saveOgImage('outdoor')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
-          <span id="ogImageMsg-outdoor" style="margin-left:10px; font-size:0.85rem;"></span>
-        </div>
-
-        <!-- Collabs Page -->
-        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
-          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🤝 Collaborators Page</label>
-          <input type="text" id="ogImage-collabs" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
-          <button onclick="saveOgImage('collabs')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
-          <span id="ogImageMsg-collabs" style="margin-left:10px; font-size:0.85rem;"></span>
+      <!-- Collaborators Collapsible -->
+      <div style="background:#1a1a1a; border:1px solid #333; margin-bottom:20px; border-radius:3px; overflow:hidden;">
+        <button onclick="toggleCollapsible('collabs-albums')" style="width:100%; padding:15px; background:#0d0d0d; border:none; color:#c8a46e; text-align:left; cursor:pointer; font-weight:600; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
+          <span>🤝 Collaborators</span>
+          <span id="collabs-toggle" style="transform:rotate(0deg); transition:transform 0.3s;">▼</span>
+        </button>
+        <div id="collabs-albums" style="display:none; padding:15px; background:#0d0d0d; border-top:1px solid #333;">
+          <div id="collabs-albums-list" style="max-height:400px; overflow-y:auto;"></div>
         </div>
       </div>
 
       <p style="color:#999; margin-top:40px; padding-top:20px; border-top:1px solid #333;">
-        💡 <strong>Note:</strong> For individual album thumbnails, use the "Set as Album Thumbnail" button on each photo in the Events, Studio, Outdoor, and Collaborators tabs.
+        💡 Click an album to set it as the page's og:image for social media previews
       </p>
     </div>
 
@@ -4823,62 +4823,123 @@
 
   <!-- OG Image Management Scripts -->
   <script>
-    // Load and display og:image settings
-    async function loadOgImageSettings() {
-      try {
-        const configDoc = await window.getDoc(window.doc(window.db, 'site', 'config'));
-        if (configDoc.exists()) {
-          const data = configDoc.data();
-          const ogImages = data.ogImages || {};
+    // Toggle collapsible sections
+    window.toggleCollapsible = function(sectionId) {
+      const section = document.getElementById(sectionId);
+      const toggle = document.getElementById(sectionId.replace('-albums', '-toggle'));
+      const isOpen = section.style.display === 'block';
 
-          document.getElementById('ogImage-home').value = ogImages.home || '';
-          document.getElementById('ogImage-events').value = ogImages.events || '';
-          document.getElementById('ogImage-studio').value = ogImages.studio || '';
-          document.getElementById('ogImage-outdoor').value = ogImages.outdoor || '';
-          document.getElementById('ogImage-collabs').value = ogImages.collabs || '';
-        }
-      } catch (err) {
-        console.error('Error loading og:image settings:', err);
-      }
-    }
+      section.style.display = isOpen ? 'none' : 'block';
+      toggle.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
 
-    // Save og:image for a specific page
-    window.saveOgImage = async function(page) {
-      const inputId = `ogImage-${page}`;
-      const msgId = `ogImageMsg-${page}`;
-      const url = document.getElementById(inputId).value.trim();
-      const msgEl = document.getElementById(msgId);
-
-      if (!url) {
-        msgEl.textContent = '❌ URL required';
-        msgEl.style.color = '#ff6b6b';
-        return;
-      }
-
-      try {
-        msgEl.textContent = '⏳ Saving...';
-        msgEl.style.color = '#aaa';
-
-        const configRef = window.doc(window.db, 'site', 'config');
-        const configSnap = await window.getDoc(configRef);
-        const ogImages = configSnap.exists() ? (configSnap.data().ogImages || {}) : {};
-
-        ogImages[page] = url;
-
-        await window.updateDoc(configRef, { ogImages });
-
-        msgEl.textContent = '✓ Saved!';
-        msgEl.style.color = '#4CAF50';
-        setTimeout(() => { msgEl.textContent = ''; }, 2000);
-      } catch (err) {
-        console.error('Error saving og:image:', err);
-        msgEl.textContent = '❌ Error: ' + err.message;
-        msgEl.style.color = '#ff6b6b';
+      if (!isOpen) {
+        loadAlbumsForSection(sectionId);
       }
     };
 
-    // Load settings when page loads
-    window.addEventListener('firebase-config-loaded', loadOgImageSettings);
+    // Load albums for a specific section
+    async function loadAlbumsForSection(sectionId) {
+      try {
+        let albums = [];
+        const listId = sectionId.replace('albums', 'albums-list');
+        const listEl = document.getElementById(listId);
+
+        if (sectionId === 'events-albums') {
+          const snap = await window.getDocs(window.collection(window.db, 'events'));
+          snap.forEach(doc => {
+            const data = doc.data();
+            const firstPhoto = (data.photos || [])[0];
+            albums.push({
+              id: doc.id,
+              name: data.name,
+              src: firstPhoto ? firstPhoto.src : '',
+              type: 'events'
+            });
+          });
+        } else if (sectionId === 'outdoor-albums') {
+          const snap = await window.getDocs(window.collection(window.db, 'outdoor'));
+          snap.forEach(doc => {
+            const data = doc.data();
+            const firstPhoto = (data.photos || [])[0];
+            albums.push({
+              id: doc.id,
+              name: data.name,
+              src: firstPhoto ? firstPhoto.src : '',
+              type: 'outdoor'
+            });
+          });
+        } else if (sectionId === 'studio-albums') {
+          const snap = await window.getDocs(window.collection(window.db, 'studio'));
+          snap.forEach(doc => {
+            const data = doc.data();
+            const firstCoser = (data.cosplayers || [])[0];
+            const firstPhoto = firstCoser ? (firstCoser.photos || [])[0] : null;
+            albums.push({
+              id: doc.id,
+              name: data.name,
+              src: firstPhoto ? firstPhoto.src : '',
+              type: 'studio'
+            });
+          });
+        } else if (sectionId === 'collabs-albums') {
+          const snap = await window.getDocs(window.collection(window.db, 'collaborators'));
+          snap.forEach(doc => {
+            const data = doc.data();
+            const firstPhoto = (data.photos || [])[0];
+            albums.push({
+              id: doc.id,
+              name: data.name,
+              src: firstPhoto ? firstPhoto.src : '',
+              type: 'collab'
+            });
+          });
+        }
+
+        // Render albums list
+        let html = '';
+        albums.forEach(album => {
+          html += `
+            <div style="background:#181818; border:1px solid #333; padding:12px; margin-bottom:10px; border-radius:2px; cursor:pointer; transition:all 0.22s ease;" onmouseover="this.style.borderColor='#c8a46e'" onmouseout="this.style.borderColor='#333'" onclick="setPageOgImage('${sectionId.replace('-albums', '')}', '${album.src}', '${album.name}')">
+              <div style="display:flex; gap:10px; align-items:center;">
+                ${album.src ? `<img src="${album.src}" alt="${album.name}" style="width:50px; height:50px; object-fit:cover; border-radius:2px;">` : `<div style="width:50px; height:50px; background:#333; border-radius:2px;"></div>`}
+                <div style="flex:1;">
+                  <div style="color:#c8a46e; font-weight:600;">${album.name}</div>
+                  <div style="color:#999; font-size:0.85rem;">Click to set as page preview</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        listEl.innerHTML = html || '<p style="color:#999;">No albums found</p>';
+      } catch (err) {
+        console.error('Error loading albums:', err);
+      }
+    }
+
+    // Set page og:image
+    window.setPageOgImage = async function(page, imageUrl, albumName) {
+      try {
+        const configRef = window.doc(window.db, 'site', 'config');
+        const ogImages = {};
+        ogImages[page] = imageUrl;
+
+        await window.updateDoc(configRef, {
+          [`ogImages.${page}`]: imageUrl
+        });
+
+        // Show confirmation
+        alert(`✓ ${albumName} set as ${page} page preview!`);
+      } catch (err) {
+        console.error('Error setting og:image:', err);
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // Load sections when tab is switched
+    window.addEventListener('firebase-config-loaded', () => {
+      console.log('Meta Tags ready');
+    });
   </script>
 
 </body>
