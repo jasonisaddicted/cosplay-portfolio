@@ -452,7 +452,7 @@ window.shareAlbumTo = (platform) => {
 
     case 'instagram':
       // Instagram doesn't support direct URL sharing from web
-      const igUrl = window.location.href;
+      const igUrl = albumUrl;
       navigator.clipboard.writeText(igUrl).then(() => {
         window.open('https://instagram.com/', '_blank');
         alert(`✓ Album link copied to clipboard!\n\nInstagram opened - now:\n1. Go to Stories (+ button)\n2. Long press to paste\n3. Share to Story`);
