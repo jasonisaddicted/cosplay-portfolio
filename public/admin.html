@@ -209,6 +209,7 @@
       <button class="tab" onclick="switchTab('outdoor')">Outdoor</button>
       <button class="tab" onclick="switchTab('studio')">Studio</button>
       <button class="tab" onclick="switchTab('collabs')">Collabs</button>
+      <button class="tab" onclick="switchTab('meta-tags')">⚙️ Meta Tags</button>
       <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
     </div>
 
@@ -737,6 +738,60 @@
       </div>
 
       <div class="items-list" id="collabList"></div>
+    </div>
+
+    <!-- Meta Tags Settings -->
+    <div id="meta-tags" class="content">
+      <h2 style="margin-bottom:20px;">⚙️ Meta Tags & OG Images</h2>
+      <p style="color:#999; margin-bottom:30px;">Configure og:image for social media previews on each main page</p>
+
+      <div style="background:#1a1a1a; border:1px solid #333; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:20px; color:#c8a46e;">Page OG Images</h3>
+
+        <!-- Home Page -->
+        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
+          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🏠 Home Page</label>
+          <input type="text" id="ogImage-home" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
+          <button onclick="saveOgImage('home')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
+          <span id="ogImageMsg-home" style="margin-left:10px; font-size:0.85rem;"></span>
+        </div>
+
+        <!-- Events Page -->
+        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
+          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">📷 Events Page</label>
+          <input type="text" id="ogImage-events" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
+          <button onclick="saveOgImage('events')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
+          <span id="ogImageMsg-events" style="margin-left:10px; font-size:0.85rem;"></span>
+        </div>
+
+        <!-- Studio Page -->
+        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
+          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🎬 Studio Page</label>
+          <input type="text" id="ogImage-studio" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
+          <button onclick="saveOgImage('studio')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
+          <span id="ogImageMsg-studio" style="margin-left:10px; font-size:0.85rem;"></span>
+        </div>
+
+        <!-- Outdoor Page -->
+        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
+          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🌳 Outdoor Page</label>
+          <input type="text" id="ogImage-outdoor" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
+          <button onclick="saveOgImage('outdoor')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
+          <span id="ogImageMsg-outdoor" style="margin-left:10px; font-size:0.85rem;"></span>
+        </div>
+
+        <!-- Collabs Page -->
+        <div style="background:#0d0d0d; border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:3px;">
+          <label style="display:block; margin-bottom:10px; color:#c8a46e; font-weight:600;">🤝 Collaborators Page</label>
+          <input type="text" id="ogImage-collabs" placeholder="https://..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#fff; margin-bottom:10px; box-sizing:border-box;">
+          <button onclick="saveOgImage('collabs')" style="padding:8px 16px; background:#c8a46e; border:none; color:#000; cursor:pointer; border-radius:2px; font-weight:600;">Save</button>
+          <span id="ogImageMsg-collabs" style="margin-left:10px; font-size:0.85rem;"></span>
+        </div>
+      </div>
+
+      <p style="color:#999; margin-top:40px; padding-top:20px; border-top:1px solid #333;">
+        💡 <strong>Note:</strong> For individual album thumbnails, use the "Set as Album Thumbnail" button on each photo in the Events, Studio, Outdoor, and Collaborators tabs.
+      </p>
     </div>
 
     <!-- Analytics Dashboard -->
@@ -4766,6 +4821,65 @@
     </div>
   </div>
 
+  <!-- OG Image Management Scripts -->
+  <script>
+    // Load and display og:image settings
+    async function loadOgImageSettings() {
+      try {
+        const configDoc = await getDoc(doc(db, 'site', 'config'));
+        if (configDoc.exists()) {
+          const data = configDoc.data();
+          const ogImages = data.ogImages || {};
+
+          document.getElementById('ogImage-home').value = ogImages.home || '';
+          document.getElementById('ogImage-events').value = ogImages.events || '';
+          document.getElementById('ogImage-studio').value = ogImages.studio || '';
+          document.getElementById('ogImage-outdoor').value = ogImages.outdoor || '';
+          document.getElementById('ogImage-collabs').value = ogImages.collabs || '';
+        }
+      } catch (err) {
+        console.error('Error loading og:image settings:', err);
+      }
+    }
+
+    // Save og:image for a specific page
+    window.saveOgImage = async function(page) {
+      const inputId = `ogImage-${page}`;
+      const msgId = `ogImageMsg-${page}`;
+      const url = document.getElementById(inputId).value.trim();
+      const msgEl = document.getElementById(msgId);
+
+      if (!url) {
+        msgEl.textContent = '❌ URL required';
+        msgEl.style.color = '#ff6b6b';
+        return;
+      }
+
+      try {
+        msgEl.textContent = '⏳ Saving...';
+        msgEl.style.color = '#aaa';
+
+        const configRef = doc(db, 'site', 'config');
+        const configSnap = await getDoc(configRef);
+        const ogImages = configSnap.exists() ? (configSnap.data().ogImages || {}) : {};
+
+        ogImages[page] = url;
+
+        await updateDoc(configRef, { ogImages });
+
+        msgEl.textContent = '✓ Saved!';
+        msgEl.style.color = '#4CAF50';
+        setTimeout(() => { msgEl.textContent = ''; }, 2000);
+      } catch (err) {
+        console.error('Error saving og:image:', err);
+        msgEl.textContent = '❌ Error: ' + err.message;
+        msgEl.style.color = '#ff6b6b';
+      }
+    };
+
+    // Load settings when page loads
+    window.addEventListener('firebase-config-loaded', loadOgImageSettings);
+  </script>
 
 </body>
 </html>
