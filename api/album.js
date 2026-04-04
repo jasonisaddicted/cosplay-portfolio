@@ -1,58 +1,10 @@
 /**
  * Open Graph Meta Tag Generator - Vercel Serverless Function
  * Generates proper og:image for album shares on social media
+ * Uses Firestore REST API (no credentials needed)
  */
 
-let db = null;
-
-function initializeFirebase() {
-  if (db) return;
-
-  try {
-    const admin = require('firebase-admin');
-
-    if (!admin.apps.length) {
-      let credentials = process.env.FIREBASE_CREDENTIALS;
-
-      if (!credentials) {
-        throw new Error('FIREBASE_CREDENTIALS environment variable not set');
-      }
-
-      let serviceAccount;
-      try {
-        // Try parsing as JSON
-        serviceAccount = JSON.parse(credentials);
-      } catch (parseError) {
-        console.error('Failed to parse FIREBASE_CREDENTIALS as JSON:', parseError.message);
-        // If JSON parsing fails, try to clean up the credentials
-        // Remove any leading/trailing whitespace or quotes
-        credentials = credentials.trim().replace(/^["']|["']$/g, '');
-        try {
-          serviceAccount = JSON.parse(credentials);
-        } catch (retryError) {
-          console.error('Failed again:', retryError.message);
-          console.error('Raw credentials:', credentials.substring(0, 100));
-          throw new Error(`Invalid Firebase credentials JSON: ${parseError.message}`);
-        }
-      }
-
-      if (Object.keys(serviceAccount).length > 0) {
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-          projectId: process.env.FIREBASE_PROJECT_ID,
-        });
-        db = admin.firestore();
-      } else {
-        throw new Error('Firebase credentials are empty');
-      }
-    } else {
-      db = admin.firestore();
-    }
-  } catch (error) {
-    console.error('Firebase initialization error:', error.message);
-    throw error;
-  }
-}
+const PROJECT_ID = 'jianshencosvisual-328dc';
 
 /**
  * Main handler: Generate meta tags for album
@@ -80,50 +32,61 @@ module.exports = async function handler(req, res) {
 
     console.log(`[OG Service] Fetching album - id: ${id}, type: ${type}`);
 
-    // Initialize Firebase if not already done
+    // Fetch album from Firestore REST API
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${type}/${id}`;
+
+    let albumData = null;
+    let previewImageUrl = 'https://cosplay-portfolio.vercel.app/og/events-oYgXpPvdrEnzQrTqypGY.jpg';
+    let title = 'Cosplay Album';
+    let description = 'Professional cosplay photography album';
+
     try {
-      initializeFirebase();
-    } catch (initError) {
-      console.error('[OG Service] Firebase initialization failed:', initError.message);
-      return res.status(500).json({ error: 'Firebase initialization failed', detail: initError.message });
+      const response = await fetch(firestoreUrl);
+      if (response.ok) {
+        const data = await response.json();
+        const fields = data.fields || {};
+
+        console.log('[OG Service] Album found in Firestore');
+
+        // Extract album data from Firestore REST format
+        title = fields.name?.stringValue || fields.title?.stringValue || 'Cosplay Album';
+        description = fields.description?.stringValue || `Album featuring photos from ${title}`;
+
+        // Get first photo from photos array
+        const photosArray = fields.photos?.arrayValue?.values || [];
+        if (photosArray.length > 0) {
+          const firstPhoto = photosArray[0].mapValue?.fields || {};
+          const photoSrc = firstPhoto.src?.stringValue;
+          if (photoSrc) {
+            previewImageUrl = photoSrc;
+          }
+        }
+
+        // Fallback to coverImageUrl if available
+        if (fields.coverImageUrl?.stringValue) {
+          previewImageUrl = fields.coverImageUrl.stringValue;
+        }
+      } else {
+        console.log('[OG Service] Album not found - using defaults');
+      }
+    } catch (fetchError) {
+      console.error('[OG Service] Error fetching from Firestore:', fetchError.message);
+      // Continue with defaults
     }
 
-    if (!db) {
-      return res.status(500).json({ error: 'Firebase not initialized - missing credentials' });
-    }
-
-    console.log('[OG Service] Firebase initialized successfully');
-
-    // Fetch album from Firestore
-    console.log(`[OG Service] Querying Firestore: collection="${type}", doc="${id}"`);
-    const docSnap = await db.collection(type).doc(id).get();
-
-    // Check if document exists - handle different SDK versions
-    const albumData = docSnap.data();
-    if (!albumData) {
-      console.log('[OG Service] Album not found');
-      return res.status(404).json({ error: 'Album not found' });
-    }
-
-    console.log('[OG Service] Album found');
-
-    const album = albumData;
     // API endpoint serves HTML with proper meta tags for crawlers
     // Redirect users to album.html for actual viewing experience
     const apiUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${id}&type=${type}`;
     const userUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${id}&type=${type}`;
 
-    // Use static cover image if available, otherwise Firebase
-    const previewImageUrl = album.coverImageUrl ||
-      (album.photos && album.photos.length > 0 ? album.photos[0].src : 'https://via.placeholder.com/1200x1600');
-
-    // Keep original photo URL as fallback
-    const firstPhotoUrl = album.photos && album.photos.length > 0
-      ? album.photos[0].src
-      : 'https://jasonisaddicted.github.io/cosplay-portfolio/images/default-og.png';
-
-    const title = album.name || 'Cosplay Album';
-    const description = `Album featuring photos from ${album.name}. ${album.photos?.length || 0} photos.`;
+    // Escape HTML special characters
+    const escape = (str) => {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, (m) => {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return map[m];
+      });
+    };
 
     // Generate HTML with proper Open Graph meta tags
     const html = `<!DOCTYPE html>
@@ -131,14 +94,14 @@ module.exports = async function handler(req, res) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} — Cosplay Portfolio</title>
-  <meta name="description" content="${description}">
+  <title>${escape(title)} — Cosplay Portfolio</title>
+  <meta name="description" content="${escape(description)}">
 
   <!-- Open Graph Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="${apiUrl}">
-  <meta property="og:title" content="${title}">
-  <meta property="og:description" content="${description}">
+  <meta property="og:title" content="${escape(title)}">
+  <meta property="og:description" content="${escape(description)}">
   <meta property="og:image" content="${previewImageUrl}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="1600">
@@ -146,15 +109,15 @@ module.exports = async function handler(req, res) {
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${title}">
-  <meta name="twitter:description" content="${description}">
+  <meta name="twitter:title" content="${escape(title)}">
+  <meta name="twitter:description" content="${escape(description)}">
   <meta name="twitter:image" content="${previewImageUrl}">
 
   <!-- Redirect to actual album page for users -->
   <meta http-equiv="refresh" content="0; url=${userUrl}">
 </head>
 <body>
-  <p>Redirecting to <a href="${userUrl}">${title}</a>...</p>
+  <p>Redirecting to <a href="${userUrl}">${escape(title)}</a>...</p>
 </body>
 </html>`;
 
