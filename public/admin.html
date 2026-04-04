@@ -4883,47 +4883,77 @@
         listEl.innerHTML = '<p style="color:#aaa;">⏳ Loading...</p>';
 
         const pageType = sectionId.replace('-albums', '');
-        let collectionName = pageType;
-
-        if (pageType === 'home') {
-          collectionName = 'featured';
-        } else if (pageType === 'collabs') {
-          collectionName = 'collaborators';
-        }
-
-        console.log('Loading albums from:', collectionName);
 
         // Check if Firebase functions are available
         if (!window.getDocs || !window.collection || !window.db) {
           throw new Error('Firebase not initialized yet. Please wait...');
         }
 
-        const snap = await window.getDocs(window.collection(window.db, collectionName));
+        // For home page, load albums from ALL collections
+        if (pageType === 'home') {
+          const collections = ['featured', 'events', 'outdoor', 'studio', 'collaborators'];
 
-        snap.forEach(doc => {
-          const data = doc.data();
-          let src = '';
+          for (const collectionName of collections) {
+            console.log('Loading albums from:', collectionName);
+            const snap = await window.getDocs(window.collection(window.db, collectionName));
 
-          if (collectionName === 'featured') {
-            // Featured collection has src at top level
-            src = data.src || '';
-          } else if (collectionName === 'studio') {
-            const firstCoser = (data.cosplayers || [])[0];
-            const firstPhoto = firstCoser ? (firstCoser.photos || [])[0] : null;
-            src = firstPhoto ? firstPhoto.src : '';
-          } else {
-            // Events, Outdoor, Collaborators have src in photos array
-            const firstPhoto = (data.photos || [])[0];
-            src = firstPhoto ? firstPhoto.src : '';
+            snap.forEach(doc => {
+              const data = doc.data();
+              let src = '';
+
+              if (collectionName === 'featured') {
+                src = data.src || '';
+              } else if (collectionName === 'studio') {
+                const firstCoser = (data.cosplayers || [])[0];
+                const firstPhoto = firstCoser ? (firstCoser.photos || [])[0] : null;
+                src = firstPhoto ? firstPhoto.src : '';
+              } else {
+                const firstPhoto = (data.photos || [])[0];
+                src = firstPhoto ? firstPhoto.src : '';
+              }
+
+              if (src) {
+                albums.push({
+                  id: doc.id,
+                  name: `${data.name || data.character || 'Untitled'} (${collectionName})`,
+                  src: src,
+                  type: pageType,
+                  collection: collectionName
+                });
+              }
+            });
+          }
+        } else {
+          // For other pages, load from single collection
+          let collectionName = pageType;
+          if (pageType === 'collabs') {
+            collectionName = 'collaborators';
           }
 
-          albums.push({
-            id: doc.id,
-            name: data.name || data.character || 'Untitled',
-            src: src,
-            type: pageType
+          console.log('Loading albums from:', collectionName);
+          const snap = await window.getDocs(window.collection(window.db, collectionName));
+
+          snap.forEach(doc => {
+            const data = doc.data();
+            let src = '';
+
+            if (collectionName === 'studio') {
+              const firstCoser = (data.cosplayers || [])[0];
+              const firstPhoto = firstCoser ? (firstCoser.photos || [])[0] : null;
+              src = firstPhoto ? firstPhoto.src : '';
+            } else {
+              const firstPhoto = (data.photos || [])[0];
+              src = firstPhoto ? firstPhoto.src : '';
+            }
+
+            albums.push({
+              id: doc.id,
+              name: data.name || data.character || 'Untitled',
+              src: src,
+              type: pageType
+            });
           });
-        });
+        }
 
         // Render albums list
         let html = '';
