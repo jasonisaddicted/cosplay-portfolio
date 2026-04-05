@@ -494,6 +494,8 @@ document.addEventListener('click', (e) => {
  * Initialize page
  */
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('Album page DOM loaded');
+
   // Attach like handler to lightbox button
   const lightboxLikeBtn = document.getElementById('lightboxLikeBtn');
   if (lightboxLikeBtn) {
@@ -501,5 +503,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Load album data
+  console.log('Starting album data load...');
   loadAlbumData();
 });
