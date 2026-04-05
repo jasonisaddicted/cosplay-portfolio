@@ -1610,7 +1610,7 @@ async function initEvents() {
     await (window.firebaseReady || Promise.resolve());
 
     // Fetch Firestore albums (like Cosmic 2025) using modular SDK
-    const snap = await getDocs(collection(db, 'albums'));
+    const snap = await getDocs(collection(db, 'events'));
     const firestoreAlbums = snap.docs.map(doc => ({
       id: doc.id,
       type: 'events',
