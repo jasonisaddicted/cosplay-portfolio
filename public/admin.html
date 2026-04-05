@@ -1015,6 +1015,15 @@
       loadAlbumPhotos('events');
     }
 
+    // Load collaborators when collabs tab is opened
+    if (tab === 'collabs') {
+      console.log('🔄 Collabs tab opened, initializing...');
+      setTimeout(async () => {
+        await window.displayCollabOrderPanel();
+        await window.updateCollabDropdown();
+      }, 100);
+    }
+
     // Load analytics when analytics tab is opened
     if (tab === 'analytics') {
       loadAnalytics();
