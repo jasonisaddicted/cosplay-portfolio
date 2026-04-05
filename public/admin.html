@@ -3696,13 +3696,18 @@
         bio,
         cover: '',
         gankUrl: '',
-        photos: []
+        albums: []  // Changed from photos[] to albums[] for new structure
       });
       document.getElementById('collabMsg').textContent = '✓ Collaborator added!';
       document.getElementById('collabMsg').className = 'success';
       document.getElementById('collabHandle').value = '';
       document.getElementById('collabBio').value = '';
       loadCollabs();
+
+      // Refresh the order and dropdown panels
+      await displayCollabOrderPanel();
+      await updateCollabDropdown();
+
       setTimeout(() => { document.getElementById('collabMsg').textContent = ''; }, 3000);
     } catch (err) {
       document.getElementById('collabMsg').textContent = 'Error: ' + err.message;
@@ -5064,13 +5069,18 @@
     // STAGE 7: Display Collaborator Order Panel
     window.displayCollabOrderPanel = async () => {
       try {
+        console.log('📋 displayCollabOrderPanel called');
         const snap = await getDocs(collection(db, 'collaborators'));
+        console.log('✓ Fetched collaborators, count:', snap.docs.length);
+        console.log('Raw data:', snap.docs.map(d => ({ id: d.id, data: d.data() })));
+
         const collabs = snap.docs.map((doc, idx) => ({
           id: doc.id,
-          name: doc.data().name,
+          name: doc.data().name || 'Unnamed',
           order: doc.data().order || idx + 1
         }));
 
+        console.log('Mapped collabs:', collabs);
         collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
 
         const container = document.getElementById('collabOrderPanel');
@@ -5147,10 +5157,15 @@
     // STAGE 8: Update Collaborator Dropdown
     window.updateCollabDropdown = async () => {
       const dropdown = document.getElementById('selectCollab');
-      if (!dropdown) return;
+      if (!dropdown) {
+        console.warn('⚠️  selectCollab dropdown not found');
+        return;
+      }
 
       try {
+        console.log('🔽 updateCollabDropdown called');
         const snap = await getDocs(collection(db, 'collaborators'));
+        console.log('✓ Fetched collaborators for dropdown, count:', snap.docs.length);
         const collabs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
 
@@ -5385,12 +5400,35 @@
       }
     };
 
+    // Debug: Check what's in collaborators collection
+    window.debugCollaborators = async () => {
+      console.log('🔍 Checking collaborators in Firebase...');
+      try {
+        const snap = await getDocs(collection(db, 'collaborators'));
+        console.log(`Found ${snap.docs.length} collaborators:`);
+        snap.docs.forEach(doc => {
+          console.log(`  - ${doc.id}:`, doc.data());
+        });
+        if (snap.docs.length === 0) {
+          console.warn('⚠️ No collaborators found in Firebase!');
+        }
+        return snap.docs.length;
+      } catch (err) {
+        console.error('❌ Error checking collaborators:', err);
+      }
+    };
+
     // Initialize when Collabs tab loads
     window.addEventListener('firebase-config-loaded', async () => {
       console.log('🔄 Firebase loaded, initializing Collabs...');
+      console.log('CONFIG.collaborators:', window.CONFIG?.collaborators?.length || 'undefined');
+
       await new Promise(resolve => setTimeout(resolve, 200));
 
       try {
+        // Debug check
+        await window.debugCollaborators();
+
         await window.displayCollabOrderPanel();
         await window.updateCollabDropdown();
         console.log('✓ Collabs initialized');
