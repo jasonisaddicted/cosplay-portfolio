@@ -2058,7 +2058,6 @@ function initCollabs() {
       <div class="collab-entry__body">
         <div class="collab-entry__label">COSPLAYER</div>
         <h2 class="collab-entry__name">${coser.name}</h2>
-        <div class="collab-entry__handle">${coser.handle || ''}</div>
         ${coser.instagram ? `
           <div class="collab-entry__instagram">
             <svg class="collab-entry__instagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
