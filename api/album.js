@@ -1,26 +1,12 @@
 /**
- * Open Graph Meta Tag Generator - Vercel Serverless Function
- * Generates proper og:image for album shares on social media
- * Uses Firestore REST API (no credentials needed)
+ * Album Sharing Handler - Serves og:image metadata for social media
+ * This is a HEADLESS API that returns HTML with metadata only
+ * Users get redirected to the actual album.html for viewing
  */
-
-const fs = require('fs');
-const path = require('path');
 
 const PROJECT_ID = 'jianshencosvisual-328dc';
 
-/**
- * Main handler: Serve album page with injected og:image meta tags
- * Usage: /api/album?id=DrKhPEqp00W2Ci09542j&type=events
- */
 module.exports = async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-  // Handle OPTIONS requests
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -28,17 +14,14 @@ module.exports = async function handler(req, res) {
 
   try {
     const { id, type } = req.query;
-
     if (!id || !type) {
-      return res.status(400).json({ error: 'Missing id or type parameter' });
+      return res.status(400).json({ error: 'Missing id or type' });
     }
-
-    console.log(`[Album] Fetching album - id: ${id}, type: ${type}`);
 
     // Fetch album from Firestore REST API
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${type}/${id}`;
 
-    let previewImageUrl = 'UNIQUE_DEBUG_URL_XXXXX';
+    let ogImage = 'https://cosplay-portfolio.vercel.app/og/events-oYgXpPvdrEnzQrTqypGY.jpg';
     let title = 'Cosplay Album';
     let description = 'Professional cosplay photography album';
 
@@ -48,107 +31,65 @@ module.exports = async function handler(req, res) {
         const data = await response.json();
         const fields = data.fields || {};
 
-        console.log('[Album] Album found in Firestore');
+        title = fields.name?.stringValue || 'Cosplay Album';
+        description = fields.description?.stringValue || `Album featuring ${title}`;
 
-        // Extract album data from Firestore REST format
-        title = fields.name?.stringValue || fields.title?.stringValue || 'Cosplay Album';
-        description = fields.description?.stringValue || `Album featuring photos from ${title}`;
-
-        // Get first photo from photos array
-        const photosArray = fields.photos?.arrayValue?.values || [];
-        if (photosArray.length > 0) {
-          const firstPhoto = photosArray[0].mapValue?.fields || {};
-          const photoSrc = firstPhoto.src?.stringValue;
-          if (photoSrc) {
-            previewImageUrl = photoSrc;
-          }
+        // Get first photo
+        const photos = fields.photos?.arrayValue?.values || [];
+        if (photos.length > 0) {
+          const firstPhoto = photos[0].mapValue?.fields || {};
+          ogImage = firstPhoto.src?.stringValue || ogImage;
         }
 
-        // Fallback to coverImageUrl if available
+        // Fallback to coverImageUrl
         if (fields.coverImageUrl?.stringValue) {
-          previewImageUrl = fields.coverImageUrl.stringValue;
+          ogImage = fields.coverImageUrl.stringValue;
         }
-      } else {
-        console.log('[Album] Album not found - using defaults');
       }
-    } catch (fetchError) {
-      console.error('[Album] Error fetching from Firestore:', fetchError.message);
-      // Continue with defaults
+    } catch (e) {
+      console.error('Firestore fetch error:', e);
     }
 
-    // Read the album.html template
-    const htmlPath = path.join(process.cwd(), 'public', 'album.html');
-    let html = fs.readFileSync(htmlPath, 'utf-8');
-
-    // DEBUG: Log what og:image is in the file we just read
-    const ogImageInFile = html.match(/<meta property="og:image" content="([^"]*)"/);
-    const debugInfo = `<!-- DEBUG: ogImageInFile="${ogImageInFile ? ogImageInFile[1] : 'NOT_FOUND'}" previewImageUrl="${previewImageUrl}" -->`;
-
-    console.log('[Album] og:image in file:', ogImageInFile ? ogImageInFile[1] : 'NOT FOUND');
-    console.log('[Album] previewImageUrl to use:', previewImageUrl);
-
-    // Build the album URL for users (without /api/ path)
-    const userUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
-
-    // Escape HTML special characters
-    const escape = (str) => {
-      if (!str) return '';
-      return str.replace(/[&<>"']/g, (m) => {
+    // Escape HTML
+    const esc = (s) => {
+      if (!s) return '';
+      return s.replace(/[&<>"']/g, m => {
         const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
         return map[m];
       });
     };
 
-    // Add debug comment at the beginning of head
-    html = html.replace('<head>', '<head>\n  ' + debugInfo);
+    const url = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
 
-    // Replace meta tags
-    html = html.replace(/<meta property="og:url" content="[^"]*">/, '<meta property="og:url" content="' + userUrl + '">');
-    html = html.replace(/<meta property="og:title" content="[^"]*">/, '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
-    html = html.replace(/<meta property="og:description" content="[^"]*">/, '<meta property="og:description" content="' + escape(description) + '">');
-
-    // CRITICAL FIX: Use split/join for bulletproof og:image replacement
-    const ogParts = html.split(/<meta property="og:image"[^>]*>/);
-    console.log('[Album SPLIT DEBUG] ogParts.length:', ogParts.length);
-    console.log('[Album SPLIT DEBUG] previewImageUrl:', previewImageUrl);
-    if (ogParts.length > 1) {
-      // Found og:image tag - replace it
-      console.log('[Album SPLIT DEBUG] Replacing og:image');
-      html = ogParts[0] + '<meta property="og:image" content="' + previewImageUrl + '">' + ogParts.slice(1).join('<met property="og:image" content="">');
-    } else {
-      console.log('[Album SPLIT DEBUG] og:image tag NOT FOUND in HTML');
-    }
-
-    html = html.replace(/<meta name="twitter:title" content="[^"]*">/, '<meta name="twitter:title" content="' + escape(title) + '">');
-    html = html.replace(/<meta name="twitter:description" content="[^"]*">/, '<meta name="twitter:description" content="' + escape(description) + '">');
-    html = html.replace(/<meta name="twitter:image" content="[^"]*">/, '<meta name="twitter:image" content="' + previewImageUrl + '">');
-
-    // Remove dimension tags (let Facebook auto-detect)
-    html = html.replace(/<meta property="og:image:width" content="[^"]*">/g, '');
-    html = html.replace(/<meta property="og:image:height" content="[^"]*">/g, '');
-    html = html.replace(/<meta property="og:image:type" content="[^"]*">/g, '');
-    // Update title
-    html = html.replace(/<title>[^<]*<\/title>/, '<title>' + escape(title) + ' — Cosplay Portfolio</title>');
-
-    // Add debug info to response
-    res.setHeader('X-Debug-PreviewImageUrl', previewImageUrl.substring(0, 100));
-    res.setHeader('X-Debug-OgParts-Length', ogParts.length);
+    // Generate clean HTML response
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta property="og:type" content="website">
+<meta property="og:url" content="${url}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(description)}">
+<meta property="og:image" content="${ogImage}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
+<meta name="twitter:image" content="${ogImage}">
+<meta http-equiv="refresh" content="0; url=${url}">
+<title>${esc(title)}</title>
+</head>
+<body>
+<p>Redirecting to <a href="${url}">${esc(title)}</a>...</p>
+</body>
+</html>`;
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.status(200).send(html);
+
   } catch (error) {
     console.error('Error:', error);
-    // Fallback to static album.html on error
-    try {
-      const htmlPath = path.join(process.cwd(), 'public', 'album.html');
-      const html = fs.readFileSync(htmlPath, 'utf-8');
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.status(200).send(html);
-    } catch (fallbackError) {
-      console.error('Fallback failed:', fallbackError);
-      return res.status(500).json({ error: error.message });
-    }
+    res.status(500).json({ error: 'Internal error' });
   }
 };
 
