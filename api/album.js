@@ -51,6 +51,11 @@ module.exports = async function handler(req, res) {
           ogImage = ogImage.split('&token=')[0];
         }
 
+        // Proxy through our endpoint to add public cache headers
+        if (ogImage && ogImage.includes('firebasestorage')) {
+          ogImage = `https://cosplay-portfolio.vercel.app/api/og-image-proxy?url=${encodeURIComponent(ogImage)}`;
+        }
+
         console.log('Firestore data loaded:', { title, photoCount: photos.length, hasImage: !!ogImage });
       } else {
         console.error('Firestore fetch failed:', response.status);
