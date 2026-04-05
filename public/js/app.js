@@ -843,7 +843,10 @@ const Lightbox = (() => {
   lb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
   lb.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+    // Ignore swipes from left edge (system back gesture) or right edge
+    if (Math.abs(dx) > 50 && touchStartX > 50 && touchStartX < window.innerWidth - 50) {
+      show(current + (dx < 0 ? 1 : -1));
+    }
   });
 
   return {
