@@ -46,6 +46,11 @@ module.exports = async function handler(req, res) {
           ogImage = fields.coverImageUrl.stringValue;
         }
 
+        // Remove expiring tokens from Firebase Storage URLs
+        if (ogImage && ogImage.includes('&token=')) {
+          ogImage = ogImage.split('&token=')[0];
+        }
+
         console.log('Firestore data loaded:', { title, photoCount: photos.length, hasImage: !!ogImage });
       } else {
         console.error('Firestore fetch failed:', response.status);
