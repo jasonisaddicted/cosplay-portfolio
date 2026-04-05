@@ -690,6 +690,15 @@
       <h2 style="margin-bottom:20px;">⚙️ Meta Tags & OG Images</h2>
       <p style="color:#999; margin-bottom:30px;">Pick albums to use as og:image for each page preview</p>
 
+      <!-- Deploy Button -->
+      <div style="background:#1a3a2e; border:1px solid #2d5a4d; padding:20px; border-radius:6px; margin-bottom:30px; text-align:center;">
+        <p style="color:#80d4aa; margin-bottom:15px; font-size:0.9rem;">After selecting images above, click to deploy:</p>
+        <button onclick="deployOgImages()" id="deploy-btn" style="background:#27a066; color:white; border:none; padding:12px 30px; border-radius:4px; cursor:pointer; font-size:1rem; font-weight:600; transition:all 0.3s; hover: background:#1f7d52;">
+          🚀 Deploy OG Images
+        </button>
+        <p id="deploy-status" style="color:#80d4aa; margin-top:15px; font-size:0.85rem; display:none;"></p>
+      </div>
+
       <!-- Home/Featured Collapsible -->
       <div style="background:#1a1a1a; border:1px solid #333; margin-bottom:20px; border-radius:3px; overflow:hidden;">
         <button onclick="toggleCollapsible('home-albums')" style="width:100%; padding:15px; background:#0d0d0d; border:none; color:#c8a46e; text-align:left; cursor:pointer; font-weight:600; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
@@ -4912,6 +4921,44 @@
       } catch (err) {
         console.error('Error setting og:image:', err);
         alert('❌ Error: ' + err.message);
+      }
+    };
+
+    // Deploy OG images to GitHub
+    window.deployOgImages = async function() {
+      const btn = document.getElementById('deploy-btn');
+      const status = document.getElementById('deploy-status');
+
+      try {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        status.style.display = 'block';
+        status.textContent = '⏳ Deploying...';
+
+        const response = await fetch('/api/deploy-og-images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          status.textContent = '✅ Deployed! GitHub Action is running... (Check back in 30 seconds)';
+          status.style.color = '#80d4aa';
+          alert('✅ Deployment started!\n\nGitHub Action is updating HTML files and deploying.\nCheck back in 30 seconds for the live update.');
+        } else {
+          status.textContent = '⚠️ ' + (result.message || 'Deployment failed');
+          status.style.color = '#ff9999';
+          alert('❌ ' + (result.message || 'Deployment failed.\n\nRun "npm run update-og-images" locally instead.'));
+        }
+      } catch (err) {
+        console.error('Deploy error:', err);
+        status.textContent = '❌ Error: ' + err.message;
+        status.style.color = '#ff9999';
+        alert('❌ Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
       }
     };
 
