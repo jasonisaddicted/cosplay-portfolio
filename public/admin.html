@@ -5356,6 +5356,41 @@
       const coverImage = colab.cover || (allPhotos[0]?.src || '');
       const instagramHandle = colab.instagram || colab.handle || '';
 
+      // Build albums list HTML
+      let albumsHtml = '';
+      if (colab.albums && colab.albums.length > 0) {
+        albumsHtml = `
+          <div class="form-group">
+            <label style="color:#c8a46e; font-weight:bold;">📚 Albums (${colab.albums.length})</label>
+            <div style="background:#181818; border:1px solid #333; border-radius:3px; padding:10px; max-height:200px; overflow-y:auto;">
+        `;
+        colab.albums.forEach((album, idx) => {
+          const photoCount = (album.photos || []).length;
+          albumsHtml += `
+            <div style="padding:8px; margin-bottom:8px; background:#0d0d0d; border:1px solid #444; border-radius:2px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="color:#c8a46e; font-weight:bold; font-size:0.95rem;">${album.name}</div>
+                <div style="color:#888; font-size:0.85rem;">${photoCount} photo${photoCount !== 1 ? 's' : ''}</div>
+              </div>
+              <div style="font-size:0.75rem; color:#666;">#${idx + 1}</div>
+            </div>
+          `;
+        });
+        albumsHtml += `
+            </div>
+          </div>
+        `;
+      } else {
+        albumsHtml = `
+          <div class="form-group">
+            <label style="color:#c8a46e; font-weight:bold;">📚 Albums</label>
+            <div style="padding:15px; background:#181818; border:1px solid #444; border-radius:3px; color:#888; text-align:center; font-size:0.9rem;">
+              No albums yet - Upload photos to create albums
+            </div>
+          </div>
+        `;
+      }
+
       const modal = document.createElement('div');
       modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;';
       modal.innerHTML = `
@@ -5364,7 +5399,7 @@
           <div style="position:relative; width:100%; aspect-ratio:3/4; background:#111; cursor:pointer;" onclick="window.openCollabAlbumLightbox('${collabId}')">
             ${coverImage ? `<img src="${coverImage}" style="width:100%; height:100%; object-fit:cover;" alt="${colab.name}">` : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:0.9rem;">No photos yet</div>'}
             <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); color:#c8a46e; padding:8px 12px; border-radius:3px; font-size:0.85rem;">
-              🔍 Click to view album (${allPhotos.length} photos)
+              🔍 Click to view (${allPhotos.length} photos)
             </div>
           </div>
 
@@ -5381,6 +5416,9 @@
               <label>Instagram Handle</label>
               <input type="text" id="editCollabHandle" value="${instagramHandle}" placeholder="@cosplayer_name" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box;">
             </div>
+
+            <!-- Albums Section -->
+            ${albumsHtml}
 
             <div class="form-group">
               <label>Bio (Optional)</label>
