@@ -92,6 +92,10 @@ module.exports = async function handler(req, res) {
       });
     };
 
+    // DEBUG: Add previewImageUrl to HTML comment so we can see what it is
+    const debugComment = `<!-- DEBUG: previewImageUrl=${previewImageUrl} -->`;
+    html = html.replace('<!-- Script to dynamically update og:image with first album photo -->', debugComment + '\n  <!-- Script to dynamically update og:image with first album photo -->');
+
     // Replace meta tags using REGEX for reliability (handles any content value)
     html = html.replace(/<meta property="og:url" content="[^"]*">/, '<meta property="og:url" content="' + userUrl + '">');
     html = html.replace(/<meta property="og:title" content="[^"]*">/, '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
