@@ -1617,8 +1617,8 @@ async function initEvents() {
       ...doc.data()
     }));
 
-    // Merge Firestore albums with CONFIG.events
-    const allAlbums = [...CONFIG.events, ...firestoreAlbums];
+    // Use only Firestore albums (no duplicates from CONFIG.events)
+    const allAlbums = firestoreAlbums;
 
     renderAlbumGrid(allAlbums, document.getElementById('albums-grid'));
     document.querySelector('.section-header__count').textContent =
