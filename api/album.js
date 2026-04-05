@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
     // Fetch album from Firestore REST API
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${type}/${id}`;
 
-    let ogImage = 'https://cosplay-portfolio.vercel.app/og/events-oYgXpPvdrEnzQrTqypGY.jpg';
+    let ogImage = 'UNIQUE_FALLBACK_IMAGE_URL_NEW_API_V2_12345';
     let title = 'Cosplay Album';
     let description = 'Professional cosplay photography album';
 
