@@ -2338,7 +2338,7 @@ footer {
   /* Mobile always gets exactly 3 columns */
   .photo-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; }
   .photo-grid__item:hover { transform: scale(1.06); }
-  .albums-grid { grid-template-columns: repeat(3, 1fr); max-width: 100%; }
+  .albums-grid { grid-template-columns: repeat(2, 1fr); max-width: 100%; }
   .album-header { padding: calc(var(--nav-height) + 28px) 20px 28px; }
   footer { padding: 28px 20px; max-width: 100%; }
 }
