@@ -80,6 +80,11 @@ module.exports = async function handler(req, res) {
     const htmlPath = path.join(process.cwd(), 'public', 'album.html');
     let html = fs.readFileSync(htmlPath, 'utf-8');
 
+    // DEBUG: Log what og:image is in the file we just read
+    const ogImageInFile = html.match(/<meta property="og:image" content="([^"]*)"/);
+    console.log('[Album] og:image in file:', ogImageInFile ? ogImageInFile[1] : 'NOT FOUND');
+    console.log('[Album] previewImageUrl to use:', previewImageUrl);
+
     // Build the album URL for users (without /api/ path)
     const userUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
 
