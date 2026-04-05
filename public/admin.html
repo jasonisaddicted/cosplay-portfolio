@@ -5338,7 +5338,17 @@
     // STAGE 11: Edit Collaborator Details
     window.editCollabDetails = async (collabId) => {
       const docSnap = await getDoc(doc(db, 'collaborators', collabId));
-      const colab = docSnap.data();
+      let colab = docSnap.data();
+
+      // Convert old flat photo structure to new album structure (backward compatibility)
+      if (!colab.albums && colab.photos) {
+        console.log('Converting old photos[] to albums[] structure');
+        colab.albums = [{
+          name: 'All Photos',
+          order: 1,
+          photos: colab.photos
+        }];
+      }
 
       // Get all photos from all albums for lightbox
       const allPhotos = [];
