@@ -646,6 +646,25 @@
     <div id="collabs" class="content">
       <h2 style="margin-bottom:20px;">Collaborators</h2>
 
+      <!-- STAGE 7: Cosplayer Order Panel -->
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px;">📋 Arrange Collaborator Order</h3>
+        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Drag to reorder which collaborator appears first on the main page</p>
+        <div id="collabOrderPanel" style="background:#0d0d0d; padding:15px; border-radius:3px;"></div>
+      </div>
+
+      <!-- STAGE 8-13: Manage Albums -->
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 style="margin-bottom:15px;">📁 Manage Collaborators</h3>
+        <div class="form-group" style="margin-bottom:15px;">
+          <label>Select Collaborator</label>
+          <select id="selectCollab" style="width:100%; max-width:300px; padding:8px; background:#0d0d0d; border:1px solid #333; color:#e4e4e4; border-radius:3px;">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+        <div id="collabAlbumsContainer" style="margin-top:20px; padding:15px; background:#0d0d0d; border-radius:3px;"></div>
+      </div>
+
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
         <h3 style="margin-bottom:15px;">Batch Upload Collab Photos</h3>
         <div class="form-group">
@@ -5037,6 +5056,342 @@
         }, 100);
       }
     };
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // STAGES 7-13: COLLABORATOR MANAGEMENT FUNCTIONS
+    // ════════════════════════════════════════════════════════════════════════════
+
+    // STAGE 7: Display Collaborator Order Panel
+    window.displayCollabOrderPanel = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'collaborators'));
+        const collabs = snap.docs.map((doc, idx) => ({
+          id: doc.id,
+          name: doc.data().name,
+          order: doc.data().order || idx + 1
+        }));
+
+        collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+        const container = document.getElementById('collabOrderPanel');
+        if (!container) return;
+
+        let html = '<div style="padding:10px; background:#181818; border-radius:3px;">';
+        if (collabs.length === 0) {
+          html += '<p style="color:#666;">No collaborators yet</p>';
+        } else {
+          collabs.forEach((colab, idx) => {
+            html += `
+              <div draggable="true" ondragstart="window.dragCollabStart(event)" ondragover="window.dragCollabOver(event)" ondrop="window.dragCollabDrop(event, ${idx})" ondragend="window.dragCollabEnd(event)" class="collab-order-item" data-collab-id="${colab.id}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none;">
+                <div style="display:flex; align-items:center; flex:1;">
+                  <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
+                  <span style="flex:1; color:#fff; font-size:0.9rem;">${colab.name}</span>
+                  <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="window.editCollabDetails('${colab.id}')" style="padding:5px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
+                  <button onclick="window.deleteCollab('${colab.id}')" style="padding:5px 10px; font-size:0.75rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete</button>
+                </div>
+              </div>`;
+          });
+        }
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (err) {
+        console.error('Error displaying collab order:', err);
+      }
+    };
+
+    let draggedCollab = null;
+
+    window.dragCollabStart = (e) => {
+      draggedCollab = e.currentTarget;
+      draggedCollab.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+    };
+
+    window.dragCollabOver = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    };
+
+    window.dragCollabDrop = async (e, targetIdx) => {
+      e.preventDefault();
+      if (!draggedCollab) return;
+
+      try {
+        const container = document.getElementById('collabOrderPanel');
+        const allItems = Array.from(container.querySelectorAll('.collab-order-item'));
+        const newOrder = allItems.map(item => item.getAttribute('data-collab-id'));
+
+        for (let i = 0; i < newOrder.length; i++) {
+          await updateDoc(doc(db, 'collaborators', newOrder[i]), { order: i + 1 });
+        }
+
+        console.log('✓ Collaborator order updated');
+        await displayCollabOrderPanel();
+      } catch (err) {
+        console.error('Error saving collab order:', err);
+      }
+
+      draggedCollab.style.opacity = '1';
+      draggedCollab = null;
+    };
+
+    window.dragCollabEnd = (e) => {
+      if (draggedCollab) {
+        draggedCollab.style.opacity = '1';
+      }
+    };
+
+    // STAGE 8: Update Collaborator Dropdown
+    window.updateCollabDropdown = async () => {
+      const dropdown = document.getElementById('selectCollab');
+      if (!dropdown) return;
+
+      try {
+        const snap = await getDocs(collection(db, 'collaborators'));
+        const collabs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+        let html = '<option value="">Select a cosplayer...</option>';
+        collabs.forEach(colab => {
+          html += `<option value="${colab.id}">${colab.name} (${colab.handle || 'N/A'})</option>`;
+        });
+        dropdown.innerHTML = html;
+
+        dropdown.onchange = async () => {
+          const collabId = dropdown.value;
+          if (collabId) {
+            await displayCollabAlbums(collabId);
+          }
+        };
+      } catch (err) {
+        console.error('Error updating collab dropdown:', err);
+      }
+    };
+
+    // STAGE 9: Display Albums
+    window.displayCollabAlbums = async (collabId) => {
+      try {
+        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+        const colab = docSnap.data();
+        const container = document.getElementById('collabAlbumsContainer');
+        if (!container) return;
+
+        const albums = colab.albums || [];
+        albums.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        let html = `<h4 style="margin-bottom:15px; color:#c8a46e;">${colab.name}'s Albums</h4>`;
+
+        if (albums.length === 0) {
+          html += '<p style="color:#666;">No albums yet</p>';
+        } else {
+          albums.forEach((album, idx) => {
+            html += `
+              <div style="margin-bottom:15px; padding:12px; background:#1a1a1a; border:1px solid #333; border-radius:3px;">
+                <div style="cursor:pointer; display:flex; align-items:center; justify-content:space-between;" onclick="window.toggleAlbumPhotos(this)">
+                  <div style="display:flex; align-items:center; flex:1;">
+                    <span style="color:#c8a46e; margin-right:10px; font-size:1.2rem;">📷</span>
+                    <span style="flex:1; color:#fff; font-weight:600;">${album.name || 'Album ' + (idx + 1)}</span>
+                    <span style="color:#666; font-size:0.85rem;">${(album.photos || []).length} photos</span>
+                  </div>
+                  <span style="color:#aaa; transition:transform 0.2s;" class="album-toggle">▼</span>
+                </div>
+                <div class="album-photos" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid #333;">
+                  <div id="album-photos-${idx}" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:15px;"></div>
+                  <div style="display:flex; gap:10px;">
+                    <button onclick="window.applyAlbumPhotoOrder('${collabId}', ${idx})" style="flex:1; padding:8px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Apply Photo Order</button>
+                    <button onclick="window.deleteAlbum('${collabId}', ${idx})" style="flex:1; padding:8px; background:#8b0000; color:#fff; border:none; border-radius:3px; cursor:pointer;">Delete Album</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        container.innerHTML = html;
+
+        // Populate photo grids
+        albums.forEach((album, idx) => {
+          const photoContainer = document.getElementById(`album-photos-${idx}`);
+          if (!photoContainer) return;
+
+          let photoHtml = '';
+          (album.photos || []).forEach((photo, pidx) => {
+            photoHtml += `
+              <div style="padding:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; text-align:center;">
+                <img src="${photo.src}" style="width:100%; aspect-ratio:3/4; object-fit:cover; margin-bottom:6px; border-radius:2px;" alt="${photo.character || 'Photo'}" />
+                <input type="number" min="1" max="100" value="${pidx + 1}" class="photo-position" data-idx="${pidx}" style="width:40px; padding:3px; font-size:0.7rem; background:#111; border:1px solid #333; color:#e4e4e4;" />
+                <button onclick="window.deleteAlbumPhoto('${collabId}', ${idx}, ${pidx})" style="width:100%; margin-top:4px; padding:4px; font-size:0.7rem; background:#8b0000; color:#fff; border:none; cursor:pointer;">Delete</button>
+              </div>
+            `;
+          });
+          photoContainer.innerHTML = photoHtml;
+        });
+      } catch (err) {
+        console.error('Error displaying albums:', err);
+      }
+    };
+
+    window.toggleAlbumPhotos = (element) => {
+      const albumPhotos = element.nextElementSibling;
+      const toggle = element.querySelector('.album-toggle');
+      if (albumPhotos) {
+        const isHidden = albumPhotos.style.display === 'none';
+        albumPhotos.style.display = isHidden ? 'block' : 'none';
+        toggle.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+    };
+
+    // STAGE 10: Reorder Photos
+    window.applyAlbumPhotoOrder = async (collabId, albumIdx) => {
+      const container = document.getElementById(`album-photos-${albumIdx}`);
+      const positions = Array.from(container.querySelectorAll('.photo-position'));
+      const newOrder = positions.map((el, idx) => ({ idx, pos: parseInt(el.value) }));
+      newOrder.sort((a, b) => a.pos - b.pos);
+
+      try {
+        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+        const colab = docSnap.data();
+        const albums = [...colab.albums];
+        const album = albums[albumIdx];
+        const originalPhotos = album.photos;
+
+        const reorderedPhotos = newOrder.map(({ idx }) => originalPhotos[idx]);
+        album.photos = reorderedPhotos;
+        albums[albumIdx] = album;
+
+        await updateDoc(doc(db, 'collaborators', collabId), { albums });
+        console.log('✓ Photo order updated');
+        await displayCollabAlbums(collabId);
+      } catch (err) {
+        console.error('Error reordering:', err);
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // STAGE 11: Edit Collaborator Details
+    window.editCollabDetails = async (collabId) => {
+      const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+      const colab = docSnap.data();
+
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1000; display:flex; align-items:center; justify-content:center;';
+      modal.innerHTML = `
+        <div style="background:#0d0d0d; border:1px solid #333; padding:20px; border-radius:4px; max-width:500px; width:90%;">
+          <h3 style="margin-top:0; color:#c8a46e;">Edit ${colab.name}</h3>
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="editCollabName" value="${colab.name || ''}" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box;">
+          </div>
+          <div class="form-group">
+            <label>Handle</label>
+            <input type="text" id="editCollabHandle" value="${colab.handle || ''}" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box;">
+          </div>
+          <div class="form-group">
+            <label>Instagram</label>
+            <input type="text" id="editCollabInstagram" value="${colab.instagram || ''}" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box;">
+          </div>
+          <div class="form-group">
+            <label>Bio</label>
+            <textarea id="editCollabBio" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; height:80px; resize:none; box-sizing:border-box;">${colab.bio || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Gank URL</label>
+            <input type="url" id="editCollabGankUrl" value="${colab.gankUrl || ''}" placeholder="https://gank.io/..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box;">
+          </div>
+          <div style="display:flex; gap:10px; margin-top:15px;">
+            <button onclick="window.saveCollabDetails('${collabId}'); this.closest('[style*=fixed]').remove();" style="flex:1; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Save</button>
+            <button onclick="this.closest('[style*=fixed]').remove();" style="flex:1; padding:10px; background:#444; color:#fff; border:none; border-radius:3px; cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    };
+
+    window.saveCollabDetails = async (collabId) => {
+      const name = document.getElementById('editCollabName').value.trim();
+      const handle = document.getElementById('editCollabHandle').value.trim();
+      const instagram = document.getElementById('editCollabInstagram').value.trim();
+      const bio = document.getElementById('editCollabBio').value.trim();
+      const gankUrl = document.getElementById('editCollabGankUrl').value.trim();
+
+      if (!name) {
+        alert('Name is required');
+        return;
+      }
+
+      try {
+        await updateDoc(doc(db, 'collaborators', collabId), {
+          name, handle, instagram, bio, gankUrl
+        });
+        console.log('✓ Details saved');
+        await displayCollabOrderPanel();
+        await updateCollabDropdown();
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // STAGE 13: Delete Album & Photo
+    window.deleteAlbum = async (collabId, albumIdx) => {
+      if (!confirm('Delete this album?')) return;
+
+      try {
+        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+        const colab = docSnap.data();
+        const albums = colab.albums.filter((_, idx) => idx !== albumIdx);
+
+        await updateDoc(doc(db, 'collaborators', collabId), { albums });
+        console.log('✓ Album deleted');
+        await displayCollabAlbums(collabId);
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error: ' + err.message);
+      }
+    };
+
+    window.deleteAlbumPhoto = async (collabId, albumIdx, photoIdx) => {
+      if (!confirm('Delete this photo?')) return;
+
+      try {
+        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+        const colab = docSnap.data();
+        const albums = [...colab.albums];
+        albums[albumIdx].photos = albums[albumIdx].photos.filter((_, idx) => idx !== photoIdx);
+
+        await updateDoc(doc(db, 'collaborators', collabId), { albums });
+        console.log('✓ Photo deleted');
+        await displayCollabAlbums(collabId);
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error: ' + err.message);
+      }
+    };
+
+    window.deleteCollab = async (collabId) => {
+      if (!confirm('Delete this collaborator?')) return;
+
+      try {
+        await deleteDoc(doc(db, 'collaborators', collabId));
+        console.log('✓ Collaborator deleted');
+        await displayCollabOrderPanel();
+        await updateCollabDropdown();
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // Initialize when Collabs tab loads
+    window.addEventListener('firebase-config-loaded', () => {
+      setTimeout(() => {
+        displayCollabOrderPanel();
+        updateCollabDropdown();
+      }, 100);
+    });
   </script>
 
 </body>

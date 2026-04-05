@@ -1948,81 +1948,141 @@ function initCollabs() {
   document.title = `Collaborators · ${window.CONFIG.photographer || 'Cosplay Portfolio'}`;
 
   const list = document.getElementById('collab-list');
-  const collabs = CONFIG.collaborators || [];
+  let collabs = CONFIG.collaborators || [];
 
   if (!collabs.length) {
     list.innerHTML = '<p class="empty">No collaborators added yet.</p>';
     return;
   }
 
-  // Collect all photos for global lightbox
-  const allPhotos = [];
-  const photoOffsets = [];
-  collabs.forEach(c => {
-    photoOffsets.push(allPhotos.length);
-    c.photos.forEach(p => allPhotos.push({
-      src:     p.src,
-      caption: p.caption || ''
-    }));
+  // Convert old flat photo structure to new album structure (backward compatibility)
+  collabs = collabs.map(coser => {
+    if (!coser.albums && coser.photos) {
+      // Old structure: convert photos[] to albums[]
+      return {
+        ...coser,
+        albums: [{
+          name: 'All Photos',
+          order: 1,
+          photos: coser.photos
+        }],
+        order: coser.order || 999
+      };
+    }
+    return {
+      ...coser,
+      order: coser.order || 999,
+      albums: coser.albums || []
+    };
   });
+
+  // Sort by order field
+  collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+  // Collect all photos from all albums for global lightbox
+  const allPhotos = [];
+  collabs.forEach(coser => {
+    if (!coser.albums) return;
+    coser.albums.forEach(album => {
+      if (!album.photos) return;
+      album.photos.forEach(photo => {
+        allPhotos.push({
+          src: photo.src,
+          coser: coser.handle || coser.name,
+          character: photo.character || '',
+          series: photo.series || '',
+          caption: photo.caption || ''
+        });
+      });
+    });
+  });
+
   Lightbox.init(allPhotos);
 
-  collabs.forEach((c, ci) => {
+  // Render cosplayer cards (2-column layout)
+  list.innerHTML = '';
+  collabs.forEach(coser => {
     const entry = document.createElement('div');
     entry.className = 'collab-entry';
-    entry.id = c.id;
+    entry.id = coser.id;
 
+    // Get cover image from first photo of first album
+    let coverSrc = coser.cover || '';
+    if (!coverSrc && coser.albums && coser.albums[0] && coser.albums[0].photos && coser.albums[0].photos[0]) {
+      coverSrc = coser.albums[0].photos[0].src;
+    }
+
+    // Collect all photos from all albums
+    const allCoserPhotos = [];
+    (coser.albums || []).forEach(album => {
+      (album.photos || []).forEach((photo, idx) => {
+        allCoserPhotos.push({
+          ...photo,
+          src: photo.src,
+          character: photo.character || '',
+          series: photo.series || '',
+          caption: photo.caption || ''
+        });
+      });
+    });
+
+    // Build thumbnail grid HTML
+    const thumbsHtml = allCoserPhotos.length ? `
+      <div class="collab-entry__projects-label">PROJECT</div>
+      <div class="collab-entry__thumbs">
+        ${allCoserPhotos.map((photo, idx) => `
+          <div class="collab-thumb" data-index="${allPhotos.findIndex(p => p.src === photo.src && p.coser === coser.handle)}" style="cursor: pointer;">
+            <img src="${photo.src}" alt="${photo.character || coser.name}" loading="lazy">
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+
+    // Build Gank button HTML
     const gankIcon = `<svg class="gank-btn__icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
       <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" fill="none"/>
       <path d="M16 10a4 4 0 01-8 0" fill="none" stroke="currentColor" stroke-width="2"/>
     </svg>`;
 
-    const thumbsHtml = c.photos.map((p, pi) =>
-      `<div class="collab-thumb" data-index="${photoOffsets[ci] + pi}">
-        <img src="${p.src}" alt="${p.caption || c.name}" loading="lazy">
-      </div>`
-    ).join('');
+    const gankButtonHtml = coser.gankUrl ? `
+      <a class="gank-btn" href="${coser.gankUrl}" target="_blank" rel="noopener noreferrer">
+        ${gankIcon}
+        Support on Gank
+      </a>
+    ` : '';
 
     entry.innerHTML = `
       <div class="collab-entry__cover">
-        <img src="${c.cover}" alt="${c.name}">
+        <img src="${coverSrc}" alt="${coser.name}" loading="lazy">
       </div>
       <div class="collab-entry__body">
-        <div class="collab-entry__label">Collaborator</div>
-        <h2 class="collab-entry__name collab-entry__name--clickable">${c.name}</h2>
-        <div class="collab-entry__handle">${c.handle}</div>
-        ${c.instagram ? `
+        <div class="collab-entry__label">COSPLAYER</div>
+        <h2 class="collab-entry__name">${coser.name}</h2>
+        <div class="collab-entry__handle">${coser.handle || ''}</div>
+        ${coser.instagram ? `
           <div class="collab-entry__instagram">
             <svg class="collab-entry__instagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
               <circle cx="17.5" cy="6.5" r="1.5"></circle>
             </svg>
-            <a href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" class="collab-entry__instagram-link">${c.instagram}</a>
+            <a href="https://instagram.com/${coser.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" class="collab-entry__instagram-link">${coser.instagram}</a>
           </div>
         ` : ''}
-        <p class="collab-entry__bio">${c.bio}</p>
-        <div class="collab-entry__divider"></div>
-        <div class="collab-entry__projects-label">Our Work Together</div>
-        <div class="collab-entry__thumbs">${thumbsHtml}</div>
-        <a class="gank-btn" href="${c.gankUrl}" target="_blank" rel="noopener noreferrer">
-          ${gankIcon}
-          Support on Gank
-        </a>
+        ${coser.bio ? `<p class="collab-entry__bio">${coser.bio}</p>` : ''}
+        ${thumbsHtml}
+        ${allCoserPhotos.length ? '<div class="collab-entry__divider"></div>' : ''}
+        ${gankButtonHtml}
       </div>
     `;
 
-    // Make coser name clickable to open panel
-    const nameEl = entry.querySelector('.collab-entry__name');
-    nameEl.addEventListener('click', () => {
-      openCollabPanel(c);
-    });
-
+    // Attach photo click handlers (for lightbox)
     entry.querySelectorAll('.collab-thumb').forEach(thumb => {
       thumb.addEventListener('click', () => {
+        const idx = parseInt(thumb.dataset.index);
         Lightbox.setBack(() => Lightbox.close());
-        Lightbox.open(parseInt(thumb.dataset.index));
+        Lightbox.open(idx);
       });
     });
 
