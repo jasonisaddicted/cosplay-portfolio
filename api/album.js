@@ -65,6 +65,7 @@ module.exports = async function handler(req, res) {
     const html = `<!DOCTYPE html>
 <html>
 <head>
+<!-- DEBUG: ogImage="${ogImage}" title="${title}" -->
 <meta charset="UTF-8">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${url}">
