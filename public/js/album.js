@@ -68,13 +68,16 @@ async function loadAlbumData() {
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-      console.error('Album not found:', currentAlbumId);
+      console.error('Album not found in Firestore:', currentAlbumId, 'Type:', currentAlbumType);
       document.getElementById('album-title').textContent = 'Album not found';
+      document.getElementById('photo-grid').innerHTML = '<p class="empty">No album data available. Please go back and try again.</p>';
       return;
     }
 
     currentAlbumData = docSnap.data();
     currentAlbumPhotos = currentAlbumData.photos || [];
+
+    console.log('Album loaded:', currentAlbumData.name, 'Photos:', currentAlbumPhotos.length);
 
     // Update page content
     renderAlbumHeader();
