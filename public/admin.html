@@ -5071,25 +5071,20 @@
       try {
         console.log('📋 displayCollabOrderPanel called');
 
-        // Use CONFIG.collaborators if available, otherwise query Firebase
-        let collabs = [];
-        if (window.CONFIG?.collaborators && window.CONFIG.collaborators.length > 0) {
-          console.log('✓ Using CONFIG.collaborators, count:', window.CONFIG.collaborators.length);
-          collabs = window.CONFIG.collaborators.map(doc => ({
-            id: doc.id,
-            name: doc.name || 'Unnamed',
-            order: doc.order || 999
-          }));
-        } else {
-          console.log('Querying Firebase for collaborators...');
-          const snap = await getDocs(collection(db, 'collaborators'));
-          console.log('✓ Fetched collaborators, count:', snap.docs.length);
-          collabs = snap.docs.map((doc, idx) => ({
-            id: doc.id,
-            name: doc.data().name || 'Unnamed',
-            order: doc.data().order || idx + 1
-          }));
-        }
+        // Always query Firebase directly for admin
+        console.log('🔥 Querying Firebase for collaborators (admin context)...');
+        const snap = await getDocs(collection(db, 'collaborators'));
+        console.log('✓ Firebase query returned:', snap.docs.length, 'collaborators');
+
+        snap.docs.forEach(doc => {
+          console.log(`  - ${doc.id}:`, doc.data());
+        });
+
+        let collabs = snap.docs.map((doc, idx) => ({
+          id: doc.id,
+          name: doc.data().name || 'Unnamed',
+          order: doc.data().order || idx + 1
+        }));
 
         collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
 
@@ -5117,8 +5112,13 @@
         }
         html += '</div>';
         container.innerHTML = html;
+        console.log('✓ Order panel rendered with', collabs.length, 'items');
       } catch (err) {
-        console.error('Error displaying collab order:', err);
+        console.error('❌ Error displaying collab order:', err);
+        const container = document.getElementById('collabOrderPanel');
+        if (container) {
+          container.innerHTML = '<p style="color:#f00;">ERROR: ' + err.message + '</p>';
+        }
       }
     };
 
@@ -5175,18 +5175,16 @@
       try {
         console.log('🔽 updateCollabDropdown called');
 
-        // Use CONFIG.collaborators if available, otherwise query Firebase
-        let collabs = [];
-        if (window.CONFIG?.collaborators && window.CONFIG.collaborators.length > 0) {
-          console.log('✓ Using CONFIG.collaborators, count:', window.CONFIG.collaborators.length);
-          collabs = window.CONFIG.collaborators;
-        } else {
-          console.log('Querying Firebase for collaborators...');
-          const snap = await getDocs(collection(db, 'collaborators'));
-          console.log('✓ Fetched collaborators for dropdown, count:', snap.docs.length);
-          collabs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
+        // Always query Firebase directly for admin
+        console.log('🔥 Querying Firebase for collaborators (admin context)...');
+        const snap = await getDocs(collection(db, 'collaborators'));
+        console.log('✓ Firebase query returned:', snap.docs.length, 'collaborators');
 
+        snap.docs.forEach(doc => {
+          console.log(`  - ${doc.id}:`, doc.data());
+        });
+
+        let collabs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
 
         let html = '<option value="">Select a cosplayer...</option>';
@@ -5194,6 +5192,7 @@
           html += `<option value="${colab.id}">${colab.name} (${colab.handle || 'N/A'})</option>`;
         });
         dropdown.innerHTML = html;
+        console.log('✓ Dropdown updated with', collabs.length, 'items');
 
         dropdown.onchange = async () => {
           const collabId = dropdown.value;
@@ -5202,7 +5201,8 @@
           }
         };
       } catch (err) {
-        console.error('Error updating collab dropdown:', err);
+        console.error('❌ Error updating collab dropdown:', err);
+        dropdown.innerHTML = '<option value="">ERROR: ' + err.message + '</option>';
       }
     };
 
