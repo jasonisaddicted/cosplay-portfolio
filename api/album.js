@@ -107,8 +107,12 @@ module.exports = async function handler(req, res) {
     html = html.replace(/<meta property="og:title" content="[^"]*">/, '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
     html = html.replace(/<meta property="og:description" content="[^"]*">/, '<meta property="og:description" content="' + escape(description) + '">');
 
-    // Remove the old og:image line(s) and insert a new one
-    html = html.replace(/\s*<meta property="og:image"[^>]*>\s*/g, '\n  <meta property="og:image" content="' + previewImageUrl + '">\n');
+    // CRITICAL FIX: Use split/join for bulletproof og:image replacement
+    const ogParts = html.split(/<meta property="og:image"[^>]*>/);
+    if (ogParts.length > 1) {
+      // Found og:image tag - replace it
+      html = ogParts[0] + '<meta property="og:image" content="' + previewImageUrl + '">' + ogParts.slice(1).join('<met property="og:image" content="">');
+    }
 
     html = html.replace(/<meta name="twitter:title" content="[^"]*">/, '<meta name="twitter:title" content="' + escape(title) + '">');
     html = html.replace(/<meta name="twitter:description" content="[^"]*">/, '<meta name="twitter:description" content="' + escape(description) + '">');
