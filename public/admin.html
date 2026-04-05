@@ -646,23 +646,11 @@
     <div id="collabs" class="content">
       <h2 style="margin-bottom:20px;">Collaborators</h2>
 
-      <!-- STAGE 7: Cosplayer Order Panel -->
+      <!-- CONSOLIDATED: Collapsible List with Albums -->
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:15px;">📋 Arrange Collaborator Order</h3>
-        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Drag to reorder which collaborator appears first on the main page</p>
+        <h3 style="margin-bottom:15px;">📋 Arrange & Manage Collaborators</h3>
+        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Drag to reorder. Click to expand and manage albums.</p>
         <div id="collabOrderPanel" style="background:#0d0d0d; padding:15px; border-radius:3px;"></div>
-      </div>
-
-      <!-- STAGE 8-13: Manage Albums -->
-      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:15px;">📁 Manage Collaborators</h3>
-        <div class="form-group" style="margin-bottom:15px;">
-          <label>Select Collaborator</label>
-          <select id="selectCollab" style="width:100%; max-width:300px; padding:8px; background:#0d0d0d; border:1px solid #333; color:#e4e4e4; border-radius:3px;">
-            <option value="">Loading...</option>
-          </select>
-        </div>
-        <div id="collabAlbumsContainer" style="margin-top:20px; padding:15px; background:#0d0d0d; border-radius:3px;"></div>
       </div>
 
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
@@ -1020,7 +1008,6 @@
       console.log('🔄 Collabs tab opened, initializing...');
       setTimeout(async () => {
         await window.displayCollabOrderPanel();
-        await window.updateCollabDropdown();
       }, 100);
     }
 
@@ -5095,24 +5082,21 @@
     // STAGES 7-13: COLLABORATOR MANAGEMENT FUNCTIONS
     // ════════════════════════════════════════════════════════════════════════════
 
-    // STAGE 7: Display Collaborator Order Panel
+    // STAGE 7: Display Collaborator Order Panel (with collapsible albums)
     window.displayCollabOrderPanel = async () => {
       try {
         console.log('📋 displayCollabOrderPanel called');
 
-        // Always query Firebase directly for admin
-        console.log('🔥 Querying Firebase for collaborators (admin context)...');
+        // Query Firebase for collaborators with full data
         const snap = await getDocs(collection(db, 'collaborators'));
         console.log('✓ Firebase query returned:', snap.docs.length, 'collaborators');
-
-        snap.docs.forEach(doc => {
-          console.log(`  - ${doc.id}:`, doc.data());
-        });
 
         let collabs = snap.docs.map((doc, idx) => ({
           id: doc.id,
           name: doc.data().name || 'Unnamed',
-          order: doc.data().order || idx + 1
+          handle: doc.data().handle || '',
+          order: doc.data().order || idx + 1,
+          albums: doc.data().albums || (doc.data().photos ? [{ name: 'All Photos', photos: doc.data().photos }] : [])
         }));
 
         collabs.sort((a, b) => (a.order || 999) - (b.order || 999));
@@ -5120,28 +5104,54 @@
         const container = document.getElementById('collabOrderPanel');
         if (!container) return;
 
-        let html = '<div style="padding:10px; background:#181818; border-radius:3px;">';
+        let html = '';
         if (collabs.length === 0) {
-          html += '<p style="color:#666;">No collaborators yet</p>';
+          html = '<p style="color:#666; padding:10px;">No collaborators yet</p>';
         } else {
           collabs.forEach((colab, idx) => {
+            const albumCount = (colab.albums || []).length;
             html += `
-              <div draggable="true" ondragstart="window.dragCollabStart(event)" ondragover="window.dragCollabOver(event)" ondrop="window.dragCollabDrop(event, ${idx})" ondragend="window.dragCollabEnd(event)" class="collab-order-item" data-collab-id="${colab.id}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none;">
-                <div style="display:flex; align-items:center; flex:1;">
-                  <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
-                  <span style="flex:1; color:#fff; font-size:0.9rem;">${colab.name}</span>
-                  <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
+              <div draggable="true" ondragstart="window.dragCollabStart(event)" ondragover="window.dragCollabOver(event)" ondrop="window.dragCollabDrop(event, ${idx})" ondragend="window.dragCollabEnd(event)" class="collab-order-item" data-collab-id="${colab.id}" style="margin-bottom:10px; background:#0d0d0d; border:1px solid #333; border-radius:3px; overflow:hidden; user-select:none;">
+
+                <!-- Header - Draggable -->
+                <div style="padding:12px; cursor:grab; display:flex; align-items:center; justify-content:space-between; background:#0d0d0d;">
+                  <div style="display:flex; align-items:center; flex:1;">
+                    <span style="color:#aaa; font-size:0.8rem; margin-right:10px;">⋮⋮</span>
+                    <div style="flex:1;">
+                      <div style="color:#c8a46e; font-weight:bold; font-size:0.95rem;">${colab.name}</div>
+                      <div style="color:#888; font-size:0.8rem;">@${colab.handle} • ${albumCount} album${albumCount !== 1 ? 's' : ''}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; gap:6px;">
+                    <button onclick="window.editCollabDetails('${colab.id}')" style="padding:6px 12px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
+                    <button onclick="window.deleteCollab('${colab.id}')" style="padding:6px 12px; font-size:0.75rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete</button>
+                  </div>
                 </div>
-                <div style="display:flex; gap:6px;">
-                  <button onclick="window.editCollabDetails('${colab.id}')" style="padding:5px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
-                  <button onclick="window.deleteCollab('${colab.id}')" style="padding:5px 10px; font-size:0.75rem; background:#8b0000; color:#fff; border:none; border-radius:2px; cursor:pointer;">Delete</button>
-                </div>
-              </div>`;
+
+                <!-- Albums Section - Collapsible -->
+                ${albumCount > 0 ? `
+                  <div style="padding:0 12px 12px 12px; border-top:1px solid #333;">
+                    <div style="margin-top:10px; background:#181818; border-radius:2px; overflow:hidden;">
+                      ${(colab.albums || []).map((album, aIdx) => {
+                        const photoCount = (album.photos || []).length;
+                        return `
+                          <div style="padding:8px; border-bottom:1px solid #2e2e2e; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                              <div style="color:#c8a46e; font-size:0.9rem; font-weight:bold;">${album.name}</div>
+                              <div style="color:#888; font-size:0.8rem;">${photoCount} photo${photoCount !== 1 ? 's' : ''}</div>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                ` : '<div style="padding:0 12px 12px 12px; color:#666; font-size:0.9rem;">No albums yet</div>'}
+              </div>
+            `;
           });
         }
-        html += '</div>';
         container.innerHTML = html;
-        console.log('✓ Order panel rendered with', collabs.length, 'items');
+        console.log('✓ Collapsible panel rendered with', collabs.length, 'collaborators');
       } catch (err) {
         console.error('❌ Error displaying collab order:', err);
         const container = document.getElementById('collabOrderPanel');
