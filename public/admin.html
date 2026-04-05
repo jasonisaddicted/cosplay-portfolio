@@ -5386,11 +5386,31 @@
     };
 
     // Initialize when Collabs tab loads
-    window.addEventListener('firebase-config-loaded', () => {
-      setTimeout(() => {
-        displayCollabOrderPanel();
-        updateCollabDropdown();
-      }, 100);
+    window.addEventListener('firebase-config-loaded', async () => {
+      console.log('🔄 Firebase loaded, initializing Collabs...');
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      try {
+        await window.displayCollabOrderPanel();
+        await window.updateCollabDropdown();
+        console.log('✓ Collabs initialized');
+      } catch (err) {
+        console.error('❌ Error initializing Collabs:', err);
+      }
+    });
+
+    // Also try to initialize when tab is clicked
+    document.addEventListener('DOMContentLoaded', () => {
+      const collabsTab = document.querySelector('[onclick*="collabs"]');
+      if (collabsTab) {
+        collabsTab.addEventListener('click', async () => {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          if (window.CONFIG?.collaborators) {
+            await window.displayCollabOrderPanel();
+            await window.updateCollabDropdown();
+          }
+        });
+      }
     });
   </script>
 
