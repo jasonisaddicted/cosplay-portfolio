@@ -12,43 +12,23 @@
       "dest": "/api/index"
     },
     {
-      "src": "/album",
+      "src": "/album$",
       "dest": "/api/album"
     },
     {
-      "src": "/album\\.html",
-      "dest": "/api/album"
-    },
-    {
-      "src": "/events",
+      "src": "/events$",
       "dest": "/api/events"
     },
     {
-      "src": "/events\\.html",
-      "dest": "/api/events"
-    },
-    {
-      "src": "/studio",
+      "src": "/studio$",
       "dest": "/api/studio"
     },
     {
-      "src": "/studio\\.html",
-      "dest": "/api/studio"
-    },
-    {
-      "src": "/outdoor",
+      "src": "/outdoor$",
       "dest": "/api/outdoor"
     },
     {
-      "src": "/outdoor\\.html",
-      "dest": "/api/outdoor"
-    },
-    {
-      "src": "/collabs",
-      "dest": "/api/collabs"
-    },
-    {
-      "src": "/collabs\\.html",
+      "src": "/collabs$",
       "dest": "/api/collabs"
     },
     {
