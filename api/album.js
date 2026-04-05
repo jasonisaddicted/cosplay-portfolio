@@ -46,15 +46,16 @@ module.exports = async function handler(req, res) {
           ogImage = fields.coverImageUrl.stringValue;
         }
 
+        // Try to use static thumbnail from /public/og-thumbnails/{albumId}.jpg
+        const staticThumbnail = `https://cosplay-portfolio.vercel.app/og-thumbnails/${encodeURIComponent(id)}.jpg`;
+
         // Remove expiring tokens from Firebase Storage URLs
         if (ogImage && ogImage.includes('&token=')) {
           ogImage = ogImage.split('&token=')[0];
         }
 
-        // Proxy through our endpoint to add public cache headers
-        if (ogImage && ogImage.includes('firebasestorage')) {
-          ogImage = `https://cosplay-portfolio.vercel.app/api/og-image-proxy?url=${encodeURIComponent(ogImage)}`;
-        }
+        // Prefer static thumbnails over Firebase URLs (they're served with public headers)
+        ogImage = staticThumbnail;
 
         console.log('Firestore data loaded:', { title, photoCount: photos.length, hasImage: !!ogImage });
       } else {
