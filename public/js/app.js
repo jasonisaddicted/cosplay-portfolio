@@ -1656,6 +1656,7 @@ function renderAlbumGrid(albums, container) {
   const type = container.dataset.type;
   const isEvents = type === 'events';
   const isOutdoor = type === 'outdoor';
+  const isStudio = type === 'studio';
 
   albums.forEach(album => {
     const card = document.createElement('a');
@@ -1674,7 +1675,14 @@ function renderAlbumGrid(albums, container) {
     ` : '';
 
     // Use first photo as cover if available
-    const coverSrc = (album.photos && album.photos.length > 0) ? album.photos[0].src : null;
+    // For events/outdoor/collabs: album.photos[0].src
+    // For studio: album.cosplayers[0].photos[0].src
+    let coverSrc = null;
+    if (isStudio && album.cosplayers && album.cosplayers.length > 0 && album.cosplayers[0].photos && album.cosplayers[0].photos.length > 0) {
+      coverSrc = album.cosplayers[0].photos[0].src;
+    } else if (!isStudio && album.photos && album.photos.length > 0) {
+      coverSrc = album.photos[0].src;
+    }
 
     card.innerHTML = `
       ${coverSrc ? `<img src="${coverSrc}" alt="${album.name}" loading="lazy">` : '<div class="album-card__no-cover"></div>'}
