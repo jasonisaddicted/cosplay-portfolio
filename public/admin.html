@@ -5350,7 +5350,11 @@
       const docSnap = await getDoc(doc(db, 'collaborators', collabId));
       const colab = docSnap.data();
 
-      const instagramHandle = colab.instagram || colab.handle || '';
+      // Get primary character name from first album
+      let characterName = '';
+      if (colab.albums && colab.albums.length > 0) {
+        characterName = colab.albums[0].name || '';
+      }
 
       const modal = document.createElement('div');
       modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;';
@@ -5361,6 +5365,11 @@
           <div class="form-group">
             <label>Cosplayer Name (IG Handle)</label>
             <input type="text" id="editCollabName" value="${colab.name || ''}" placeholder="e.g., clothsy.hj_" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box; margin-bottom:15px;">
+          </div>
+
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" id="editCollabCharacter" value="${characterName}" placeholder="e.g., Hatsune Miku" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box; margin-bottom:15px;">
           </div>
 
           <div class="form-group">
@@ -5407,6 +5416,7 @@
 
     window.saveCollabDetails = async (collabId) => {
       const name = document.getElementById('editCollabName').value.trim();
+      const characterName = document.getElementById('editCollabCharacter').value.trim();
       const bio = document.getElementById('editCollabBio').value.trim();
       const gankUrl = document.getElementById('editCollabGankUrl').value.trim();
 
@@ -5416,10 +5426,20 @@
       }
 
       try {
+        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+        const colab = docSnap.data();
+        const albums = [...(colab.albums || [])];
+
+        // Update first album's character name (name field)
+        if (albums.length > 0 && characterName) {
+          albums[0].name = characterName;
+        }
+
         await updateDoc(doc(db, 'collaborators', collabId), {
           name,
           bio,
-          gankUrl
+          gankUrl,
+          albums: albums.length > 0 ? albums : undefined
         });
         console.log('✓ Collaborator details saved');
         await displayCollabOrderPanel();
