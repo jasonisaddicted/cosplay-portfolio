@@ -2294,8 +2294,14 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
       break;
 
     case 'threads':
-      // Open Threads with the URL
-      window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}\n${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+      // Copy link to clipboard and open Threads
+      const threadsText = `${shareText}\n${url}`;
+      navigator.clipboard.writeText(url).then(() => {
+        window.open('https://www.threads.net', '_blank', 'width=600,height=400');
+        alert('Link copied! Paste in Threads');
+      }).catch(err => {
+        window.open('https://www.threads.net', '_blank', 'width=600,height=400');
+      });
       break;
   }
 
@@ -2435,8 +2441,13 @@ window.addEventListener('firebase-config-loaded', () => {
       const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
       window.open(facebookUrl, '_blank', 'width=600,height=400');
     } else if (platform === 'threads') {
-      const threadsText = `${shareText}\n\n${currentUrl}`;
-      window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(threadsText)}`, '_blank', 'width=600,height=400');
+      // Copy link to clipboard and open Threads
+      navigator.clipboard.writeText(currentUrl).then(() => {
+        window.open('https://www.threads.net', '_blank', 'width=600,height=400');
+        alert('Link copied! Paste in Threads');
+      }).catch(err => {
+        window.open('https://www.threads.net', '_blank', 'width=600,height=400');
+      });
     }
 
     // Close menu

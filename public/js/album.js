@@ -461,8 +461,13 @@ window.shareAlbumTo = (platform) => {
       break;
 
     case 'threads':
-      // Open Threads with the URL
-      window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}\n${encodeURIComponent(albumUrl)}`, '_blank', 'width=550,height=420');
+      // Copy link to clipboard and open Threads
+      navigator.clipboard.writeText(albumUrl).then(() => {
+        window.open('https://www.threads.net', '_blank', 'width=550,height=420');
+        alert('Link copied! Paste in Threads');
+      }).catch(err => {
+        window.open('https://www.threads.net', '_blank', 'width=550,height=420');
+      });
       break;
   }
 
