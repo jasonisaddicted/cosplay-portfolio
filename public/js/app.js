@@ -1675,12 +1675,13 @@ function renderAlbumGrid(albums, container) {
     ` : '';
 
     // Use first photo as cover if available
-    // For events/outdoor/collabs: album.photos[0].src
+    // For events/collabs: album.photos[0].src
     // For studio: album.cosplayers[0].photos[0].src
+    // For outdoor: album.cosplayers[0].photos[0].src (same as studio)
     let coverSrc = null;
-    if (isStudio && album.cosplayers && album.cosplayers.length > 0 && album.cosplayers[0].photos && album.cosplayers[0].photos.length > 0) {
+    if ((isStudio || isOutdoor) && album.cosplayers && album.cosplayers.length > 0 && album.cosplayers[0].photos && album.cosplayers[0].photos.length > 0) {
       coverSrc = album.cosplayers[0].photos[0].src;
-    } else if (!isStudio && album.photos && album.photos.length > 0) {
+    } else if (album.photos && album.photos.length > 0) {
       coverSrc = album.photos[0].src;
     }
 
