@@ -92,31 +92,22 @@ module.exports = async function handler(req, res) {
       });
     };
 
-    console.log('[Album] previewImageUrl before replacements:', previewImageUrl);
+    // Replace meta tags using REGEX for reliability (handles any content value)
+    html = html.replace(/<meta property="og:url" content="[^"]*">/, '<meta property="og:url" content="' + userUrl + '">');
+    html = html.replace(/<meta property="og:title" content="[^"]*">/, '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
+    html = html.replace(/<meta property="og:description" content="[^"]*">/, '<meta property="og:description" content="' + escape(description) + '">');
+    // CRITICAL: This is the og:image replacement - must work!
+    html = html.replace(/<meta property="og:image" content="[^"]*">/, '<meta property="og:image" content="' + previewImageUrl + '">');
+    html = html.replace(/<meta name="twitter:title" content="[^"]*">/, '<meta name="twitter:title" content="' + escape(title) + '">');
+    html = html.replace(/<meta name="twitter:description" content="[^"]*">/, '<meta name="twitter:description" content="' + escape(description) + '">');
+    html = html.replace(/<meta name="twitter:image" content="[^"]*">/, '<meta name="twitter:image" content="' + previewImageUrl + '">');
 
-    // Replace meta tags with actual album data
-    // First, find what og:image currently has
-    const ogImageMatch = html.match(/<meta property="og:image" content="([^"]*)"/);
-    console.log('[Album] Current og:image in HTML:', ogImageMatch ? ogImageMatch[1] : 'NOT FOUND');
-
-    // Use simple string replacements for reliability
-    html = html.replace('<meta property="og:url" content="">', '<meta property="og:url" content="' + userUrl + '">');
-    html = html.replace('<meta property="og:title" content="Cosplay Portfolio Album">', '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
-    html = html.replace('<meta property="og:description" content="">', '<meta property="og:description" content="' + escape(description) + '">');
-    const beforeOgReplace = html.match(/<meta property="og:image" content="([^"]*)"/)[1];
-    html = html.replace('<meta property="og:image" content="">', '<meta property="og:image" content="' + previewImageUrl + '">');
-    const afterOgReplace = html.match(/<meta property="og:image" content="([^"]*)"/)[1];
-    console.log('[Album] og:image before replace:', beforeOgReplace);
-    console.log('[Album] og:image after replace:', afterOgReplace);
-    console.log('[Album] og:image expected:', previewImageUrl);
-
+    // Remove dimension tags (let Facebook auto-detect)
     html = html.replace(/<meta property="og:image:width" content="[^"]*">/g, '');
     html = html.replace(/<meta property="og:image:height" content="[^"]*">/g, '');
     html = html.replace(/<meta property="og:image:type" content="[^"]*">/g, '');
-    html = html.replace('<meta name="twitter:title" content="Album Title">', '<meta name="twitter:title" content="' + escape(title) + '">');
-    html = html.replace('<meta name="twitter:description" content="">', '<meta name="twitter:description" content="' + escape(description) + '">');
-    html = html.replace('<meta name="twitter:image" content="">', '<meta name="twitter:image" content="' + previewImageUrl + '">');
-    html = html.replace(/<title>Album — Cosplay Portfolio<\/title>/, '<title>' + escape(title) + ' — Cosplay Portfolio</title>');
+    // Update title
+    html = html.replace(/<title>[^<]*<\/title>/, '<title>' + escape(title) + ' — Cosplay Portfolio</title>');
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
