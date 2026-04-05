@@ -96,12 +96,18 @@ module.exports = async function handler(req, res) {
     const debugComment = `<!-- DEBUG: previewImageUrl=${previewImageUrl} -->`;
     html = html.replace('<!-- Script to dynamically update og:image with first album photo -->', debugComment + '\n  <!-- Script to dynamically update og:image with first album photo -->');
 
-    // Replace meta tags using REGEX for reliability (handles any content value)
+    // Replace meta tags using multiple replacement strategies
+    // Strategy 1: Replace whole tags with regex
     html = html.replace(/<meta property="og:url" content="[^"]*">/, '<meta property="og:url" content="' + userUrl + '">');
     html = html.replace(/<meta property="og:title" content="[^"]*">/, '<meta property="og:title" content="' + escape(title) + ' — Cosplay Portfolio">');
     html = html.replace(/<meta property="og:description" content="[^"]*">/, '<meta property="og:description" content="' + escape(description) + '">');
-    // CRITICAL: This is the og:image replacement - must work!
+
+    // Strategy 2: For og:image, try multiple patterns
+    // Pattern 1: Complete tag match
     html = html.replace(/<meta property="og:image" content="[^"]*">/, '<meta property="og:image" content="' + previewImageUrl + '">');
+    // Pattern 2: Just replace the content value if pattern 1 didn't work
+    html = html.replace(/og:image" content="[^"]*/, 'og:image" content="' + previewImageUrl);
+
     html = html.replace(/<meta name="twitter:title" content="[^"]*">/, '<meta name="twitter:title" content="' + escape(title) + '">');
     html = html.replace(/<meta name="twitter:description" content="[^"]*">/, '<meta name="twitter:description" content="' + escape(description) + '">');
     html = html.replace(/<meta name="twitter:image" content="[^"]*">/, '<meta name="twitter:image" content="' + previewImageUrl + '">');
