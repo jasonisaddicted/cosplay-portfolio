@@ -1743,7 +1743,7 @@ function renderAlbumGrid(albums, container) {
           ${album.location ? `<span class="dot">·</span><span>${album.location}</span>` : ''}
         </div>
         <div class="album-card__count">${count} photo${count !== 1 ? 's' : ''}</div>
-        <div class="album-card__actions" data-album-id="${album.id}" style="position:relative; display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid #2e2e2e; justify-content:center;">
+        <div class="album-card__actions" data-album-id="${album.id}" data-album-name="${album.name.replace(/"/g, "&quot;")}" data-album-type="${type}" data-album-image="${coverSrc || ''}" style="position:relative; display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid #2e2e2e; justify-content:center;">
           <button class="like-btn" onclick="event.preventDefault(); event.stopPropagation(); likeAlbum('${album.id}', '${album.name}', '${type}'); return false;" style="display:flex; align-items:center; gap:8px; background:none; border:1px solid #2e2e2e; color:#e4e4e4; padding:8px 16px; cursor:pointer; transition:all 0.22s ease; border-radius:3px; flex:1; justify-content:center; font-size:0.85rem;">
             <svg class="like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -1761,10 +1761,10 @@ function renderAlbumGrid(albums, container) {
             <span>Share</span>
           </button>
           <div class="share-menu" style="display:none; position:fixed; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:4px; padding:4px 0; z-index:10001; min-width:200px; box-shadow:0 4px 12px rgba(0,0,0,0.5); bottom:auto; top:auto; left:auto; right:auto;">
-            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('facebook', '${album.name.replace(/'/g, "&apos;")}', '${album.id}', '${type}', '${coverSrc ? coverSrc.replace(/'/g, "&apos;") : ''}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+            <button class="share-facebook-btn" onclick="event.preventDefault(); event.stopPropagation(); handleAlbumShare('facebook'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
               Facebook
             </button>
-            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('threads', '${album.name.replace(/'/g, "&apos;")}', '${album.id}', '${type}', '${coverSrc ? coverSrc.replace(/'/g, "&apos;") : ''}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+            <button class="share-threads-btn" onclick="event.preventDefault(); event.stopPropagation(); handleAlbumShare('threads'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
               Threads
             </button>
             <button onclick="event.preventDefault(); event.stopPropagation(); copyShareLink('${album.id}', '${type}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left; border-top:1px solid #2e2e2e;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
@@ -2272,6 +2272,15 @@ window.likeAlbum = async (eventId, eventName, type = 'events') => {
   } catch (err) {
     console.error('Error liking album:', err);
   }
+};
+
+// Handle album share from event cards
+window.handleAlbumShare = (platform) => {
+  // Find the closest album-card__actions element to get data attributes
+  const btn = event.target.closest('.share-menu').parentElement;
+  const albumData = btn.dataset;
+
+  shareToSocial(platform, albumData.albumName, albumData.albumId, albumData.albumType, albumData.albumImage);
 };
 
 // Share to multiple social media platforms
