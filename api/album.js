@@ -82,6 +82,8 @@ module.exports = async function handler(req, res) {
 
     // DEBUG: Log what og:image is in the file we just read
     const ogImageInFile = html.match(/<meta property="og:image" content="([^"]*)"/);
+    const debugInfo = `<!-- DEBUG: ogImageInFile="${ogImageInFile ? ogImageInFile[1] : 'NOT_FOUND'}" previewImageUrl="${previewImageUrl}" -->`;
+
     console.log('[Album] og:image in file:', ogImageInFile ? ogImageInFile[1] : 'NOT FOUND');
     console.log('[Album] previewImageUrl to use:', previewImageUrl);
 
@@ -96,6 +98,9 @@ module.exports = async function handler(req, res) {
         return map[m];
       });
     };
+
+    // Add debug comment at the beginning of head
+    html = html.replace('<head>', '<head>\n  ' + debugInfo);
 
     // Replace meta tags
     html = html.replace(/<meta property="og:url" content="[^"]*">/, '<meta property="og:url" content="' + userUrl + '">');
