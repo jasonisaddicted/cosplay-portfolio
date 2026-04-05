@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
     // Fetch album from Firestore REST API
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${type}/${id}`;
 
-    let previewImageUrl = 'https://via.placeholder.com/1200x630?text=LOADING_FROM_FIRESTORE';
+    let previewImageUrl = 'UNIQUE_DEBUG_URL_XXXXX';
     let title = 'Cosplay Album';
     let description = 'Professional cosplay photography album';
 
