@@ -926,7 +926,6 @@ window.openCollabPanel = (collab) => {
           <img src="${coverImage}" alt="${collab.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
         </div>
         <div style="font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 8px;">${collab.name}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">${collab.handle}</div>
         ${collab.instagram ? `
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
