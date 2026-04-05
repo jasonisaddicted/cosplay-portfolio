@@ -450,7 +450,13 @@ window.shareAlbumTo = (platform) => {
 
   // Use OG service URL for proper social media previews
   const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
-  const albumUrl = `${ogServiceUrl}/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
+  let albumUrl = `${ogServiceUrl}/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
+
+  // Add first photo as image URL for thumbnail
+  if (currentAlbumPhotos.length > 0 && currentAlbumPhotos[0].src) {
+    albumUrl += `&image=${encodeURIComponent(currentAlbumPhotos[0].src)}`;
+  }
+
   const albumName = currentAlbumData.name;
   const shareText = `Check out this cosplay album: ${albumName}`;
 

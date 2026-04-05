@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
     // Fetch album from Firestore REST API
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${type}/${id}`;
 
-    let ogImage = 'UNIQUE_FALLBACK_IMAGE_URL_NEW_API_V2_12345';
+    let ogImage = '';
     let title = 'Cosplay Album';
     let description = 'Professional cosplay photography album';
 
@@ -38,16 +38,26 @@ module.exports = async function handler(req, res) {
         const photos = fields.photos?.arrayValue?.values || [];
         if (photos.length > 0) {
           const firstPhoto = photos[0].mapValue?.fields || {};
-          ogImage = firstPhoto.src?.stringValue || ogImage;
+          ogImage = firstPhoto.src?.stringValue || '';
         }
 
         // Fallback to coverImageUrl
-        if (fields.coverImageUrl?.stringValue) {
+        if (!ogImage && fields.coverImageUrl?.stringValue) {
           ogImage = fields.coverImageUrl.stringValue;
         }
+
+        console.log('Firestore data loaded:', { title, photoCount: photos.length, hasImage: !!ogImage });
+      } else {
+        console.error('Firestore fetch failed:', response.status);
       }
     } catch (e) {
       console.error('Firestore fetch error:', e);
+    }
+
+    // Use image from query param if provided
+    const queryImage = req.query.image || req.query.img;
+    if (queryImage) {
+      ogImage = decodeURIComponent(queryImage);
     }
 
     // Escape HTML

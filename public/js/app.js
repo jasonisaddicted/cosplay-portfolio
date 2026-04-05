@@ -1761,10 +1761,10 @@ function renderAlbumGrid(albums, container) {
             <span>Share</span>
           </button>
           <div class="share-menu" style="display:none; position:fixed; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:4px; padding:4px 0; z-index:10001; min-width:200px; box-shadow:0 4px 12px rgba(0,0,0,0.5); bottom:auto; top:auto; left:auto; right:auto;">
-            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('facebook', '${album.name.replace(/'/g, "&apos;")}', '${album.id}', '${type}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('facebook', '${album.name.replace(/'/g, "&apos;")}', '${album.id}', '${type}', '${coverSrc ? coverSrc.replace(/'/g, "&apos;") : ''}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
               Facebook
             </button>
-            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('threads', '${album.name.replace(/'/g, "&apos;")}', '${album.id}', '${type}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
+            <button onclick="event.preventDefault(); event.stopPropagation(); shareToSocial('threads', '${album.name.replace(/'/g, "&apos;")}', '${album.id}', '${type}', '${coverSrc ? coverSrc.replace(/'/g, "&apos;") : ''}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
               Threads
             </button>
             <button onclick="event.preventDefault(); event.stopPropagation(); copyShareLink('${album.id}', '${type}'); return false;" style="width:100%; padding:10px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s; text-align:left; border-top:1px solid #2e2e2e;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='none'">
@@ -2275,12 +2275,16 @@ window.likeAlbum = async (eventId, eventName, type = 'events') => {
 };
 
 // Share to multiple social media platforms
-window.shareToSocial = (platform, albumName, albumId, albumType) => {
+window.shareToSocial = (platform, albumName, albumId, albumType, imageUrl) => {
   // Construct album URL using OG service if album ID is provided
   let url;
   if (albumId && albumType) {
     const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
     url = `${ogServiceUrl}/api/album?id=${albumId}&type=${albumType}`;
+    // Add image URL if available
+    if (imageUrl) {
+      url += `&image=${encodeURIComponent(imageUrl)}`;
+    }
   } else {
     url = window.location.href;
   }
