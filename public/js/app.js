@@ -180,6 +180,55 @@ const Lightbox = (() => {
     return results;
   };
 
+  // Auto-discovers all albums containing this collaborator (by handle)
+  // Used for the collaborator albums modal
+  window.findCollaboratorAlbums = function(handle) {
+    const results = [];
+    if (!handle || typeof CONFIG === 'undefined') return results;
+
+    // Search events for photos with matching coser
+    (CONFIG.events || []).forEach(album => {
+      const photos = (album.photos || []).filter(p => p.coser === handle);
+      if (photos.length) {
+        results.push({
+          id: album.id,
+          type: 'events',
+          name: album.name,
+          date: album.date,
+          location: album.location,
+          photos: album.photos // Include all photos from album
+        });
+      }
+    });
+
+    // Search studio for cosplayers with matching handle
+    (CONFIG.studio || []).forEach(album => {
+      const cosplayer = (album.cosplayers || []).find(c => c.handle === handle || c.name === handle);
+      if (cosplayer && (cosplayer.photos || []).length) {
+        results.push({
+          id: album.id,
+          type: 'studio',
+          name: album.name,
+          photos: album.photos // Include all photos from album
+        });
+      }
+    });
+
+    // Include collaborator's own albums from collaborators collection
+    (CONFIG.collaborators || []).forEach(collab => {
+      if (collab.handle === handle) {
+        results.push({
+          id: collab.id || collab.handle.replace('@', ''),
+          type: 'collab',
+          name: collab.name,
+          photos: collab.photos || []
+        });
+      }
+    });
+
+    return results;
+  };
+
   // Auto-discovers all albums featuring this character
   function findCharacterAlbums(character) {
     const results = [];
@@ -1941,6 +1990,95 @@ async function initAlbum() {
   }
 }
 
+// ── Collaborator Albums Modal ─────────────────────────────────
+window.openCollaboratorAlbumsModal = function(collaborator) {
+  const albums = window.findCollaboratorAlbums(collaborator.handle);
+
+  if (!albums.length) {
+    alert('No albums found for this collaborator.');
+    return;
+  }
+
+  // Create modal HTML
+  const modal = document.createElement('div');
+  modal.className = 'collab-albums-modal active';
+  modal.id = 'collabAlbumsModal';
+
+  let albumsHtml = albums.map((album, idx) => {
+    const coverSrc = album.photos?.[0]?.src || '';
+    const photoCount = album.photos?.length || 0;
+    return `
+      <div class="collab-album-card" onclick="openCollaboratorAlbumLightbox('${album.id}', '${album.type}', ${photoCount}, event)">
+        <div class="collab-album-card__cover">
+          ${coverSrc ? `<img src="${coverSrc}" alt="${album.name}" loading="lazy">` : '<div style="width:100%; height:100%; background: var(--bg-card);"></div>'}
+          <div class="collab-album-card__info">
+            <div class="collab-album-card__name">${album.name}</div>
+            <div class="collab-album-card__meta">${photoCount} photo${photoCount !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  modal.innerHTML = `
+    <div class="collab-albums-modal__overlay" onclick="closeCollaboratorAlbumsModal()"></div>
+    <div class="collab-albums-modal__content">
+      <div class="collab-albums-modal__header">
+        <h2>${collaborator.name}'s Albums & Projects</h2>
+        <button class="collab-albums-modal__close" onclick="closeCollaboratorAlbumsModal()">✕</button>
+      </div>
+      <div class="collab-albums-modal__grid">
+        ${albumsHtml}
+      </div>
+    </div>
+  `;
+
+  // Store albums data for lightbox integration
+  modal._albums = albums;
+  modal._collaborator = collaborator;
+
+  document.body.appendChild(modal);
+};
+
+window.closeCollaboratorAlbumsModal = function() {
+  const modal = document.getElementById('collabAlbumsModal');
+  if (modal) {
+    modal.remove();
+  }
+};
+
+window.openCollaboratorAlbumLightbox = function(albumId, albumType, photoCount, evt) {
+  evt.stopPropagation();
+
+  const modal = document.getElementById('collabAlbumsModal');
+  if (!modal || !modal._albums) return;
+
+  const collaborator = modal._collaborator;
+  const album = modal._albums.find(a => a.id === albumId && a.type === albumType);
+
+  if (!album || !album.photos) return;
+
+  // Map photos for lightbox with collaborator context
+  const photos = album.photos.map(p => ({
+    src: p.src,
+    coser: collaborator.name,
+    character: p.character || '',
+    series: p.series || '',
+    caption: p.caption || ''
+  }));
+
+  // Initialize and open lightbox
+  Lightbox.init(photos);
+  Lightbox.setBack(() => {
+    // Show modal again when back button is clicked
+    modal.style.display = 'flex';
+  });
+
+  // Hide modal and open lightbox
+  modal.style.display = 'none';
+  Lightbox.open(0);
+};
+
 // ── Page: Collabs ─────────────────────────────────────────────
 function initCollabs() {
   if (!document.body.classList.contains('page-collabs')) return;
@@ -2075,15 +2213,11 @@ function initCollabs() {
       </div>
     `;
 
-    // Attach cover image click handler (for lightbox)
+    // Attach cover image click handler (opens albums modal)
     const coverEl = entry.querySelector('.collab-entry__cover');
-    if (coverEl && allCoserPhotos.length > 0) {
+    if (coverEl) {
       coverEl.addEventListener('click', () => {
-        const coverIndex = allPhotos.findIndex(p => p.src === coverSrc);
-        if (coverIndex >= 0) {
-          Lightbox.setBack(() => Lightbox.close());
-          Lightbox.open(coverIndex);
-        }
+        openCollaboratorAlbumsModal(coser);
       });
     }
 

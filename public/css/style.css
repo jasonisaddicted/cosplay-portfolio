@@ -1893,6 +1893,161 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
   }
 }
 
+/* ── Collaborator Albums Modal ─────────────────────────────────── */
+.collab-albums-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+  background: transparent;
+}
+
+.collab-albums-modal.active {
+  display: flex;
+}
+
+.collab-albums-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1;
+  cursor: pointer;
+}
+
+.collab-albums-modal__content {
+  position: relative;
+  z-index: 2;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 90%;
+  max-width: 1440px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 40px;
+}
+
+.collab-albums-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+}
+
+.collab-albums-modal__header h2 {
+  font-size: 1.8rem;
+  color: var(--white);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.collab-albums-modal__close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: color 0.22s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collab-albums-modal__close:hover {
+  color: var(--accent);
+}
+
+/* Album Grid */
+.collab-albums-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* Album Card */
+.collab-album-card {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3/4;
+  background: var(--bg-card);
+  border-radius: 2px;
+  transition: transform 0.3s ease;
+}
+
+.collab-album-card:hover {
+  transform: scale(1.02);
+}
+
+.collab-album-card:hover img {
+  filter: brightness(0.6);
+}
+
+.collab-album-card__cover {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.collab-album-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.75);
+  transition: filter 0.3s ease;
+}
+
+.collab-album-card__info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+  color: var(--white);
+}
+
+.collab-album-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.collab-album-card__meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .collab-albums-modal__content {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .collab-albums-modal__grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .collab-albums-modal__header h2 {
+    font-size: 1.3rem;
+  }
+
+  .collab-albums-modal__close {
+    font-size: 1.2rem;
+  }
+}
+
 /* ── Mobile Preview Button ──────────────────────────────────── */
 .mob-toggle {
   position: fixed;
