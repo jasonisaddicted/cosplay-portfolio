@@ -46,17 +46,6 @@ module.exports = async function handler(req, res) {
           ogImage = fields.coverImageUrl.stringValue;
         }
 
-        // Try to use static thumbnail from /public/og-thumbnails/{albumId}.jpg
-        const staticThumbnail = `https://cosplay-portfolio.vercel.app/og-thumbnails/${encodeURIComponent(id)}.jpg`;
-
-        // Remove expiring tokens from Firebase Storage URLs
-        if (ogImage && ogImage.includes('&token=')) {
-          ogImage = ogImage.split('&token=')[0];
-        }
-
-        // Prefer static thumbnails over Firebase URLs (they're served with public headers)
-        ogImage = staticThumbnail;
-
         console.log('Firestore data loaded:', { title, photoCount: photos.length, hasImage: !!ogImage });
       } else {
         console.error('Firestore fetch failed:', response.status);
@@ -65,7 +54,11 @@ module.exports = async function handler(req, res) {
       console.error('Firestore fetch error:', e);
     }
 
-    // Use image from query param if provided
+    // Always use static thumbnail from /public/og-thumbnails/{albumId}.jpg
+    const albumIdEncoded = encodeURIComponent(id);
+    ogImage = `https://cosplay-portfolio.vercel.app/og-thumbnails/${albumIdEncoded}.jpg`;
+
+    // Use image from query param if provided (override)
     const queryImage = req.query.image || req.query.img;
     if (queryImage) {
       ogImage = decodeURIComponent(queryImage);
