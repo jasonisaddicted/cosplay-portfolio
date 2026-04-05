@@ -12,28 +12,28 @@
       "dest": "/api/index"
     },
     {
-      "src": "/album$",
+      "src": "/(.*)\\.html",
+      "dest": "/public/$1.html"
+    },
+    {
+      "src": "/album(?:\\?|$)",
       "dest": "/api/album"
     },
     {
-      "src": "/events$",
+      "src": "/events(?:\\?|$)",
       "dest": "/api/events"
     },
     {
-      "src": "/studio$",
+      "src": "/studio(?:\\?|$)",
       "dest": "/api/studio"
     },
     {
-      "src": "/outdoor$",
+      "src": "/outdoor(?:\\?|$)",
       "dest": "/api/outdoor"
     },
     {
-      "src": "/collabs$",
+      "src": "/collabs(?:\\?|$)",
       "dest": "/api/collabs"
-    },
-    {
-      "src": "/(.*)\\.html",
-      "dest": "/public/$1.html"
     },
     {
       "src": "/(.+)",
