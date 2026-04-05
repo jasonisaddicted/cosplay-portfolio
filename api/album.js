@@ -109,9 +109,14 @@ module.exports = async function handler(req, res) {
 
     // CRITICAL FIX: Use split/join for bulletproof og:image replacement
     const ogParts = html.split(/<meta property="og:image"[^>]*>/);
+    console.log('[Album SPLIT DEBUG] ogParts.length:', ogParts.length);
+    console.log('[Album SPLIT DEBUG] previewImageUrl:', previewImageUrl);
     if (ogParts.length > 1) {
       // Found og:image tag - replace it
+      console.log('[Album SPLIT DEBUG] Replacing og:image');
       html = ogParts[0] + '<meta property="og:image" content="' + previewImageUrl + '">' + ogParts.slice(1).join('<met property="og:image" content="">');
+    } else {
+      console.log('[Album SPLIT DEBUG] og:image tag NOT FOUND in HTML');
     }
 
     html = html.replace(/<meta name="twitter:title" content="[^"]*">/, '<meta name="twitter:title" content="' + escape(title) + '">');
@@ -124,6 +129,10 @@ module.exports = async function handler(req, res) {
     html = html.replace(/<meta property="og:image:type" content="[^"]*">/g, '');
     // Update title
     html = html.replace(/<title>[^<]*<\/title>/, '<title>' + escape(title) + ' — Cosplay Portfolio</title>');
+
+    // Add debug info to response
+    res.setHeader('X-Debug-PreviewImageUrl', previewImageUrl.substring(0, 100));
+    res.setHeader('X-Debug-OgParts-Length', ogParts.length);
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
