@@ -840,11 +840,16 @@ const Lightbox = (() => {
   });
 
   let touchStartX = 0;
-  lb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  let touchStartY = 0;
+  lb.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
   lb.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
-    // Ignore swipes from left edge (system back gesture) or right edge
-    if (Math.abs(dx) > 50 && touchStartX > 50 && touchStartX < window.innerWidth - 50) {
+    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    // Only swipe horizontally (not vertical scrolling), ignore edge swipes
+    if (Math.abs(dx) > 50 && dy < 50 && touchStartX > 30 && touchStartX < window.innerWidth - 30) {
       show(current + (dx < 0 ? 1 : -1));
     }
   });
