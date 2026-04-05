@@ -683,68 +683,6 @@
         <div id="batchCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
-      <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
-
-      <h3 style="margin-bottom:15px;">Or Add Manually</h3>
-      <div class="form-group" style="max-width:400px;">
-        <label>Cosplayer Name</label>
-        <input type="text" id="collabName" placeholder="e.g., Jane Cosplayer">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Cosplayer Handle (IG)</label>
-        <input type="text" id="collabHandle" placeholder="e.g., @sakurahime_cos">
-      </div>
-      <button id="saveCollabBtn" onclick="saveCollab()" style="max-width:400px; width:100%;">Add Collaborator</button>
-      <div id="collabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
-
-      <!-- Collab Photo Management Section -->
-      <div id="collabPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
-        <!-- Cosplayers Order Panel -->
-        <div style="margin-bottom:30px; padding:15px; background:#0d0d0d; border:1px solid #333; border-radius:4px;">
-          <h4 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="window.toggleCoserOrderPanel(this)">
-            📋 Arrange & Edit Cosplayer Details (Click to expand/collapse)
-          </h4>
-          <div id="collabCoserOrderList" style="display:none; padding:10px;">
-            <!-- Populated by JavaScript -->
-          </div>
-        </div>
-
-        <h3 style="margin-bottom:15px;">Manage Photos in This Collab Session</h3>
-        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (3 columns) — Edit position numbers and drag photos to reorder</p>
-        <div id="collabPhotosList" style="margin-bottom:15px;"></div>
-        <div id="collabPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
-        <button onclick="applyCollabPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
-
-        <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
-
-        <!-- Add More Photos Section -->
-        <h3 style="margin-bottom:15px;">Add More Photos to This Collaborator</h3>
-        <div style="background:#181818; border:1px solid #2e2e2e; padding:20px;">
-          <div class="form-group">
-            <label>Drop photos here</label>
-            <div class="upload-area" id="uploadMoreCollabPhotos" onclick="document.getElementById('addMoreCollabFiles').click()" style="border:2px dashed #2e2e2e; padding:30px; text-align:center; cursor:pointer; margin-bottom:20px;">
-              <p>Click or drag multiple photos</p>
-              <input type="file" id="addMoreCollabFiles" accept="image/*" multiple style="display:none;">
-            </div>
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Character</label>
-            <input type="text" id="addMoreCollabCharacter" placeholder="Character name">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Series</label>
-            <input type="text" id="addMoreCollabSeries" placeholder="Series name">
-          </div>
-          <div class="form-group" style="max-width:400px;">
-            <label>Caption (Optional)</label>
-            <input type="text" id="addMoreCollabCaption" placeholder="Photo shoot details">
-          </div>
-          <button onclick="addPhotosToCollab()" style="max-width:400px; width:100%;">Upload & Add Photos</button>
-          <div id="addMoreCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
-        </div>
-      </div>
-
-      <div class="items-list" id="collabList"></div>
     </div>
 
     <!-- Meta Tags Settings -->
@@ -977,7 +915,7 @@
       displayFeaturedRowPanel();
       loadEvents();
       loadStudio();
-      loadCollabs();
+      displayCollabOrderPanel();
     } catch (err) {
       document.getElementById('authError').textContent = 'Login failed: ' + err.message;
     }
@@ -3318,7 +3256,7 @@
       document.getElementById('batchCollabSeries').value = '';
       document.getElementById('batchCollabCaption').value = '';
       document.getElementById('uploadCollabBatchStatus').textContent = '';
-      loadCollabs();
+      displayCollabOrderPanel();
       setTimeout(() => { document.getElementById('batchCollabMsg').textContent = ''; }, 3000);
     } catch (err) {
       document.getElementById('batchCollabMsg').textContent = 'Error: ' + err.message;
@@ -3699,7 +3637,7 @@
       document.getElementById('collabMsg').className = 'success';
       document.getElementById('collabHandle').value = '';
       document.getElementById('collabBio').value = '';
-      loadCollabs();
+      displayCollabOrderPanel();
 
       // Refresh the order and dropdown panels
       await displayCollabOrderPanel();
@@ -3712,74 +3650,10 @@
     }
   };
 
-  window.loadCollabs = async () => {
-    const snap = await getDocs(collection(db, 'collaborators'));
-    const html = snap.docs.map(doc => {
-      const d = doc.data();
-      return `
-        <div class="item">
-          <div class="item-header">
-            <div>
-              <div class="item-title">${d.name}</div>
-              <div style="font-size:0.8rem; color:#666;">${d.handle}</div>
-            </div>
-            <div class="item-actions">
-              <button onclick="editCollab('${doc.id}')">Edit</button>
-              <button onclick="deleteCollab('${doc.id}')">Delete</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-    document.getElementById('collabList').innerHTML = html || '<p style="color:#666;">No collaborators yet</p>';
-  };
-
-  window.editCollab = async (id) => {
-    const docSnap = await getDoc(doc(db, 'collaborators', id));
-    const d = docSnap.data();
-    document.getElementById('collabName').value = d.name;
-    document.getElementById('collabHandle').value = d.handle;
-    document.getElementById('collabMsg').textContent = '';
-    document.getElementById('saveCollabBtn').textContent = 'Update Collaborator';
-    document.getElementById('saveCollabBtn').onclick = () => updateCollab(id);
-    document.getElementById('collabName').focus();
-
-    // Show photo management section
-    document.getElementById('collabPhotosSection').style.display = 'block';
-    window.currentEditingCollabId = id;
-    displayCollabPhotos(id);
-  };
-
-  window.updateCollab = async (id) => {
-    const name = document.getElementById('collabName').value;
-    const handle = document.getElementById('collabHandle').value;
-
-    if (!name || !handle) {
-      document.getElementById('collabMsg').textContent = 'Name and handle required';
-      document.getElementById('collabMsg').className = 'error';
-      return;
-    }
-
-    try {
-      await updateDoc(doc(db, 'collaborators', id), { name, handle });
-      document.getElementById('collabMsg').textContent = '✓ Collaborator updated!';
-      document.getElementById('collabMsg').className = 'success';
-      document.getElementById('collabName').value = '';
-      document.getElementById('collabHandle').value = '';
-      document.getElementById('saveCollabBtn').textContent = 'Add Collaborator';
-      document.getElementById('saveCollabBtn').onclick = saveCollab;
-      loadCollabs();
-      setTimeout(() => { document.getElementById('collabMsg').textContent = ''; }, 3000);
-    } catch (err) {
-      document.getElementById('collabMsg').textContent = 'Error: ' + err.message;
-      document.getElementById('collabMsg').className = 'error';
-    }
-  };
-
   window.deleteCollab = async (id) => {
     if (confirm('Delete this collaborator?')) {
       await deleteDoc(doc(db, 'collaborators', id));
-      loadCollabs();
+      displayCollabOrderPanel();
     }
   };
 
@@ -3797,8 +3671,7 @@
       grouped[handle].push({ ...photo, index });
     });
 
-    // Display cosplayer order panel
-    window.displayCollabCoserOrderPanel(id, Object.keys(grouped));
+    // Display cosplayer order panel - REMOVED (old UI)
 
     let html = '';
     Object.entries(grouped).forEach(([handle, coserPhotos]) => {
@@ -4526,30 +4399,6 @@
   };
 
   // ── Collab Cosplayer Order Management ──────────────────────────────
-  window.displayCollabCoserOrderPanel = (collabId, cosers) => {
-    const container = document.getElementById('collabCoserOrderList');
-    if (cosers.length === 0) {
-      container.innerHTML = '<p style="color:#666;">No cosplayers in this collab</p>';
-      return;
-    }
-
-    let html = '<div style="padding:10px; background:#181818; border-radius:3px;">';
-    cosers.forEach((coser, idx) => {
-      html += `
-        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserCollabDrop(event, '${collabId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser="${coser}" data-collab-id="${collabId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none;">
-          <div style="display:flex; align-items:center; flex:1;">
-            <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
-            <span style="flex:1; color:#fff; font-size:0.9rem;">${coser}</span>
-            <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button onclick="openCollabCoserEditModal('${collabId}', '${coser}')" style="padding:5px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
-          </div>
-        </div>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-  };
 
   window.dragCoserCollabDrop = async (e, collabId, targetIdx) => {
     e.preventDefault();
@@ -5345,50 +5194,117 @@
       }
     };
 
-    // STAGE 11: Edit Collaborator Details
+    // STAGE 11: Edit Collaborator Details Modal
     window.editCollabDetails = async (collabId) => {
-      const docSnap = await getDoc(doc(db, 'collaborators', collabId));
-      const colab = docSnap.data();
+      try {
+        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
+        const colab = docSnap.data();
 
-      // Get primary character name from first album
-      let characterName = '';
-      if (colab.albums && colab.albums.length > 0) {
-        characterName = colab.albums[0].name || '';
+        if (!colab) {
+          alert('Collaborator not found');
+          return;
+        }
+
+        // Extract character name from available sources
+        let characterName = '';
+
+        // Try albums[0].name first (new structure)
+        if (colab.albums?.length > 0 && colab.albums[0].name) {
+          characterName = colab.albums[0].name;
+        }
+        // Fall back to photos[0].character (old structure)
+        else if (colab.photos?.length > 0 && colab.photos[0].character) {
+          characterName = colab.photos[0].character;
+        }
+
+        // Store data for saving
+        window._editingCollabData = { collabId, colab, characterName };
+
+        // Create and show modal
+        const modal = document.createElement('div');
+        modal.id = 'collabEditModal';
+        modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:2000; display:flex; align-items:center; justify-content:center;';
+
+        modal.innerHTML = `
+          <div style="background:#0d0d0d; border:1px solid #444; border-radius:6px; padding:30px; max-width:550px; width:90%; max-height:90vh; overflow-y:auto;">
+            <h2 style="margin:0 0 25px 0; color:#c8a46e; font-size:1.3em;">Edit Collaborator</h2>
+
+            <div style="margin-bottom:20px;">
+              <label style="display:block; margin-bottom:8px; color:#ccc; font-size:0.9em;">Cosplayer Name (IG Handle) *</label>
+              <input type="text" id="editCollabName" value="${colab.name || ''}" placeholder="e.g., clothsy.hj_" style="width:100%; padding:10px; background:#1a1a1a; border:1px solid #333; color:#e4e4e4; border-radius:4px; box-sizing:border-box; font-size:1em;">
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <label style="display:block; margin-bottom:8px; color:#ccc; font-size:0.9em;">Character Name ${characterName ? `<span style="color:#a89968;">(Current: ${characterName})</span>` : ''}</label>
+              <input type="text" id="editCollabCharacter" value="${characterName}" placeholder="e.g., Hatsune Miku" style="width:100%; padding:10px; background:#1a1a1a; border:1px solid #333; color:#e4e4e4; border-radius:4px; box-sizing:border-box; font-size:1em;">
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <label style="display:block; margin-bottom:8px; color:#ccc; font-size:0.9em;">Bio (Optional)</label>
+              <textarea id="editCollabBio" placeholder="Tell viewers about yourself..." style="width:100%; padding:10px; background:#1a1a1a; border:1px solid #333; color:#e4e4e4; border-radius:4px; box-sizing:border-box; height:100px; resize:none; font-family:inherit; font-size:1em;">${colab.bio || ''}</textarea>
+            </div>
+
+            <div style="margin-bottom:25px;">
+              <label style="display:block; margin-bottom:8px; color:#ccc; font-size:0.9em;">Support on Gank (URL)</label>
+              <input type="url" id="editCollabGankUrl" value="${colab.gankUrl || ''}" placeholder="https://gank.io/..." style="width:100%; padding:10px; background:#1a1a1a; border:1px solid #333; color:#e4e4e4; border-radius:4px; box-sizing:border-box; font-size:1em;">
+            </div>
+
+            <div style="display:flex; gap:10px;">
+              <button onclick="window.saveCollabEditModal()" style="flex:1; padding:12px; background:#c8a46e; color:#000; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.95em;">Save Changes</button>
+              <button onclick="document.getElementById('collabEditModal').remove();" style="flex:1; padding:12px; background:#444; color:#ccc; border:none; border-radius:4px; cursor:pointer; font-size:0.95em;">Cancel</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+
+      } catch (err) {
+        console.error('Error opening edit modal:', err);
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // Save collaborator edit modal
+    window.saveCollabEditModal = async () => {
+      const data = window._editingCollabData;
+      if (!data) return;
+
+      const name = document.getElementById('editCollabName')?.value.trim();
+      const characterName = document.getElementById('editCollabCharacter')?.value.trim();
+      const bio = document.getElementById('editCollabBio')?.value.trim();
+      const gankUrl = document.getElementById('editCollabGankUrl')?.value.trim();
+
+      if (!name) {
+        alert('Cosplayer name is required');
+        return;
       }
 
-      const modal = document.createElement('div');
-      modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;';
-      modal.innerHTML = `
-        <div style="background:#0d0d0d; border:1px solid #333; padding:20px; border-radius:4px; max-width:500px; width:100%;">
-          <h3 style="margin-top:0; color:#c8a46e;">Edit ${colab.name}</h3>
+      try {
+        const updateObj = { name, bio: bio || '', gankUrl: gankUrl || '' };
 
-          <div class="form-group">
-            <label>Cosplayer Name (IG Handle)</label>
-            <input type="text" id="editCollabName" value="${colab.name || ''}" placeholder="e.g., clothsy.hj_" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box; margin-bottom:15px;">
-          </div>
+        // Update character name in the appropriate location
+        if (data.colab.albums?.length > 0) {
+          // New structure: update album name
+          const albums = JSON.parse(JSON.stringify(data.colab.albums));
+          if (characterName) albums[0].name = characterName;
+          updateObj.albums = albums;
+        } else if (data.colab.photos?.length > 0) {
+          // Old structure: update photo character
+          const photos = JSON.parse(JSON.stringify(data.colab.photos));
+          if (characterName) photos[0].character = characterName;
+          updateObj.photos = photos;
+        }
 
-          <div class="form-group">
-            <label>Character Name</label>
-            <input type="text" id="editCollabCharacter" value="${characterName}" placeholder="e.g., Hatsune Miku" style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box; margin-bottom:15px;">
-          </div>
+        await updateDoc(doc(db, 'collaborators', data.collabId), updateObj);
 
-          <div class="form-group">
-            <label>Bio (Optional)</label>
-            <textarea id="editCollabBio" placeholder="Tell viewers about yourself..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; height:100px; resize:none; box-sizing:border-box; margin-bottom:15px;">${colab.bio || ''}</textarea>
-          </div>
+        console.log('✓ Collaborator saved successfully');
+        document.getElementById('collabEditModal').remove();
+        await displayCollabOrderPanel();
 
-          <div class="form-group">
-            <label>Support on Gank (URL)</label>
-            <input type="url" id="editCollabGankUrl" value="${colab.gankUrl || ''}" placeholder="https://gank.io/..." style="width:100%; padding:8px; background:#181818; border:1px solid #333; color:#e4e4e4; border-radius:3px; box-sizing:border-box; margin-bottom:20px;">
-          </div>
-
-          <div style="display:flex; gap:10px;">
-            <button onclick="window.saveCollabDetails('${collabId}'); this.closest('[style*=fixed]').remove();" style="flex:1; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Save</button>
-            <button onclick="this.closest('[style*=fixed]').remove();" style="flex:1; padding:10px; background:#444; color:#fff; border:none; border-radius:3px; cursor:pointer;">Cancel</button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
+      } catch (err) {
+        console.error('Error saving:', err);
+        alert('Error: ' + err.message);
+      }
     };
 
     // Open lightbox to view all album photos
@@ -5414,40 +5330,6 @@
       });
     };
 
-    window.saveCollabDetails = async (collabId) => {
-      const name = document.getElementById('editCollabName').value.trim();
-      const characterName = document.getElementById('editCollabCharacter').value.trim();
-      const bio = document.getElementById('editCollabBio').value.trim();
-      const gankUrl = document.getElementById('editCollabGankUrl').value.trim();
-
-      if (!name) {
-        alert('Cosplayer name is required');
-        return;
-      }
-
-      try {
-        const docSnap = await getDoc(doc(db, 'collaborators', collabId));
-        const colab = docSnap.data();
-        const albums = [...(colab.albums || [])];
-
-        // Update first album's character name (name field)
-        if (albums.length > 0 && characterName) {
-          albums[0].name = characterName;
-        }
-
-        await updateDoc(doc(db, 'collaborators', collabId), {
-          name,
-          bio,
-          gankUrl,
-          albums: albums.length > 0 ? albums : undefined
-        });
-        console.log('✓ Collaborator details saved');
-        await displayCollabOrderPanel();
-      } catch (err) {
-        console.error('Error:', err);
-        alert('Error: ' + err.message);
-      }
-    };
 
     // STAGE 13: Delete Album & Photo
     window.deleteAlbum = async (collabId, albumIdx) => {
