@@ -2294,9 +2294,9 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
       break;
 
     case 'threads':
-      // Copy link to clipboard and open Threads
-      const threadsText = `${shareText}\n${url}`;
-      navigator.clipboard.writeText(url).then(() => {
+      // Copy full share text with link to clipboard and open Threads
+      const threadsFullText = `${shareText}\n\n${url}`;
+      navigator.clipboard.writeText(threadsFullText).then(() => {
         window.open('https://www.threads.net', '_blank', 'width=600,height=400');
         alert('Link copied! Paste in Threads');
       }).catch(err => {
@@ -2441,8 +2441,9 @@ window.addEventListener('firebase-config-loaded', () => {
       const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
       window.open(facebookUrl, '_blank', 'width=600,height=400');
     } else if (platform === 'threads') {
-      // Copy link to clipboard and open Threads
-      navigator.clipboard.writeText(currentUrl).then(() => {
+      // Copy full share text with link to clipboard and open Threads
+      const fullThreadsText = `${shareText}\n\n${currentUrl}`;
+      navigator.clipboard.writeText(fullThreadsText).then(() => {
         window.open('https://www.threads.net', '_blank', 'width=600,height=400');
         alert('Link copied! Paste in Threads');
       }).catch(err => {

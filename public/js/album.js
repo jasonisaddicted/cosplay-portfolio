@@ -461,8 +461,9 @@ window.shareAlbumTo = (platform) => {
       break;
 
     case 'threads':
-      // Copy link to clipboard and open Threads
-      navigator.clipboard.writeText(albumUrl).then(() => {
+      // Copy full share text with link to clipboard and open Threads
+      const fullText = `${shareText}\n\n${albumUrl}`;
+      navigator.clipboard.writeText(fullText).then(() => {
         window.open('https://www.threads.net', '_blank', 'width=550,height=420');
         alert('Link copied! Paste in Threads');
       }).catch(err => {
