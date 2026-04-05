@@ -3301,23 +3301,24 @@
         photos.push({ src: url, character, series, caption });
       }
 
-      // Create collaborator first to get the ID
+      // Create album with character name
+      const albumName = character || `Album ${new Date().toLocaleDateString()}`;
+      const album = {
+        name: albumName,
+        order: 1,
+        photos: photos
+      };
+
+      // Create collaborator with new albums structure
       const newCollabRef = await addDoc(collection(db, 'collaborators'), {
         name: handle,
         handle: handle,
         bio: '',
         cover: photos[0]?.src || '',
         gankUrl: '',
-        photos: []
+        order: 999,
+        albums: [album]
       });
-
-      // Add source tags and update with the collab ID
-      const photosWithSource = photos.map(p => ({
-        ...p,
-        source: { type: 'collaborators', id: newCollabRef.id }
-      }));
-
-      await updateDoc(newCollabRef, { photos: photosWithSource });
 
       // Auto-save cover image for new collaborator
       await updateCoverImage(newCollabRef.id, 'collaborators');
@@ -4084,13 +4085,32 @@
         });
       }
 
-      // Fetch collab and append photos
+      // Fetch collab and add photos to album
       const docSnap = await getDoc(doc(db, 'collaborators', collabId));
       const collab = docSnap.data();
-      const existingPhotos = collab.photos || [];
+      const albums = collab.albums || [];
+
+      // Check if album with this character exists
+      const existingAlbumIndex = albums.findIndex(a => a.name === character);
+
+      if (existingAlbumIndex >= 0) {
+        // Add photos to existing album
+        albums[existingAlbumIndex].photos = [
+          ...(albums[existingAlbumIndex].photos || []),
+          ...newPhotos
+        ];
+      } else {
+        // Create new album
+        const newOrder = albums.length > 0 ? Math.max(...albums.map(a => a.order || 0)) + 1 : 1;
+        albums.push({
+          name: character,
+          order: newOrder,
+          photos: newPhotos
+        });
+      }
 
       await updateDoc(doc(db, 'collaborators', collabId), {
-        photos: [...existingPhotos, ...newPhotos]
+        albums: albums
       });
 
       status.textContent = `✓ ${files.length} photos added!`;
