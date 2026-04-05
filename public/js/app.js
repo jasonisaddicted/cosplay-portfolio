@@ -2053,8 +2053,8 @@ function initCollabs() {
     ` : '';
 
     entry.innerHTML = `
-      <div class="collab-entry__cover">
-        <img src="${coverSrc}" alt="${coser.name}" loading="lazy">
+      <div class="collab-entry__cover" style="cursor: pointer;" data-cover-index="${allPhotos.findIndex(p => p.src === coverSrc)}">
+        <img src="${coverSrc}" alt="${coser.name}" loading="lazy" style="cursor: pointer;">
       </div>
       <div class="collab-entry__body">
         <div class="collab-entry__label">COSPLAYER</div>
@@ -2077,7 +2077,19 @@ function initCollabs() {
       </div>
     `;
 
-    // Attach photo click handlers (for lightbox)
+    // Attach cover image click handler (for lightbox)
+    const coverEl = entry.querySelector('.collab-entry__cover');
+    if (coverEl && allCoserPhotos.length > 0) {
+      coverEl.addEventListener('click', () => {
+        const coverIndex = allPhotos.findIndex(p => p.src === coverSrc);
+        if (coverIndex >= 0) {
+          Lightbox.setBack(() => Lightbox.close());
+          Lightbox.open(coverIndex);
+        }
+      });
+    }
+
+    // Attach thumbnail click handlers (for lightbox)
     entry.querySelectorAll('.collab-thumb').forEach(thumb => {
       thumb.addEventListener('click', () => {
         const idx = parseInt(thumb.dataset.index);
