@@ -12,16 +12,12 @@
       "dest": "/api/index"
     },
     {
-      "src": "/album.html(?:\\?|$)",
-      "dest": "/api/album"
+      "src": "/(.*)\\.html",
+      "dest": "/public/$1.html"
     },
     {
       "src": "/album(?:\\?|$)",
       "dest": "/api/album"
-    },
-    {
-      "src": "/(.*)\\.html",
-      "dest": "/public/$1.html"
     },
     {
       "src": "/events(?:\\?|$)",
