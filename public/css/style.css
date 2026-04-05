@@ -1713,7 +1713,7 @@ a.info-panel__ig-row:hover { color: var(--accent-light); }
 .collab-list {
   padding: 0 40px 80px;
   margin: 0 auto;
-  max-width: clamp(280px, 90vw, 55vw);
+  max-width: var(--max-width);
 }
 .collab-entry {
   display: grid;
