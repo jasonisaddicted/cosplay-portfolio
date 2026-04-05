@@ -452,17 +452,34 @@ window.shareAlbumTo = (platform) => {
   const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
   const albumUrl = `${ogServiceUrl}/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
   const albumName = currentAlbumData.name;
-  const firstPhoto = currentAlbumPhotos.length > 0 ? currentAlbumPhotos[0].src : '';
-
   const shareText = `Check out this cosplay album: ${albumName}`;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   switch (platform) {
     case 'facebook':
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(albumUrl)}`, '_blank', 'width=550,height=420');
+      // On mobile, try native share if available
+      if (isMobile && navigator.share) {
+        navigator.share({
+          title: albumName,
+          text: shareText,
+          url: albumUrl
+        }).catch(err => console.log('Share cancelled or failed:', err));
+      } else {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(albumUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=550,height=420');
+      }
       break;
 
     case 'threads':
-      window.open(`https://www.threads.net/intent/compose?text=${encodeURIComponent(shareText + ' ' + albumUrl)}`, '_blank', 'width=550,height=420');
+      // On mobile, try native share if available
+      if (isMobile && navigator.share) {
+        navigator.share({
+          title: albumName,
+          text: shareText,
+          url: albumUrl
+        }).catch(err => console.log('Share cancelled or failed:', err));
+      } else {
+        window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(albumUrl)}`, '_blank', 'width=550,height=420');
+      }
       break;
   }
 

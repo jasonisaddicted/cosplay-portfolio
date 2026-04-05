@@ -2284,15 +2284,36 @@ window.shareToSocial = (platform, albumName, albumId, albumType) => {
   } else {
     url = window.location.href;
   }
-  const shareText = `${albumName}`;
+  const shareText = `Check out: ${albumName}`;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   switch(platform) {
     case 'facebook':
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(`Check out: ${shareText}`)}`, '_blank');
+      // On mobile, try native share if available, otherwise use Facebook share
+      if (isMobile && navigator.share) {
+        navigator.share({
+          title: albumName,
+          text: shareText,
+          url: url
+        }).catch(err => console.log('Share cancelled or failed:', err));
+      } else {
+        // Use Facebook Feed Dialog format (better than old sharer)
+        const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(shareText)}`;
+        window.open(facebookShareUrl, '_blank', 'width=600,height=400');
+      }
       break;
 
     case 'threads':
-      window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(`Check out: ${shareText}\n${url}`)}`, '_blank');
+      // Try native share on mobile
+      if (isMobile && navigator.share) {
+        navigator.share({
+          title: albumName,
+          text: shareText,
+          url: url
+        }).catch(err => console.log('Share cancelled or failed:', err));
+      } else {
+        window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+      }
       break;
   }
 
@@ -2427,18 +2448,33 @@ window.addEventListener('firebase-config-loaded', () => {
     const { character, series, coser, photoUrl } = window.currentPhotoShare;
     const shareText = `Check out this ${character} cosplay${series ? ` from ${series}` : ''}${coser ? ` by ${coser}` : ''}`;
     const currentUrl = window.location.href;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     if (platform === 'facebook') {
-      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
-      window.open(facebookUrl, '_blank', 'width=600,height=400');
+      // On mobile, try native share if available
+      if (isMobile && navigator.share) {
+        navigator.share({
+          title: character,
+          text: shareText,
+          url: currentUrl
+        }).catch(err => console.log('Share cancelled or failed:', err));
+      } else {
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
+        window.open(facebookUrl, '_blank', 'width=600,height=400');
+      }
     } else if (platform === 'threads') {
-      // Threads doesn't have a direct share API, so provide link share
-      const threadsText = `${shareText}\n\n${currentUrl}`;
-      window.open(`https://www.threads.net/`, '_blank');
-      // Copy to clipboard as fallback
-      navigator.clipboard.writeText(threadsText).then(() => {
-        console.log('Share text copied to clipboard');
-      });
+      // Try native share on mobile first
+      if (isMobile && navigator.share) {
+        navigator.share({
+          title: character,
+          text: shareText,
+          url: currentUrl
+        }).catch(err => console.log('Share cancelled or failed:', err));
+      } else {
+        // On desktop, open Threads with share intent
+        const threadsText = `${shareText}\n\n${currentUrl}`;
+        window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(threadsText)}`, '_blank', 'width=600,height=400');
+      }
     }
 
     // Close menu
