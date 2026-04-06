@@ -255,19 +255,57 @@ async function getOrCreateEvent(eventName, eventDate = '', location = '') {
 }
 
 /**
+ * Get existing photos (filename + size) in event
+ */
+async function getExistingPhotos(eventId) {
+  try {
+    const eventRef = await db.collection('events').doc(eventId).get();
+    if (!eventRef.exists) return [];
+
+    const photos = eventRef.data().photos || [];
+    return photos.map(p => ({
+      filename: p.filename,
+      size: p.size || 0
+    })).filter(p => p.filename);
+  } catch (err) {
+    console.error('Warning: Could not check existing files:', err.message);
+    return [];
+  }
+}
+
+/**
  * Upload batch of photos to event
  */
 async function uploadPhotoBatch(eventId, photos, dayName, eventName) {
   const uploadedPhotos = [];
   let successCount = 0;
   let failCount = 0;
+  let duplicateCount = 0;
+
+  // Get existing photos to avoid duplicates
+  const existingPhotos = await getExistingPhotos(eventId);
+
+  // Filter out duplicates (by filename + size)
+  const newPhotos = photos.filter(photo => {
+    const isDuplicate = existingPhotos.some(existing =>
+      existing.filename === photo.filename && existing.size === photo.size
+    );
+
+    if (isDuplicate) {
+      console.log(`  ⊘ ${photo.filename}: Already exists (skipped)`);
+      duplicateCount++;
+      return false;
+    }
+    return true;
+  });
 
   // Upload in parallel batches
-  for (let i = 0; i < photos.length; i += BATCH_SIZE) {
-    const batch = photos.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < newPhotos.length; i += BATCH_SIZE) {
+    const batch = newPhotos.slice(i, i + BATCH_SIZE);
     const uploads = batch.map(async (photo) => {
       try {
         const url = await uploadPhotoToStorage(photo.path, photo.filename, eventName, dayName);
+        const fileSize = fs.statSync(photo.path).size;
 
         return {
           src: url,
@@ -276,6 +314,7 @@ async function uploadPhotoBatch(eventId, photos, dayName, eventName) {
           series: 'Unknown',
           day: dayName,
           filename: photo.filename,
+          size: fileSize, // Store file size for duplicate detection
           uploadedAt: new Date().toISOString()
         };
       } catch (err) {
@@ -290,7 +329,7 @@ async function uploadPhotoBatch(eventId, photos, dayName, eventName) {
     successCount += results.filter(r => r !== null).length;
   }
 
-  return { uploadedPhotos, successCount, failCount };
+  return { uploadedPhotos, successCount, failCount, duplicateCount };
 }
 
 /**
