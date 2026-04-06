@@ -829,7 +829,8 @@ const Lightbox = (() => {
   // Handle system back button closing lightbox
   window.addEventListener('popstate', (e) => {
     if (lb.classList.contains('active')) {
-      // Close lightbox when back button is pressed
+      // Close lightbox when back button is pressed (don't reload page)
+      e.preventDefault();
       if (backCallback) {
         backCallback();
       } else {
