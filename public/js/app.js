@@ -1961,41 +1961,62 @@ async function initAlbum() {
 
     Lightbox.init(allPhotos);
 
-  // ── Events: flat photo grid with coser overlay on hover ───
+  // ── Events: group by cosplayer (same as studio) ───
   } else if (album.photos) {
-    album.photos.forEach((photo, i) => {
-      const item = document.createElement('div');
-      item.className = 'photo-grid__item';
+    // Group photos by cosplayer
+    const cosplayerGroups = {};
+    album.photos.forEach(photo => {
+      const coserName = photo.coser || photo.caption || 'Unknown';
+      if (!cosplayerGroups[coserName]) {
+        cosplayerGroups[coserName] = [];
+      }
+      cosplayerGroups[coserName].push(photo);
+    });
 
-      // Build overlay HTML if coser data exists
-      const hasCoser = photo.coser || photo.caption;
-      const overlayHtml = hasCoser ? `
-        <div class="photo-overlay">
-          <span class="photo-overlay__label">COSER</span>
-          <span class="photo-overlay__coser">${photo.coser || photo.caption || ''}</span>
-          ${photo.character ? `<span class="photo-overlay__character">${photo.character}</span>` : ''}
-          ${photo.series    ? `<span class="photo-overlay__series">${photo.series}</span>`    : ''}
+    const allPhotos = [];
+    const cosplayerNames = Object.keys(cosplayerGroups).sort();
+
+    cosplayerNames.forEach(coserName => {
+      const coserPhotos = cosplayerGroups[coserName];
+      const offset = allPhotos.length;
+
+      // Add all photos from this cosplayer to the flat array
+      coserPhotos.forEach(p => allPhotos.push({
+        src:       p.src,
+        coser:     p.coser || p.caption || '',
+        character: p.character || '',
+        series:    p.series || ''
+      }));
+
+      // Create cosplayer section
+      const section = document.createElement('div');
+      section.className = 'cosplayer-section';
+      section.innerHTML = `
+        <div class="cosplayer-header">
+          <span class="cosplayer-header__name">${coserName}</span>
+          <span class="cosplayer-header__count">${coserPhotos.length} photo${coserPhotos.length !== 1 ? 's' : ''}</span>
         </div>
-      ` : '';
-
-      item.innerHTML = `
-        <img src="${photo.src}" alt="${photo.character || album.name}" loading="lazy">
-        ${overlayHtml}
       `;
-      item.addEventListener('click', () => {
-        Lightbox.setBack(() => Lightbox.close());
-        Lightbox.open(i);
+
+      const grid = document.createElement('div');
+      grid.className = 'photo-grid';
+      coserPhotos.forEach((photo, pi) => {
+        const item = document.createElement('div');
+        item.className = 'photo-grid__item';
+        item.innerHTML = `<img src="${photo.src}" alt="${coserName}" loading="lazy">`;
+        item.addEventListener('click', () => {
+          Lightbox.setBack(() => Lightbox.close());
+          Lightbox.open(offset + pi);
+        });
+        grid.appendChild(item);
       });
-      photoGrid.appendChild(item);
+
+      section.appendChild(grid);
+      photoGrid.appendChild(section);
     });
 
     // Pass structured photo data to lightbox
-    Lightbox.init(album.photos.map(p => ({
-      src:       p.src,
-      coser:     p.coser     || p.caption || '',
-      character: p.character || '',
-      series:    p.series    || ''
-    })));
+    Lightbox.init(allPhotos);
   }
 }
 
