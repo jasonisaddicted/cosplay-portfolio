@@ -1111,7 +1111,7 @@ ul { list-style: none; }
 }
 .cosplayer-section {
   display: block;
-  margin-bottom: 80px;
+  margin-bottom: 30px;
   width: 100%;
 }
 .cosplayer-header {
@@ -1138,9 +1138,9 @@ ul { list-style: none; }
 .cosplayer-section .photo-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 1px;
+  gap: 0;
   background: var(--border);
-  margin: 0 auto 80px;
+  margin: 0 auto 30px;
   max-width: var(--max-width);
   padding: 0;
 }
@@ -2381,9 +2381,9 @@ footer {
   .albums-grid { grid-template-columns: 1fr; max-width: 100%; }
   .cosplayer-section .photo-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
+    gap: 0;
     background: var(--border);
-    margin: 0 auto 80px;
+    margin: 0 auto 30px;
     max-width: 100%;
     padding: 0;
   }
