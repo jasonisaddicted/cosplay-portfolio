@@ -1107,14 +1107,16 @@ ul { list-style: none; }
 
 /* ── Event Album Cosplayer Sections ───────────────────────── */
 .cosplayer-section {
-  margin-bottom: 4px;
+  margin-bottom: 80px;
+  width: 100%;
 }
 .cosplayer-header {
-  padding: 28px 4px 14px;
+  padding: 28px 0 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--border);
+  width: 100%;
 }
 .cosplayer-header__name {
   font-size: 0.9rem;
@@ -1128,6 +1130,9 @@ ul { list-style: none; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-dim);
+}
+.cosplayer-section .photo-grid {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 /* Studio album outer wrapper — not a grid itself */
@@ -2364,6 +2369,7 @@ footer {
   .photo-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; }
   .photo-grid__item:hover { transform: scale(1.06); }
   .albums-grid { grid-template-columns: 1fr; max-width: 100%; }
+  .cosplayer-section .photo-grid { grid-template-columns: repeat(2, 1fr); }
   .album-header { padding: calc(var(--nav-height) + 28px) 20px 28px; }
   footer { padding: 28px 20px; max-width: 100%; }
 }
