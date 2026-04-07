@@ -127,6 +127,7 @@ function getPhotosFromFolder(folderPath) {
       photos.push({
         path: itemPath,
         filename: item,
+        size: stat.size, // Capture file size for duplicate detection
         coser: extractCoserFromFilename(item)
       });
     }
@@ -285,11 +286,16 @@ async function uploadPhotoBatch(eventId, photos, dayName, eventName) {
   // Get existing photos to avoid duplicates
   const existingPhotos = await getExistingPhotos(eventId);
 
-  // Filter out duplicates (by filename + size)
+  // Filter out duplicates (by filename, or filename + size if size exists)
   const newPhotos = photos.filter(photo => {
-    const isDuplicate = existingPhotos.some(existing =>
-      existing.filename === photo.filename && existing.size === photo.size
-    );
+    const isDuplicate = existingPhotos.some(existing => {
+      // Match by filename alone if no size data exists yet
+      if (!existing.size) {
+        return existing.filename === photo.filename;
+      }
+      // Match by filename + size if both have size data
+      return existing.filename === photo.filename && existing.size === photo.size;
+    });
 
     if (isDuplicate) {
       console.log(`  ⊘ ${photo.filename}: Already exists (skipped)`);
@@ -402,7 +408,7 @@ async function main() {
       for (const batch of batches) {
         console.log(`   Uploading ${batch.day} (${batch.count} photos)...`);
 
-        const { uploadedPhotos, successCount, failCount } = await uploadPhotoBatch(
+        const { uploadedPhotos, successCount, failCount, duplicateCount } = await uploadPhotoBatch(
           eventId,
           batch.photos,
           batch.day,
@@ -410,7 +416,7 @@ async function main() {
         );
 
         eventPhotos.push(...uploadedPhotos);
-        console.log(`   ✓ ${successCount} uploaded, ${failCount} failed`);
+        console.log(`   ✓ ${successCount} uploaded, ${failCount} failed, ${duplicateCount} skipped (duplicates)`);
       }
 
       // Save all photos to Firestore
