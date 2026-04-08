@@ -108,6 +108,11 @@ async function loadAlbumData() {
     renderAlbumHeader();
     renderAlbumPhotos();
 
+    // Initialize Lightbox with album photos (enables info panel + detail display)
+    if (typeof Lightbox !== 'undefined') {
+      Lightbox.init(currentAlbumPhotos);
+    }
+
     // Update Open Graph tags with first photo
     if (currentAlbumPhotos.length > 0) {
       const firstPhoto = currentAlbumPhotos[0];
@@ -225,14 +230,10 @@ window.currentLightboxIndex = 0;
 
 function openPhotoLightbox(index) {
   window.currentLightboxIndex = index;
-  const lightbox = document.getElementById('lightbox');
   const photo = currentAlbumPhotos[index];
 
-  document.querySelector('.lightbox__img').src = photo.src;
-  document.querySelector('.lightbox__caption').innerHTML = `
-    ${photo.character ? `<strong>${photo.character}</strong> from ${photo.series || 'Unknown'}` : 'Photo'}
-    ${photo.coser ? `<br><span style="color:#aaa; font-size:0.85rem;">by @${photo.coser}</span>` : ''}
-  `;
+  // Use Lightbox API to properly display photo + info panel + share context
+  Lightbox.open(index);
 
   updateLightboxCounter();
   updateLightboxLikeCount(index);
@@ -251,9 +252,6 @@ function openPhotoLightbox(index) {
   // Update URL to reflect current photo so it can be shared/bookmarked
   const photoUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${index}`;
   window.history.replaceState({ photoIndex: index }, '', photoUrl);
-
-  lightbox.classList.add('active');
-  document.body.style.overflow = 'hidden';
 
   // Enable/disable nav buttons
   updateLightboxNavigation();
