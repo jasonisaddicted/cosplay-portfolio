@@ -236,6 +236,10 @@ function openPhotoLightbox(index) {
     index:     index,
   };
 
+  // Update URL to reflect current photo so it can be shared/bookmarked
+  const newUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${index}`;
+  window.history.replaceState({ photoIndex: index }, '', newUrl);
+
   lightbox.classList.add('active');
   document.body.style.overflow = 'hidden';
 
@@ -306,6 +310,10 @@ function closeLightbox() {
   const lightbox = document.getElementById('lightbox');
   lightbox.classList.remove('active');
   document.body.style.overflow = '';
+
+  // Update URL to remove photo parameter when lightbox closes
+  const cleanUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
+  window.history.replaceState({}, '', cleanUrl);
 }
 
 /**
