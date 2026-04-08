@@ -58,11 +58,11 @@ module.exports = async function handler(req, res) {
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${esc(photoUrl)}">
-<meta http-equiv="refresh" content="0; url=${esc(redirectUrl)}">
 <title>${esc(title)}</title>
 </head>
 <body>
 <p>Redirecting to <a href="${esc(redirectUrl)}">${esc(title)}</a>...</p>
+<script>window.location.replace("${esc(redirectUrl)}");</script>
 </body>
 </html>`;
 
