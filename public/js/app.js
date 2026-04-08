@@ -2488,15 +2488,11 @@ window.addEventListener('firebase-config-loaded', () => {
       const fullText = `${shareText}\n\n${shareUrl}`;
       // Copy to clipboard
       navigator.clipboard.writeText(fullText).then(() => {
-        // Try to open native Threads app first (iOS/Android)
-        window.open('threads://compose', '_blank');
-        // Use a timeout to fallback to web if native app didn't open
-        setTimeout(() => {
-          window.open('https://www.threads.net', '_blank', 'width=600,height=400');
-        }, 1500);
+        // Open Threads web - content is in clipboard ready to paste
+        window.open('https://www.threads.net/create', '_blank', 'width=600,height=400');
       }).catch(() => {
         // Fallback if clipboard fails
-        window.open('https://www.threads.net', '_blank', 'width=600,height=400');
+        window.open('https://www.threads.net/create', '_blank', 'width=600,height=400');
         prompt('Copy this text to Threads:', fullText);
       });
     }
