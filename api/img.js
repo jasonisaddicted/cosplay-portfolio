@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
   let decoded;
   try {
     decoded = decodeURIComponent(urlParam);
-    console.log('Image proxy request for:', decoded.substring(0, 100));
+    console.log('Image proxy request for (full):', decoded);
     const host = new URL(decoded).hostname;
     if (!ALLOWED_HOSTS.some(h => host === h || host.endsWith('.' + h))) {
       return res.status(403).send('Forbidden');
@@ -32,17 +32,21 @@ module.exports = async function handler(req, res) {
 
   try {
     // Use Fetch API to retrieve image
-    console.log('Fetching image from:', decoded);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
+    console.log('About to fetch:', decoded);
     const response = await fetch(decoded, {
       signal: controller.signal,
     });
     clearTimeout(timeout);
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', JSON.stringify(Object.fromEntries(response.headers)));
+    console.log('Fetch successful! Status:', response.status);
+    const headerObj = {};
+    response.headers.forEach((value, key) => {
+      headerObj[key] = value;
+    });
+    console.log('Response headers:', JSON.stringify(headerObj));
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
