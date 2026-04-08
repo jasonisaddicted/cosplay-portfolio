@@ -1,52 +1,64 @@
 /**
  * Image proxy for social media OG thumbnails
- * Facebook/social crawlers can't always load Firebase Storage URLs directly.
- * This endpoint fetches the image from Firebase and serves it from our domain.
+ * Accepts Firebase Storage paths and generates fresh signed URLs for reliable access
  *
- * Usage: /api/img?url=<encoded_firebase_url>
- * Only allows Firebase Storage URLs for security.
+ * Usage: /api/img?path=<encoded_storage_path>
+ * Example: /api/img?path=photos%2Fevents%2Fimage.jpg
  */
 
-const ALLOWED_HOSTS = [
-  'firebasestorage.googleapis.com',
-  'storage.googleapis.com',
-  'firebasestorage.app', // Firebase Storage app domains (*.firebasestorage.app)
-];
+const admin = require('firebase-admin');
+const path = require('path');
+
+// Initialize Firebase Admin SDK (reuse if already initialized)
+if (!admin.apps.length) {
+  const keyPath = path.join(__dirname, '../jianshencosvisual-328dc-firebase-adminsdk-fbsvc-81e1445bc4.json');
+  admin.initializeApp({
+    credential: admin.credential.cert(require(keyPath)),
+    storageBucket: 'jianshencosvisual-328dc.appspot.com',
+  });
+}
+
+const bucket = admin.storage().bucket();
 
 module.exports = async function handler(req, res) {
-  const { url: urlParam } = req.query;
+  // Support both 'path' (new) and 'url' (legacy) parameters
+  let storagePath = req.query.path || req.query.url;
 
-  if (!urlParam) return res.status(400).send('Missing url');
-
-  let decoded;
-  try {
-    decoded = decodeURIComponent(urlParam);
-    console.log('Image proxy request for (full):', decoded);
-    const host = new URL(decoded).hostname;
-    if (!ALLOWED_HOSTS.some(h => host === h || host.endsWith('.' + h))) {
-      return res.status(403).send('Forbidden');
-    }
-  } catch (_) {
-    return res.status(400).send('Invalid url');
+  if (!storagePath) {
+    return res.status(400).send('Missing path or url parameter');
   }
 
   try {
-    // Use Fetch API to retrieve image
+    const decodedPath = decodeURIComponent(storagePath);
+
+    // If it's a full URL, extract just the path
+    let filename = decodedPath;
+    if (decodedPath.includes('firebasestorage')) {
+      // Extract path from Firebase URL
+      const urlObj = new URL(decodedPath);
+      const pathMatch = urlObj.pathname.match(/\/o\/(.*?)$/);
+      if (pathMatch) {
+        filename = decodeURIComponent(pathMatch[1]);
+      }
+    }
+
+    console.log('Generating signed URL for:', filename);
+
+    // Generate a fresh signed URL from the Admin SDK
+    const [signedUrl] = await bucket.file(filename).getSignedUrl({
+      version: 'v4',
+      action: 'read',
+      expires: Date.now() + 60 * 60 * 1000, // 1 hour
+    });
+
+    // Now fetch the image using the signed URL
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
-    console.log('About to fetch:', decoded);
-    const response = await fetch(decoded, {
+    const response = await fetch(signedUrl, {
       signal: controller.signal,
     });
     clearTimeout(timeout);
-
-    console.log('Fetch successful! Status:', response.status);
-    const headerObj = {};
-    response.headers.forEach((value, key) => {
-      headerObj[key] = value;
-    });
-    console.log('Response headers:', JSON.stringify(headerObj));
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
@@ -63,11 +75,11 @@ module.exports = async function handler(req, res) {
     }
 
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour cache
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).send(Buffer.from(buffer));
   } catch (e) {
-    console.error('Proxy error:', e.message, 'URL:', decoded);
+    console.error('Image proxy error:', e.message);
     res.status(500).send(`Image proxy failed: ${e.message}`);
   }
 };
