@@ -494,10 +494,10 @@ window.toggleAlbumShareMenu = () => {
 window.shareAlbumTo = (platform) => {
   if (!currentAlbumId || !currentAlbumType) return;
 
-  // Use /album.html with Firestore ID (not slug) for proper routing and OG tags
+  // Use /api/album endpoint for proper OG tag generation
   // Include current photo index if viewing a photo in the lightbox
-  let albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
-  if (window.currentLightboxIndex !== undefined && window.currentLightboxIndex !== null) {
+  let albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
+  if (window.currentLightboxIndex !== undefined && window.currentLightboxIndex !== null && window.currentLightboxIndex > 0) {
     albumUrl += `&photo=${window.currentLightboxIndex}`;
   }
 
@@ -534,10 +534,10 @@ window.shareAlbumTo = (platform) => {
 };
 
 window.copyAlbumLink = () => {
-  // Use /album.html with Firestore ID (not slug) for proper routing and OG tags
+  // Use /api/album endpoint for proper OG tag generation when pasted to social media
   // Include current photo index if viewing a photo in the lightbox
-  let albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
-  if (window.currentLightboxIndex !== undefined && window.currentLightboxIndex !== null) {
+  let albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
+  if (window.currentLightboxIndex !== undefined && window.currentLightboxIndex !== null && window.currentLightboxIndex > 0) {
     albumUrl += `&photo=${window.currentLightboxIndex}`;
   }
   navigator.clipboard.writeText(albumUrl).then(() => {
