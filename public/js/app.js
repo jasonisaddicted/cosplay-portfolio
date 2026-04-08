@@ -830,7 +830,7 @@ const Lightbox = (() => {
 
   document.addEventListener('keydown', e => {
     if (!lb.classList.contains('active')) return;
-    if (e.key === 'Escape')      hide();
+    // ESC key handling moved to album.js closeLightbox() for URL cleanup
     if (e.key === 'ArrowLeft')   show(current - 1);
     if (e.key === 'ArrowRight')  show(current + 1);
   });
