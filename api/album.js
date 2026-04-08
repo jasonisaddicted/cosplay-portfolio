@@ -97,7 +97,7 @@ function serveAlbumHtml(res) {
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  const { id, type } = req.query;
+  const { id, type, photo } = req.query;
   const ua = req.headers['user-agent'] || '';
   const isBot = BOT_UA.test(ua);
 
@@ -117,13 +117,31 @@ module.exports = async function handler(req, res) {
     if (fields) {
       title       = fields.name?.stringValue        || title;
       description = fields.description?.stringValue || `${title} — cosplay photography`;
-      if (!ogImage) ogImage = firstPhotoSrc(fields);
+      if (!ogImage) {
+        // If photo index is specified, use that photo; otherwise use first photo
+        if (photo !== undefined && photo !== '') {
+          const photoIndex = parseInt(photo, 10);
+          const photos = fields.photos?.arrayValue?.values || [];
+          if (!isNaN(photoIndex) && photoIndex >= 0 && photoIndex < photos.length) {
+            const photoObj = photos[photoIndex].mapValue?.fields;
+            if (photoObj?.src?.stringValue) {
+              ogImage = photoObj.src.stringValue;
+            }
+          }
+        }
+        // Fallback to first photo if no photo param or photo not found
+        if (!ogImage) ogImage = firstPhotoSrc(fields);
+      }
     }
   } catch (e) {
     console.error('Firestore error:', e.message);
   }
 
-  const pageUrl  = `${BASE_URL}/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
+  // Include photo parameter in the page URL if provided
+  let pageUrl  = `${BASE_URL}/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
+  if (photo !== undefined && photo !== '') {
+    pageUrl += `&photo=${encodeURIComponent(photo)}`;
+  }
   // Route og:image through our proxy so Facebook can always load it
   // Extract storage path and pass to proxy for reliable access
   const storagePath = extractStoragePath(ogImage);
