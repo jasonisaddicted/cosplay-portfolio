@@ -7,19 +7,23 @@
  * Only allows Firebase Storage URLs for security.
  */
 
+const https = require('https');
+const http = require('http');
+const url = require('url');
+
 const ALLOWED_HOSTS = [
   'firebasestorage.googleapis.com',
   'storage.googleapis.com',
 ];
 
 module.exports = async function handler(req, res) {
-  const { url } = req.query;
+  const { url: urlParam } = req.query;
 
-  if (!url) return res.status(400).send('Missing url');
+  if (!urlParam) return res.status(400).send('Missing url');
 
   let decoded;
   try {
-    decoded = decodeURIComponent(url);
+    decoded = decodeURIComponent(urlParam);
     const host = new URL(decoded).hostname;
     if (!ALLOWED_HOSTS.some(h => host === h || host.endsWith('.' + h))) {
       return res.status(403).send('Forbidden');
@@ -29,37 +33,59 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Add timeout to prevent hanging on slow Firebase responses
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    // Use Node.js https module for better performance
+    const urlObj = new URL(decoded);
+    const protocol = urlObj.protocol === 'https:' ? https : http;
 
-    const upstream = await fetch(decoded, {
-      headers: { 'User-Agent': 'cosplay-portfolio-og-proxy/1.0' },
-      signal: controller.signal,
+    const fetchPromise = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Fetch timeout'));
+      }, 8000); // 8 second timeout
+
+      protocol.get(
+        {
+          hostname: urlObj.hostname,
+          path: urlObj.pathname + urlObj.search,
+          headers: {
+            'User-Agent': 'facebookexternalhit/1.1',
+          },
+          timeout: 8000,
+        },
+        (upstream) => {
+          clearTimeout(timeout);
+
+          if (upstream.statusCode !== 200) {
+            reject(new Error(`Status ${upstream.statusCode}`));
+            return;
+          }
+
+          const contentType = upstream.headers['content-type'];
+          if (!contentType || !contentType.includes('image')) {
+            reject(new Error(`Invalid content-type: ${contentType}`));
+            return;
+          }
+
+          const chunks = [];
+          upstream.on('data', chunk => chunks.push(chunk));
+          upstream.on('end', () => {
+            const buffer = Buffer.concat(chunks);
+            if (buffer.length === 0) {
+              reject(new Error('Empty response'));
+              return;
+            }
+            resolve({ contentType, buffer });
+          });
+          upstream.on('error', reject);
+        }
+      ).on('error', reject);
     });
 
-    clearTimeout(timeout);
-
-    if (!upstream.ok) {
-      console.error('Upstream error:', upstream.status, decoded);
-      return res.status(upstream.status).send('Image not found');
-    }
-
-    const contentType = upstream.headers.get('content-type');
-    if (!contentType || !contentType.includes('image')) {
-      console.error('Invalid content type:', contentType, 'for', decoded);
-      return res.status(400).send('Invalid image');
-    }
-
-    const buffer = await upstream.arrayBuffer();
-    if (buffer.byteLength === 0) {
-      return res.status(400).send('Empty image');
-    }
+    const { contentType, buffer } = await fetchPromise;
 
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=86400'); // 24h cache
+    res.setHeader('Cache-Control', 'public, max-age=86400');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(200).send(Buffer.from(buffer));
+    res.status(200).send(buffer);
   } catch (e) {
     console.error('Proxy error:', e.message, 'URL:', decoded);
     res.status(500).send('Image proxy failed');
