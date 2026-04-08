@@ -756,10 +756,16 @@ const Lightbox = (() => {
 
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      if (backCallback) {
+      // Call global closeLightbox (set by album.js) which handles URL cleanup + lightbox close
+      // Falls back to hide() if not available
+      if (typeof window.closeLightbox === 'function') {
+        window.closeLightbox();
+      } else if (backCallback) {
         backCallback();
         backCallback = null;
         if (backBtn) backBtn.style.display = 'none';
+      } else {
+        hide();
       }
     });
   }

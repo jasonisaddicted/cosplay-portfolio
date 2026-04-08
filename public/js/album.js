@@ -329,6 +329,9 @@ function closeLightbox() {
   }
 }
 
+// Make closeLightbox globally accessible for back button handler
+window.closeLightbox = closeLightbox;
+
 /**
  * Like functionality
  */
