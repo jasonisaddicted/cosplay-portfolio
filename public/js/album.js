@@ -482,14 +482,8 @@ window.toggleAlbumShareMenu = () => {
 window.shareAlbumTo = (platform) => {
   if (!currentAlbumId || !currentAlbumType) return;
 
-  // Use OG service URL for proper social media previews
-  const ogServiceUrl = 'https://cosplay-portfolio.vercel.app';
-  let albumUrl = `${ogServiceUrl}/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
-
-  // Add first photo as image URL for thumbnail
-  if (currentAlbumPhotos.length > 0 && currentAlbumPhotos[0].src) {
-    albumUrl += `&image=${encodeURIComponent(currentAlbumPhotos[0].src)}`;
-  }
+  // Use /api/album endpoint for proper OG tags
+  const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
 
   const albumName = currentAlbumData.name;
   const shareText = `Check out this cosplay album: ${albumName}`;
