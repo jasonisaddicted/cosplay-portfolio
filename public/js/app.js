@@ -756,15 +756,19 @@ const Lightbox = (() => {
 
   if (backBtn) {
     backBtn.addEventListener('click', () => {
+      console.log('[BackBtn] Clicked. window.closeLightbox exists?', typeof window.closeLightbox === 'function');
       // Call global closeLightbox (set by album.js) which handles URL cleanup + lightbox close
       // Falls back to hide() if not available
       if (typeof window.closeLightbox === 'function') {
+        console.log('[BackBtn] Calling window.closeLightbox()');
         window.closeLightbox();
       } else if (backCallback) {
+        console.log('[BackBtn] Calling backCallback');
         backCallback();
         backCallback = null;
         if (backBtn) backBtn.style.display = 'none';
       } else {
+        console.log('[BackBtn] Calling hide()');
         hide();
       }
     });
