@@ -552,18 +552,30 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Starting album data load...');
   loadAlbumData();
 
-  // Hook into global Lightbox to update URL whenever photo changes
-  // This catches navigation from prev/next buttons and swipes (which app.js handles)
-  if (typeof Lightbox !== 'undefined' && Lightbox.onPhotoChange) {
-    console.log('Setting up Lightbox.onPhotoChange callback for URL updates');
-    Lightbox.onPhotoChange((photo, index) => {
-      console.log('Photo changed to index:', index, 'albumId:', currentAlbumId, 'albumType:', currentAlbumType);
-      // Update URL to reflect current photo
-      const newUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${index}`;
-      console.log('Updating URL to:', newUrl);
-      window.history.replaceState({ photoIndex: index }, '', newUrl);
-    });
-  } else {
-    console.log('Lightbox or onPhotoChange not available yet');
-  }
+  // Monitor lightbox image changes to update URL
+  // This catches swipe/next/prev navigation since app.js handles those
+  setTimeout(() => {
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+      const imgEl = lightbox.querySelector('.lightbox__img');
+      let lastSrc = '';
+
+      // Watch for image source changes (which happen on swipe/next/prev)
+      const checkImageChange = () => {
+        if (imgEl && imgEl.src && imgEl.src !== lastSrc) {
+          lastSrc = imgEl.src;
+          console.log('Image source changed, updating URL for current index:', window.currentLightboxIndex);
+          const newUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${window.currentLightboxIndex}`;
+          window.history.replaceState({ photoIndex: window.currentLightboxIndex }, '', newUrl);
+        }
+      };
+
+      // Poll for image changes when lightbox is active
+      setInterval(() => {
+        if (lightbox.classList.contains('active')) {
+          checkImageChange();
+        }
+      }, 50);
+    }
+  }, 500);
 });
