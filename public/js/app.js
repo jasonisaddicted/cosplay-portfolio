@@ -1877,21 +1877,11 @@ async function initAlbum() {
 
   if (!album) { titleEl.textContent = 'Album not found'; return; }
 
-  // Load photos from Firestore subcollection if this is a Firebase album
-  if (type === 'events' && !album.photos) {
-    try {
-      const photosSnap = await getDocs(collection(db, 'albums', id, 'photos'));
-      album.photos = photosSnap.docs.map(doc => ({
-        id: doc.id,
-        src: doc.data().src,
-        coser: doc.data().coser || '',
-        character: doc.data().character || 'Unknown',
-        series: doc.data().series || ''
-      }));
-    } catch (err) {
-      console.error('Error loading album photos:', err);
-      album.photos = [];
-    }
+  // Note: Photos come from the album document itself (album.photos field)
+  // NOT from a subcollection. This ensures consistent indexing with album.js
+  // which loads photos from the same album.photos field.
+  if (!album.photos) {
+    album.photos = [];
   }
 
   // Clear previous content
@@ -1971,61 +1961,40 @@ async function initAlbum() {
 
     Lightbox.init(allPhotos);
 
-  // ── Events: group by cosplayer (same as studio) ───
+  // ── Events: render photos in original Firestore order ───
+  // IMPORTANT: Use photos in their original Firestore order (no regrouping!)
+  // This ensures photo indices match between:
+  //   - album.js share links (which use original order)
+  //   - app.js lightbox (which must use same indices)
   } else if (album.photos) {
-    // Group photos by cosplayer
-    const cosplayerGroups = {};
-    album.photos.forEach(photo => {
-      const coserName = photo.coser || photo.caption || 'Unknown';
-      if (!cosplayerGroups[coserName]) {
-        cosplayerGroups[coserName] = [];
-      }
-      cosplayerGroups[coserName].push(photo);
-    });
+    // Convert photos to lightbox format (same as album.js does)
+    const allPhotos = album.photos.map((p, idx) => ({
+      src:       p.src,
+      coser:     p.coser || p.caption || '',
+      character: p.character || '',
+      series:    p.series || '',
+      index:     idx
+    }));
 
-    const allPhotos = [];
-    const cosplayerNames = Object.keys(cosplayerGroups).sort();
+    // Render photos as a single grid (no cosplayer sections)
+    // This maintains the original Firestore photo order for consistency with album.js
+    const grid = document.createElement('div');
+    grid.className = 'photo-grid';
 
-    cosplayerNames.forEach(coserName => {
-      const coserPhotos = cosplayerGroups[coserName];
-      const offset = allPhotos.length;
-
-      // Add all photos from this cosplayer to the flat array
-      coserPhotos.forEach(p => allPhotos.push({
-        src:       p.src,
-        coser:     p.coser || p.caption || '',
-        character: p.character || '',
-        series:    p.series || ''
-      }));
-
-      // Create cosplayer section
-      const section = document.createElement('div');
-      section.className = 'cosplayer-section';
-      section.innerHTML = `
-        <div class="cosplayer-header">
-          <span class="cosplayer-header__name">${coserName}</span>
-          <span class="cosplayer-header__count">${coserPhotos.length} photo${coserPhotos.length !== 1 ? 's' : ''}</span>
-        </div>
-      `;
-
-      const grid = document.createElement('div');
-      grid.className = 'photo-grid';
-      coserPhotos.forEach((photo, pi) => {
-        const item = document.createElement('div');
-        item.className = 'photo-grid__item';
-        item.innerHTML = `<img src="${photo.src}" alt="${coserName}" loading="lazy">`;
-        item.addEventListener('click', () => {
-          Lightbox.setBack(() => Lightbox.close());
-          Lightbox.open(offset + pi);
-        });
-        grid.appendChild(item);
+    album.photos.forEach((photo, idx) => {
+      const item = document.createElement('div');
+      item.className = 'photo-grid__item';
+      item.innerHTML = `<img src="${photo.src}" alt="${photo.character || 'Photo'}" loading="lazy">`;
+      item.addEventListener('click', () => {
+        Lightbox.setBack(() => Lightbox.close());
+        Lightbox.open(idx);  // Use original index, no offset
       });
-
-      section.appendChild(grid);
-      photoGrid.appendChild(section);
+      grid.appendChild(item);
     });
 
-    // Pass structured photo data to lightbox
+    photoGrid.appendChild(grid);
+
+    // Pass photos in original order to lightbox
     Lightbox.init(allPhotos);
   }
 }

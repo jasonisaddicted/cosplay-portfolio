@@ -6,6 +6,13 @@
  * - Implements Like and Share functionality
  */
 
+// Make these globally accessible so app.js can use them
+window.currentAlbumData = null;
+window.currentAlbumId = null;
+window.currentAlbumType = null;
+window.currentAlbumPhotos = [];
+
+// Also keep local references for brevity
 let currentAlbumData = null;
 let currentAlbumId = null;
 let currentAlbumType = null;
@@ -55,8 +62,10 @@ async function loadAlbumData() {
   }
 
   currentAlbumId = getQueryParam('id');
+  window.currentAlbumId = currentAlbumId;
   const typeParam = getQueryParam('type');
   currentAlbumType = typeParam || 'events';
+  window.currentAlbumType = currentAlbumType;
 
   if (!currentAlbumId) {
     console.error('No album ID provided');
@@ -74,6 +83,7 @@ async function loadAlbumData() {
         docSnap = await getDoc(doc(db, tryType, currentAlbumId));
         if (docSnap.exists()) {
           currentAlbumType = tryType;  // Update to correct type
+          window.currentAlbumType = tryType;
           console.log('Album found in', tryType, 'collection');
           break;
         }
@@ -88,7 +98,9 @@ async function loadAlbumData() {
     }
 
     currentAlbumData = docSnap.data();
+    window.currentAlbumData = currentAlbumData;
     currentAlbumPhotos = currentAlbumData.photos || [];
+    window.currentAlbumPhotos = currentAlbumPhotos;
 
     console.log('Album loaded:', currentAlbumData.name, 'Photos:', currentAlbumPhotos.length);
 
@@ -482,8 +494,8 @@ window.toggleAlbumShareMenu = () => {
 window.shareAlbumTo = (platform) => {
   if (!currentAlbumId || !currentAlbumType) return;
 
-  // Use /api/album endpoint for proper OG tags
-  const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
+  // Use /album.html with Firestore ID (not slug) for proper routing and OG tags
+  const albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
 
   const albumName = currentAlbumData.name;
   const shareText = `Check out this cosplay album: ${albumName}`;
@@ -512,8 +524,8 @@ window.shareAlbumTo = (platform) => {
 };
 
 window.copyAlbumLink = () => {
-  // Use /api/album endpoint which has proper og:image meta tags for social media bots
-  const albumUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${currentAlbumId}&type=${currentAlbumType}`;
+  // Use /album.html with Firestore ID (not slug) for proper routing and OG tags
+  const albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
   navigator.clipboard.writeText(albumUrl).then(() => {
     alert('Album link copied to clipboard!');
   }).catch(() => {
