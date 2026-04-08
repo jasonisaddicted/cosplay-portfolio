@@ -7,10 +7,6 @@
  * Only allows Firebase Storage URLs for security.
  */
 
-const https = require('https');
-const http = require('http');
-const url = require('url');
-
 const ALLOWED_HOSTS = [
   'firebasestorage.googleapis.com',
   'storage.googleapis.com',
@@ -35,74 +31,38 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Use Node.js https module for better performance
-    const urlObj = new URL(decoded);
-    const protocol = urlObj.protocol === 'https:' ? https : http;
-
-    const fetchPromise = new Promise((resolve, reject) => {
-      let req;
-      const timeout = setTimeout(() => {
-        req.destroy();
-        reject(new Error('Fetch timeout'));
-      }, 8000); // 8 second timeout
-
-      try {
-        req = protocol.get(
-          {
-            hostname: urlObj.hostname,
-            path: urlObj.pathname + urlObj.search,
-            headers: {
-              'User-Agent': 'facebookexternalhit/1.1',
-            },
-            timeout: 8000,
-          },
-          (upstream) => {
-            clearTimeout(timeout);
-            console.log('Upstream response status:', upstream.statusCode);
-            console.log('Upstream headers:', JSON.stringify(upstream.headers));
-
-            if (upstream.statusCode !== 200) {
-              reject(new Error(`Status ${upstream.statusCode}`));
-              return;
-            }
-
-            const contentType = upstream.headers['content-type'];
-            if (!contentType || !contentType.includes('image')) {
-              reject(new Error(`Invalid content-type: ${contentType}`));
-              return;
-            }
-
-            const chunks = [];
-            upstream.on('data', chunk => chunks.push(chunk));
-            upstream.on('end', () => {
-              const buffer = Buffer.concat(chunks);
-              if (buffer.length === 0) {
-                reject(new Error('Empty response'));
-                return;
-              }
-              resolve({ contentType, buffer });
-            });
-            upstream.on('error', reject);
-          }
-        );
-        req.on('error', (e) => {
-          clearTimeout(timeout);
-          reject(e);
-        });
-      } catch (setupError) {
-        clearTimeout(timeout);
-        reject(setupError);
-      }
+    // Use Fetch API with Facebook's User-Agent for crawler recognition
+    console.log('Fetching image from:', decoded);
+    const response = await fetch(decoded, {
+      headers: {
+        'User-Agent': 'facebookexternalhit/1.1',
+      },
+      timeout: 8000,
     });
 
-    const { contentType, buffer } = await fetchPromise;
+    console.log('Response status:', response.status);
+    console.log('Response headers:', JSON.stringify(Object.fromEntries(response.headers)));
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('image')) {
+      throw new Error(`Invalid content-type: ${contentType}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    if (buffer.byteLength === 0) {
+      throw new Error('Empty response');
+    }
 
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(200).send(buffer);
+    res.status(200).send(Buffer.from(buffer));
   } catch (e) {
-    console.error('Proxy error:', e.message, 'URL:', decoded, 'Stack:', e.stack);
+    console.error('Proxy error:', e.message, 'URL:', decoded);
     res.status(500).send(`Image proxy failed: ${e.message}`);
   }
 };
