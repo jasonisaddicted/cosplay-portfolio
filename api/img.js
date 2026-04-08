@@ -38,46 +38,57 @@ module.exports = async function handler(req, res) {
     const protocol = urlObj.protocol === 'https:' ? https : http;
 
     const fetchPromise = new Promise((resolve, reject) => {
+      let req;
       const timeout = setTimeout(() => {
+        req.destroy();
         reject(new Error('Fetch timeout'));
       }, 8000); // 8 second timeout
 
-      protocol.get(
-        {
-          hostname: urlObj.hostname,
-          path: urlObj.pathname + urlObj.search,
-          headers: {
-            'User-Agent': 'facebookexternalhit/1.1',
+      try {
+        req = protocol.get(
+          {
+            hostname: urlObj.hostname,
+            path: urlObj.pathname + urlObj.search,
+            headers: {
+              'User-Agent': 'facebookexternalhit/1.1',
+            },
+            timeout: 8000,
           },
-          timeout: 8000,
-        },
-        (upstream) => {
-          clearTimeout(timeout);
+          (upstream) => {
+            clearTimeout(timeout);
 
-          if (upstream.statusCode !== 200) {
-            reject(new Error(`Status ${upstream.statusCode}`));
-            return;
-          }
-
-          const contentType = upstream.headers['content-type'];
-          if (!contentType || !contentType.includes('image')) {
-            reject(new Error(`Invalid content-type: ${contentType}`));
-            return;
-          }
-
-          const chunks = [];
-          upstream.on('data', chunk => chunks.push(chunk));
-          upstream.on('end', () => {
-            const buffer = Buffer.concat(chunks);
-            if (buffer.length === 0) {
-              reject(new Error('Empty response'));
+            if (upstream.statusCode !== 200) {
+              reject(new Error(`Status ${upstream.statusCode}`));
               return;
             }
-            resolve({ contentType, buffer });
-          });
-          upstream.on('error', reject);
-        }
-      ).on('error', reject);
+
+            const contentType = upstream.headers['content-type'];
+            if (!contentType || !contentType.includes('image')) {
+              reject(new Error(`Invalid content-type: ${contentType}`));
+              return;
+            }
+
+            const chunks = [];
+            upstream.on('data', chunk => chunks.push(chunk));
+            upstream.on('end', () => {
+              const buffer = Buffer.concat(chunks);
+              if (buffer.length === 0) {
+                reject(new Error('Empty response'));
+                return;
+              }
+              resolve({ contentType, buffer });
+            });
+            upstream.on('error', reject);
+          }
+        );
+        req.on('error', (e) => {
+          clearTimeout(timeout);
+          reject(e);
+        });
+      } catch (setupError) {
+        clearTimeout(timeout);
+        reject(setupError);
+      }
     });
 
     const { contentType, buffer } = await fetchPromise;
@@ -87,7 +98,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).send(buffer);
   } catch (e) {
-    console.error('Proxy error:', e.message, 'URL:', decoded);
-    res.status(500).send('Image proxy failed');
+    console.error('Proxy error:', e.message, 'URL:', decoded, 'Stack:', e.stack);
+    res.status(500).send(`Image proxy failed: ${e.message}`);
   }
 };
