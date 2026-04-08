@@ -14,6 +14,7 @@ const url = require('url');
 const ALLOWED_HOSTS = [
   'firebasestorage.googleapis.com',
   'storage.googleapis.com',
+  'firebasestorage.app', // Firebase Storage app domains (*.firebasestorage.app)
 ];
 
 module.exports = async function handler(req, res) {
