@@ -25,6 +25,7 @@ module.exports = async function handler(req, res) {
   let decoded;
   try {
     decoded = decodeURIComponent(urlParam);
+    console.log('Image proxy request for:', decoded.substring(0, 100));
     const host = new URL(decoded).hostname;
     if (!ALLOWED_HOSTS.some(h => host === h || host.endsWith('.' + h))) {
       return res.status(403).send('Forbidden');
@@ -57,6 +58,8 @@ module.exports = async function handler(req, res) {
           },
           (upstream) => {
             clearTimeout(timeout);
+            console.log('Upstream response status:', upstream.statusCode);
+            console.log('Upstream headers:', JSON.stringify(upstream.headers));
 
             if (upstream.statusCode !== 200) {
               reject(new Error(`Status ${upstream.statusCode}`));
