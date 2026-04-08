@@ -395,7 +395,9 @@ const Lightbox = (() => {
             src: p.src,
             coser: p.coser || '',
             character: p.character || '',
-            series: p.series || ''
+            series: p.series || '',
+            albumId: album.id,
+            albumType: album.type || 'events',
           })));
           Lightbox.setBack(() => Lightbox.close());
           Lightbox.open(pi);
@@ -410,7 +412,9 @@ const Lightbox = (() => {
             src: p.src,
             coser: p.coser || '',
             character: p.character || '',
-            series: p.series || ''
+            series: p.series || '',
+            albumId: album.id,
+            albumType: album.type || 'events',
           })));
           Lightbox.setBack(() => Lightbox.close());
           Lightbox.open(0);
@@ -2099,7 +2103,9 @@ window.openCollaboratorAlbumLightbox = function(albumId, albumType, photoCount, 
     coser: collaborator.name,
     character: p.character || '',
     series: p.series || '',
-    caption: p.caption || ''
+    caption: p.caption || '',
+    albumId: albumId,
+    albumType: albumType || 'collab',
   }));
 
   // Initialize and open lightbox
@@ -2163,7 +2169,9 @@ function initCollabs() {
           coser: coser.handle || coser.name,
           character: photo.character || '',
           series: photo.series || '',
-          caption: photo.caption || ''
+          caption: photo.caption || '',
+          albumId: album.id || null,
+          albumType: album.type || 'collab',
         });
       });
     });
@@ -2546,8 +2554,8 @@ window.addEventListener('firebase-config-loaded', () => {
         series:    photo.series    || '',
         coser:     photo.coser     || photo.credit || '',
         index:     index,
-        albumId:   window.currentPhotoShare?.albumId   || null,
-        albumType: window.currentPhotoShare?.albumType || null,
+        albumId:   photo.albumId   || window.currentPhotoShare?.albumId   || null,
+        albumType: photo.albumType || window.currentPhotoShare?.albumType || null,
       };
     }
   });

@@ -67,7 +67,10 @@ function firstPhotoSrc(fields) {
 
 function serveAlbumHtml(res) {
   try {
-    const html = fs.readFileSync(path.join(__dirname, '../public/album.html'), 'utf8');
+    // Inject <base href="/"> so relative CSS/JS paths resolve correctly
+    // when served from /api/album instead of /album.html
+    const html = fs.readFileSync(path.join(__dirname, '../public/album.html'), 'utf8')
+      .replace('<head>', '<head><base href="/">');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
     return res.status(200).send(html);
@@ -105,7 +108,11 @@ module.exports = async function handler(req, res) {
     console.error('Firestore error:', e.message);
   }
 
-  const pageUrl = `${BASE_URL}/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
+  const pageUrl  = `${BASE_URL}/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
+  // Route og:image through our proxy so Facebook can always load it
+  const ogImageProxied = ogImage
+    ? `${BASE_URL}/api/img?url=${encodeURIComponent(ogImage)}`
+    : '';
 
   const html = `<!DOCTYPE html>
 <html>
@@ -115,13 +122,13 @@ module.exports = async function handler(req, res) {
 <meta property="og:url" content="${esc(pageUrl)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
-<meta property="og:image" content="${esc(ogImage)}">
+<meta property="og:image" content="${esc(ogImageProxied)}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="1600">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
-<meta name="twitter:image" content="${esc(ogImage)}">
+<meta name="twitter:image" content="${esc(ogImageProxied)}">
 <title>${esc(title)}</title>
 </head>
 <body>
