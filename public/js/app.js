@@ -2486,11 +2486,18 @@ window.addEventListener('firebase-config-loaded', () => {
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=600,height=400');
     } else if (platform === 'threads') {
       const fullText = `${shareText}\n\n${shareUrl}`;
+      // Copy to clipboard
       navigator.clipboard.writeText(fullText).then(() => {
-        window.open('https://www.threads.net', '_blank', 'width=600,height=400');
-        alert('Link copied! Paste in Threads');
+        // Try to open native Threads app first (iOS/Android)
+        window.open('threads://compose', '_blank');
+        // Use a timeout to fallback to web if native app didn't open
+        setTimeout(() => {
+          window.open('https://www.threads.net', '_blank', 'width=600,height=400');
+        }, 1500);
       }).catch(() => {
+        // Fallback if clipboard fails
         window.open('https://www.threads.net', '_blank', 'width=600,height=400');
+        prompt('Copy this text to Threads:', fullText);
       });
     }
 

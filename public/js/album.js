@@ -514,10 +514,16 @@ window.shareAlbumTo = (platform) => {
       // Copy full share text with link to clipboard and open Threads
       const fullText = `${shareText}\n\n${albumUrl}`;
       navigator.clipboard.writeText(fullText).then(() => {
-        window.open('https://www.threads.net', '_blank', 'width=550,height=420');
-        alert('Link copied! Paste in Threads');
+        // Try to open native Threads app first (iOS/Android)
+        window.open('threads://compose', '_blank');
+        // Use a timeout to fallback to web if native app didn't open
+        setTimeout(() => {
+          window.open('https://www.threads.net', '_blank', 'width=550,height=420');
+        }, 1500);
       }).catch(err => {
+        // Fallback if clipboard fails
         window.open('https://www.threads.net', '_blank', 'width=550,height=420');
+        prompt('Copy this text to Threads:', fullText);
       });
       break;
   }
