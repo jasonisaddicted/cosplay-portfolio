@@ -25,6 +25,30 @@ function esc(s) {
   );
 }
 
+/**
+ * Extract albumId from Firebase Storage URL
+ * Firebase paths look like: /o/albums%252Falbum-id%252F...
+ * Decoded: /albums/album-id/...
+ * Returns: album-id (or null if not found)
+ */
+function extractAlbumIdFromUrl(firebaseUrl) {
+  try {
+    const url = new URL(firebaseUrl);
+    // Get the 'o' parameter which contains the path
+    const oParam = url.pathname.split('/o/')[1];
+    if (!oParam) return null;
+
+    // Decode once (Firebase uses %2F for /, and URL params use %)
+    const decoded = decodeURIComponent(oParam);
+
+    // Match /albums/<id>/ or similar album structure
+    const match = decoded.match(/^albums[/\\]([^/\\]+)/);
+    return match ? match[1] : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
@@ -46,9 +70,15 @@ module.exports = async function handler(req, res) {
     : 'Professional cosplay photography';
 
   // Build the album page URL with photo index so lightbox auto-opens
+  // If albumId missing, try to extract it from the Firebase URL as fallback
+  let resolvedAlbumId = albumId;
+  if (!resolvedAlbumId) {
+    resolvedAlbumId = extractAlbumIdFromUrl(photoUrl);
+  }
+
   let albumPageUrl = BASE_URL;
-  if (albumId && type) {
-    albumPageUrl = `${BASE_URL}/album.html?id=${encodeURIComponent(albumId)}&type=${encodeURIComponent(type)}`;
+  if (resolvedAlbumId && type) {
+    albumPageUrl = `${BASE_URL}/album.html?id=${encodeURIComponent(resolvedAlbumId)}&type=${encodeURIComponent(type)}`;
     if (index !== undefined && index !== '') {
       albumPageUrl += `&photo=${encodeURIComponent(index)}`;
     }
@@ -65,9 +95,9 @@ module.exports = async function handler(req, res) {
 
   // Bots: OG page — og:url points to this same /photo URL so Facebook doesn't re-scrape
   const selfUrl = `${BASE_URL}/photo?src=${encodeURIComponent(src)}` +
-    (albumId ? `&albumId=${encodeURIComponent(albumId)}` : '') +
-    (type    ? `&type=${encodeURIComponent(type)}`       : '') +
-    (index !== undefined ? `&index=${encodeURIComponent(index)}` : '');
+    (resolvedAlbumId ? `&albumId=${encodeURIComponent(resolvedAlbumId)}` : '') +
+    (type            ? `&type=${encodeURIComponent(type)}`                : '') +
+    (index !== undefined ? `&index=${encodeURIComponent(index)}`          : '');
 
   const html = `<!DOCTYPE html>
 <html>
