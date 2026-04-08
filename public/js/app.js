@@ -146,8 +146,6 @@ const Lightbox = (() => {
   const backBtn = lb.querySelector('.lightbox__back');
   const likeBtn = lb.querySelector('.lightbox__like-btn');
 
-  console.log('[Lightbox Init] backBtn element found?', !!backBtn, backBtn);
-
   const infoPanel = document.createElement('div');
   infoPanel.className = 'lightbox__info-panel';
   lb.appendChild(infoPanel);
@@ -757,27 +755,19 @@ const Lightbox = (() => {
   }
 
   if (backBtn) {
-    console.log('[Lightbox Init] Attaching click listener to back button');
-    backBtn.addEventListener('click', (e) => {
-      console.log('[BackBtn] Clicked!', e);
-      console.log('[BackBtn] window.closeLightbox exists?', typeof window.closeLightbox === 'function');
+    backBtn.addEventListener('click', () => {
       // Call global closeLightbox (set by album.js) which handles URL cleanup + lightbox close
       // Falls back to hide() if not available
       if (typeof window.closeLightbox === 'function') {
-        console.log('[BackBtn] Calling window.closeLightbox()');
         window.closeLightbox();
       } else if (backCallback) {
-        console.log('[BackBtn] Calling backCallback');
         backCallback();
         backCallback = null;
         if (backBtn) backBtn.style.display = 'none';
       } else {
-        console.log('[BackBtn] Calling hide()');
         hide();
       }
     });
-  } else {
-    console.log('[Lightbox Init] backBtn NOT FOUND - event listener not attached');
   }
 
   // Like button for current photo

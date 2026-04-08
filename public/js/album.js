@@ -320,12 +320,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function closeLightbox() {
   // Clean URL when lightbox closes (remove photo parameter)
-  console.log('[closeLightbox] Called. Current URL:', window.location.href);
-  console.log('[closeLightbox] currentAlbumId:', currentAlbumId, 'currentAlbumType:', currentAlbumType);
   const cleanUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
-  console.log('[closeLightbox] Cleaning to:', cleanUrl);
   window.history.replaceState({}, '', cleanUrl);
-  console.log('[closeLightbox] After replaceState, URL:', window.location.href);
 
   // Close lightbox using Lightbox API for full cleanup
   if (typeof Lightbox !== 'undefined') {
