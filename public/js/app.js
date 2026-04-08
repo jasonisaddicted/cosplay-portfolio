@@ -705,7 +705,11 @@ const Lightbox = (() => {
     buildInfoPanel(p);
 
     // Fire share-context callback so currentPhotoShare stays in sync on prev/next
-    if (onPhotoChangeCb) onPhotoChangeCb(p, current);
+    console.log('show() called with index:', current, 'onPhotoChangeCb defined:', typeof onPhotoChangeCb !== 'undefined');
+    if (onPhotoChangeCb) {
+      console.log('Firing onPhotoChangeCb');
+      onPhotoChangeCb(p, current);
+    }
 
     // Update like button for current photo
     if (likeBtn && window.db && p.eventId) {
