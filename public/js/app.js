@@ -133,7 +133,8 @@ const Lightbox = (() => {
   let photos = [];
   let current = 0;
   let panelTimers = [];
-  let backCallback = null;
+  let backCallback    = null;
+  let onPhotoChangeCb = null;
   let historyState = null;
 
   const lb = document.getElementById('lightbox');
@@ -699,6 +700,9 @@ const Lightbox = (() => {
     if (backBtn && backCallback) backBtn.style.display = 'flex';
     buildInfoPanel(p);
 
+    // Fire share-context callback so currentPhotoShare stays in sync on prev/next
+    if (onPhotoChangeCb) onPhotoChangeCb(p, current);
+
     // Update like button for current photo
     if (likeBtn && window.db && p.eventId) {
       const likeKey = `photo_${p.eventId}_${current}`;
@@ -860,6 +864,7 @@ const Lightbox = (() => {
     open(index)      { show(index); },
     close()          { hide(); },
     setBack(callback) { backCallback = callback; },
+    onPhotoChange(cb) { onPhotoChangeCb = cb; },
     openCharacter(character) { buildCharacterPanel(character); lb.style.display = 'flex'; },
     openCoser(handle) { buildCoserPanel(handle); lb.style.display = 'flex'; }
   };
@@ -2473,16 +2478,17 @@ window.addEventListener('firebase-config-loaded', () => {
     });
   }
 
-  // Build a /api/photo share URL with OG metadata
+  // Build a /photo share URL with OG metadata + deep-link index
   function buildPhotoShareUrl(photoShare) {
-    const { photoUrl, albumId, albumType, character, series, coser } = photoShare;
-    const base = 'https://cosplay-portfolio.vercel.app/photo';
+    const { photoUrl, albumId, albumType, character, series, coser, index } = photoShare;
+    const base   = 'https://cosplay-portfolio.vercel.app/photo';
     const params = new URLSearchParams({ src: photoUrl });
-    if (albumId)   params.set('albumId', albumId);
-    if (albumType) params.set('type', albumType);
-    if (character) params.set('character', character);
-    if (series)    params.set('series', series);
-    if (coser)     params.set('coser', coser);
+    if (albumId)              params.set('albumId', albumId);
+    if (albumType)            params.set('type', albumType);
+    if (character)            params.set('character', character);
+    if (series)               params.set('series', series);
+    if (coser)                params.set('coser', coser);
+    if (index !== undefined)  params.set('index', index);
     return `${base}?${params.toString()}`;
   }
 
@@ -2529,12 +2535,20 @@ window.addEventListener('firebase-config-loaded', () => {
     if (shareMenu) shareMenu.style.display = 'none';
   };
 
-  // Update lightbox share context when a photo is opened
-  // This runs after the lightbox shows a photo
-  const originalLightboxOpen = Lightbox.open;
-  Lightbox.open = function(index) {
-    originalLightboxOpen.call(this, index);
-    // Update share context with current photo info
-    // (This will be set by the calling function with photo details)
-  };
+  // Keep currentPhotoShare in sync whenever the lightbox shows a photo
+  // albumId/albumType are injected by the calling context (album.js sets them separately)
+  Lightbox.onPhotoChange((photo, index) => {
+    // Only set if album.js hasn't already set a richer context for this photo
+    if (!window.currentPhotoShare || window.currentPhotoShare.index !== index) {
+      window.currentPhotoShare = {
+        photoUrl:  photo.src       || '',
+        character: photo.character || '',
+        series:    photo.series    || '',
+        coser:     photo.coser     || photo.credit || '',
+        index:     index,
+        albumId:   window.currentPhotoShare?.albumId   || null,
+        albumType: window.currentPhotoShare?.albumType || null,
+      };
+    }
+  });
 });

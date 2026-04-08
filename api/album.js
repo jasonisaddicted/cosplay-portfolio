@@ -1,84 +1,118 @@
 /**
- * Album Sharing Handler - Serves og:image metadata for social media
- * This is a HEADLESS API that returns HTML with metadata only
- * Users get redirected to the actual album.html for viewing
+ * Album page handler
+ * - Bots (Facebook, Twitter, etc.): returns OG meta tags with real photo thumbnail
+ * - Humans: serves album.html directly so Firebase JS loads normally
+ *
+ * Firestore collection map:
+ *   type=events  → tries 'albums' then 'events'
+ *   type=studio  → 'studio'
+ *   type=outdoor → 'outdoor'
+ *   type=collab  → 'collaborators' (CONFIG-only, no Firestore — uses query image)
  */
 
+const fs   = require('fs');
+const path = require('path');
+
 const PROJECT_ID = 'jianshencosvisual-328dc';
+const BASE_URL   = 'https://cosplay-portfolio.vercel.app';
+
+const BOT_UA = /facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Discordbot|Googlebot|bingbot|ia_archiver|curl|python-requests|PostmanRuntime/i;
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/[&<>"']/g, m =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'": '&#039;' }[m])
+  );
+}
+
+function collectionsFor(type) {
+  if (type === 'events')  return ['albums', 'events'];
+  if (type === 'studio')  return ['studio'];
+  if (type === 'outdoor') return ['outdoor'];
+  return [type, 'albums'];
+}
+
+async function fetchAlbum(id, type) {
+  for (const col of collectionsFor(type)) {
+    try {
+      const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${col}/${id}`;
+      const res  = await fetch(url);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.fields) return data.fields;
+    } catch (_) {}
+  }
+  return null;
+}
+
+function firstPhotoSrc(fields) {
+  // Standard photos array
+  const photos = fields.photos?.arrayValue?.values || [];
+  if (photos.length > 0) {
+    const src = photos[0].mapValue?.fields?.src?.stringValue;
+    if (src) return src;
+  }
+  // Studio format: cosplayers[0].photos[0].src
+  const cosplayers = fields.cosplayers?.arrayValue?.values || [];
+  if (cosplayers.length > 0) {
+    const coserPhotos = cosplayers[0].mapValue?.fields?.photos?.arrayValue?.values || [];
+    if (coserPhotos.length > 0) {
+      const src = coserPhotos[0].mapValue?.fields?.src?.stringValue;
+      if (src) return src;
+    }
+  }
+  // Explicit cover
+  return fields.coverImageUrl?.stringValue || '';
+}
+
+function serveAlbumHtml(res) {
+  try {
+    const html = fs.readFileSync(path.join(__dirname, '../public/album.html'), 'utf8');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    return res.status(200).send(html);
+  } catch (e) {
+    return res.status(500).send('Error loading page');
+  }
+}
 
 module.exports = async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+
+  const { id, type } = req.query;
+  const ua = req.headers['user-agent'] || '';
+  const isBot = BOT_UA.test(ua);
+
+  // Humans always get the real album.html
+  if (!isBot) return serveAlbumHtml(res);
+
+  // No album params — still serve the page (bot hit root album.html)
+  if (!id || !type) return serveAlbumHtml(res);
+
+  // --- Bot: build OG response ---
+  let title       = 'Cosplay Album';
+  let description = 'Professional cosplay photography album';
+  let ogImage     = req.query.image ? decodeURIComponent(req.query.image) : '';
 
   try {
-    const { id, type } = req.query;
-    if (!id || !type) {
-      return res.status(400).json({ error: 'Missing id or type' });
+    const fields = await fetchAlbum(id, type);
+    if (fields) {
+      title       = fields.name?.stringValue        || title;
+      description = fields.description?.stringValue || `${title} — cosplay photography`;
+      if (!ogImage) ogImage = firstPhotoSrc(fields);
     }
+  } catch (e) {
+    console.error('Firestore error:', e.message);
+  }
 
-    // Fetch album from Firestore REST API
-    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${type}/${id}`;
+  const pageUrl = `${BASE_URL}/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
 
-    let ogImage = '';
-    let title = 'Cosplay Album';
-    let description = 'Professional cosplay photography album';
-
-    try {
-      const response = await fetch(firestoreUrl);
-      if (response.ok) {
-        const data = await response.json();
-        const fields = data.fields || {};
-
-        title = fields.name?.stringValue || 'Cosplay Album';
-        description = fields.description?.stringValue || `Album featuring ${title}`;
-
-        // Get first photo
-        const photos = fields.photos?.arrayValue?.values || [];
-        if (photos.length > 0) {
-          const firstPhoto = photos[0].mapValue?.fields || {};
-          ogImage = firstPhoto.src?.stringValue || '';
-        }
-
-        // Fallback to coverImageUrl
-        if (!ogImage && fields.coverImageUrl?.stringValue) {
-          ogImage = fields.coverImageUrl.stringValue;
-        }
-
-        console.log('Firestore data loaded:', { title, photoCount: photos.length, hasImage: !!ogImage });
-      } else {
-        console.error('Firestore fetch failed:', response.status);
-      }
-    } catch (e) {
-      console.error('Firestore fetch error:', e);
-    }
-
-    // Use image from query param if provided (override), otherwise use first photo from Firestore
-    const queryImage = req.query.image || req.query.img;
-    if (queryImage) {
-      ogImage = decodeURIComponent(queryImage);
-    }
-
-    // Escape HTML
-    const esc = (s) => {
-      if (!s) return '';
-      return s.replace(/[&<>"']/g, m => {
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return map[m];
-      });
-    };
-
-    const albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
-    const canonicalUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
-
-    // Generate clean HTML response
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta property="og:type" content="website">
-<meta property="og:url" content="${esc(canonicalUrl)}">
+<meta property="og:url" content="${esc(pageUrl)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:image" content="${esc(ogImage)}">
@@ -91,18 +125,12 @@ module.exports = async function handler(req, res) {
 <title>${esc(title)}</title>
 </head>
 <body>
-<p>Redirecting to <a href="${esc(albumUrl)}">${esc(title)}</a>...</p>
-<script>window.location.replace("${esc(albumUrl)}");</script>
+<p><a href="${esc(pageUrl)}">${esc(title)}</a></p>
+<script>window.location.replace("${esc(pageUrl)}");</script>
 </body>
 </html>`;
 
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.status(200).send(html);
-
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal error' });
-  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.status(200).send(html);
 };
-

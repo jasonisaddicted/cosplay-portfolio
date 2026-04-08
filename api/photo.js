@@ -1,57 +1,76 @@
 /**
- * Individual Photo Sharing Handler
- * Serves og:image metadata for a single photo, then redirects to the album
- * Usage: /api/photo?src=<photo_url>&albumId=<id>&type=<type>&character=<name>&series=<name>
+ * Individual photo sharing handler
+ * - Bots: returns OG meta tags with the photo as thumbnail
+ * - Humans: redirects to album.html?id=X&type=Y&photo=N so the lightbox auto-opens
+ *
+ * Query params:
+ *   src      — Firebase Storage URL of the photo (required)
+ *   albumId  — Firestore album ID
+ *   type     — album type (events / studio / outdoor / collab)
+ *   index    — photo index within the album (for lightbox auto-open)
+ *   character, series, coser — metadata for OG title/description
  */
 
+const BOT_UA = /facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Discordbot|Googlebot|bingbot|ia_archiver|curl|python-requests|PostmanRuntime/i;
+const BASE_URL = 'https://cosplay-portfolio.vercel.app';
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/[&<>"']/g, m =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'": '&#039;' }[m])
+  );
+}
+
 module.exports = async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  const { src, albumId, type, character, series, coser } = req.query;
+  const { src, albumId, type, index, character, series, coser } = req.query;
 
-  if (!src) {
-    return res.status(400).json({ error: 'Missing src' });
-  }
+  if (!src) return res.status(400).json({ error: 'Missing src' });
 
-  const esc = (s) => {
-    if (!s) return '';
-    return s.replace(/[&<>"']/g, m => {
-      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-      return map[m];
-    });
-  };
-
-  const photoUrl = decodeURIComponent(src);
-  const charName  = character ? decodeURIComponent(character) : '';
-  const seriesName = series  ? decodeURIComponent(series)    : '';
-  const coserName  = coser   ? decodeURIComponent(coser)     : '';
+  const photoUrl   = decodeURIComponent(src);
+  const charName   = character ? decodeURIComponent(character) : '';
+  const seriesName = series    ? decodeURIComponent(series)    : '';
+  const coserName  = coser     ? decodeURIComponent(coser)     : '';
 
   const title = charName
     ? `${charName}${seriesName ? ` · ${seriesName}` : ''}${coserName ? ` by ${coserName}` : ''}`
     : 'Cosplay Photo';
 
   const description = charName
-    ? `${charName}${seriesName ? ` from ${seriesName}` : ''}${coserName ? `, cosplayed by ${coserName}` : ''}`
+    ? `${charName}${seriesName ? ` from ${seriesName}` : ''}${coserName ? `, cosplayed by ${coserName}` : ''} — cosplay photography`
     : 'Professional cosplay photography';
 
-  const base = 'https://cosplay-portfolio.vercel.app';
-  const redirectUrl = albumId && type
-    ? `${base}/album.html?id=${encodeURIComponent(albumId)}&type=${encodeURIComponent(type)}`
-    : base;
+  // Build the album page URL with photo index so lightbox auto-opens
+  let albumPageUrl = BASE_URL;
+  if (albumId && type) {
+    albumPageUrl = `${BASE_URL}/album.html?id=${encodeURIComponent(albumId)}&type=${encodeURIComponent(type)}`;
+    if (index !== undefined && index !== '') {
+      albumPageUrl += `&photo=${encodeURIComponent(index)}`;
+    }
+  }
 
-  // og:url must point to this API endpoint, not album.html
-  // Otherwise Facebook follows og:url and re-scrapes the static page
-  const canonicalUrl = `${base}/photo?src=${encodeURIComponent(src)}${albumId ? `&albumId=${encodeURIComponent(albumId)}` : ''}${type ? `&type=${encodeURIComponent(type)}` : ''}`;
+  const ua    = req.headers['user-agent'] || '';
+  const isBot = BOT_UA.test(ua);
+
+  // Humans: redirect straight to the album page (lightbox opens via ?photo=N)
+  if (!isBot) {
+    res.setHeader('Location', albumPageUrl);
+    return res.status(302).end();
+  }
+
+  // Bots: OG page — og:url points to this same /photo URL so Facebook doesn't re-scrape
+  const selfUrl = `${BASE_URL}/photo?src=${encodeURIComponent(src)}` +
+    (albumId ? `&albumId=${encodeURIComponent(albumId)}` : '') +
+    (type    ? `&type=${encodeURIComponent(type)}`       : '') +
+    (index !== undefined ? `&index=${encodeURIComponent(index)}` : '');
 
   const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta property="og:type" content="website">
-<meta property="og:url" content="${esc(canonicalUrl)}">
+<meta property="og:url" content="${esc(selfUrl)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:image" content="${esc(photoUrl)}">
@@ -65,8 +84,8 @@ module.exports = async function handler(req, res) {
 <title>${esc(title)}</title>
 </head>
 <body>
-<p>Redirecting to <a href="${esc(redirectUrl)}">${esc(title)}</a>...</p>
-<script>window.location.replace("${esc(redirectUrl)}");</script>
+<p><a href="${esc(albumPageUrl)}">${esc(title)}</a></p>
+<script>window.location.replace("${esc(albumPageUrl)}");</script>
 </body>
 </html>`;
 

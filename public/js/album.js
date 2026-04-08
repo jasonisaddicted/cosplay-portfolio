@@ -101,6 +101,16 @@ async function loadAlbumData() {
 
     // Load like count
     updateAlbumLikeCount();
+
+    // Auto-open a specific photo if ?photo=N is in the URL (from a photo share link)
+    const photoParam = new URLSearchParams(window.location.search).get('photo');
+    if (photoParam !== null) {
+      const photoIndex = parseInt(photoParam, 10);
+      if (!isNaN(photoIndex) && photoIndex >= 0 && photoIndex < currentAlbumPhotos.length) {
+        // Small delay to let the grid render first
+        setTimeout(() => openPhotoLightbox(photoIndex), 300);
+      }
+    }
   } catch (error) {
     console.error('Error loading album:', error);
     document.getElementById('album-title').textContent = 'Error loading album';
@@ -202,14 +212,15 @@ function openPhotoLightbox(index) {
   updateLightboxCounter();
   updateLightboxLikeCount(index);
 
-  // Set share context for this photo
+  // Set share context for this photo (includes index for deep-link)
   window.currentPhotoShare = {
     character: photo.character || '',
-    series: photo.series || '',
-    coser: photo.coser ? `@${photo.coser}` : '',
-    photoUrl: photo.src,
-    albumId: currentAlbumId,
+    series:    photo.series    || '',
+    coser:     photo.coser ? `@${photo.coser}` : '',
+    photoUrl:  photo.src,
+    albumId:   currentAlbumId,
     albumType: currentAlbumType,
+    index:     index,
   };
 
   lightbox.classList.add('active');

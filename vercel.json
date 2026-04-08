@@ -12,7 +12,11 @@
       "dest": "/api/index"
     },
     {
-      "src": "/(.*)\\.html",
+      "src": "/album\\.html",
+      "dest": "/api/album"
+    },
+    {
+      "src": "/((?!album)[^/]*)\\.html",
       "dest": "/public/$1.html"
     },
     {
