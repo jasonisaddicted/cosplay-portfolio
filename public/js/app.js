@@ -695,6 +695,7 @@ const Lightbox = (() => {
 
   function show(index) {
     current = (index + photos.length) % photos.length;
+    window.currentLightboxIndex = current;  // Update global index for URL tracking
     const p = photos[current];
     fadeUpdateImage(imgEl, p.src);
     if (capEl) capEl.textContent = '';
