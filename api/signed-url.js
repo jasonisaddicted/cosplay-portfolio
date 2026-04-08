@@ -7,13 +7,13 @@
  */
 
 const admin = require('firebase-admin');
-const path = require('path');
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
-  const keyPath = path.join(__dirname, '../jianshencosvisual-328dc-firebase-adminsdk-fbsvc-81e1445bc4.json');
+  // Use FIREBASE_CREDENTIALS env var set in Vercel
+  const credentials = JSON.parse(process.env.FIREBASE_CREDENTIALS);
   admin.initializeApp({
-    credential: admin.credential.cert(require(keyPath)),
+    credential: admin.credential.cert(credentials),
     storageBucket: 'jianshencosvisual-328dc.appspot.com',
   });
 }
