@@ -111,6 +111,8 @@ async function loadAlbumData() {
     // Initialize Lightbox with album photos (enables info panel + detail display)
     if (typeof Lightbox !== 'undefined') {
       Lightbox.init(currentAlbumPhotos);
+      // Set back button callback to close lightbox and clean URL
+      Lightbox.setBack(() => closeLightbox());
     }
 
     // Update Open Graph tags with first photo
@@ -317,13 +319,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function closeLightbox() {
-  const lightbox = document.getElementById('lightbox');
-  lightbox.classList.remove('active');
-  document.body.style.overflow = '';
-
   // Clean URL when lightbox closes (remove photo parameter)
   const cleanUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
   window.history.replaceState({}, '', cleanUrl);
+
+  // Close lightbox using Lightbox API for full cleanup
+  if (typeof Lightbox !== 'undefined') {
+    Lightbox.close();
+  }
 }
 
 /**
