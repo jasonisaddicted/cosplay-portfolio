@@ -29,23 +29,39 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    // Add timeout to prevent hanging on slow Firebase responses
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const upstream = await fetch(decoded, {
       headers: { 'User-Agent': 'cosplay-portfolio-og-proxy/1.0' },
+      signal: controller.signal,
     });
 
+    clearTimeout(timeout);
+
     if (!upstream.ok) {
-      return res.status(upstream.status).send('Upstream error');
+      console.error('Upstream error:', upstream.status, decoded);
+      return res.status(upstream.status).send('Image not found');
     }
 
-    const contentType = upstream.headers.get('content-type') || 'image/jpeg';
+    const contentType = upstream.headers.get('content-type');
+    if (!contentType || !contentType.includes('image')) {
+      console.error('Invalid content type:', contentType, 'for', decoded);
+      return res.status(400).send('Invalid image');
+    }
+
     const buffer = await upstream.arrayBuffer();
+    if (buffer.byteLength === 0) {
+      return res.status(400).send('Empty image');
+    }
 
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=86400'); // 24h cache
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).send(Buffer.from(buffer));
   } catch (e) {
-    console.error('Proxy error:', e.message);
-    res.status(500).send('Proxy error');
+    console.error('Proxy error:', e.message, 'URL:', decoded);
+    res.status(500).send('Image proxy failed');
   }
 };
