@@ -42,12 +42,16 @@ module.exports = async function handler(req, res) {
     ? `${base}/album.html?id=${encodeURIComponent(albumId)}&type=${encodeURIComponent(type)}`
     : base;
 
+  // og:url must point to this API endpoint, not album.html
+  // Otherwise Facebook follows og:url and re-scrapes the static page
+  const canonicalUrl = `${base}/photo?src=${encodeURIComponent(src)}${albumId ? `&albumId=${encodeURIComponent(albumId)}` : ''}${type ? `&type=${encodeURIComponent(type)}` : ''}`;
+
   const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta property="og:type" content="website">
-<meta property="og:url" content="${esc(redirectUrl)}">
+<meta property="og:url" content="${esc(canonicalUrl)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:image" content="${esc(photoUrl)}">

@@ -69,28 +69,30 @@ module.exports = async function handler(req, res) {
       });
     };
 
-    const url = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
+    const albumUrl = `https://cosplay-portfolio.vercel.app/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
+    const canonicalUrl = `https://cosplay-portfolio.vercel.app/api/album?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
 
     // Generate clean HTML response
     const html = `<!DOCTYPE html>
 <html>
 <head>
-<!-- DEBUG: ogImage="${ogImage}" title="${title}" -->
 <meta charset="UTF-8">
 <meta property="og:type" content="website">
-<meta property="og:url" content="${url}">
+<meta property="og:url" content="${esc(canonicalUrl)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
-<meta property="og:image" content="${ogImage}">
+<meta property="og:image" content="${esc(ogImage)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1600">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
-<meta name="twitter:image" content="${ogImage}">
+<meta name="twitter:image" content="${esc(ogImage)}">
 <title>${esc(title)}</title>
 </head>
 <body>
-<p>Redirecting to <a href="${url}">${esc(title)}</a>...</p>
-<script>window.location.replace("${url}");</script>
+<p>Redirecting to <a href="${esc(albumUrl)}">${esc(title)}</a>...</p>
+<script>window.location.replace("${esc(albumUrl)}");</script>
 </body>
 </html>`;
 
