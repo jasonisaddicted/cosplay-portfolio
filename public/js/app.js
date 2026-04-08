@@ -2473,51 +2473,58 @@ window.addEventListener('firebase-config-loaded', () => {
     });
   }
 
-  // Share to Facebook
+  // Build a /api/photo share URL with OG metadata
+  function buildPhotoShareUrl(photoShare) {
+    const { photoUrl, albumId, albumType, character, series, coser } = photoShare;
+    const base = 'https://cosplay-portfolio.vercel.app/photo';
+    const params = new URLSearchParams({ src: photoUrl });
+    if (albumId)   params.set('albumId', albumId);
+    if (albumType) params.set('type', albumType);
+    if (character) params.set('character', character);
+    if (series)    params.set('series', series);
+    if (coser)     params.set('coser', coser);
+    return `${base}?${params.toString()}`;
+  }
+
+  // Share to Facebook / Threads
   window.sharePhotoTo = function(platform) {
     if (!window.currentPhotoShare) return;
-    const { character, series, coser, photoUrl } = window.currentPhotoShare;
-    const shareText = `Check out this ${character} cosplay${series ? ` from ${series}` : ''}${coser ? ` by ${coser}` : ''}`;
-    const currentUrl = window.location.href;
+    const { character, series, coser } = window.currentPhotoShare;
+    const shareUrl  = buildPhotoShareUrl(window.currentPhotoShare);
+    const shareText = `Check out this${character ? ` ${character}` : ''} cosplay${series ? ` from ${series}` : ''}${coser ? ` by ${coser}` : ''}`;
 
     if (platform === 'facebook') {
-      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
-      window.open(facebookUrl, '_blank', 'width=600,height=400');
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=600,height=400');
     } else if (platform === 'threads') {
-      // Copy full share text with link to clipboard and open Threads
-      const fullThreadsText = `${shareText}\n\n${currentUrl}`;
-      navigator.clipboard.writeText(fullThreadsText).then(() => {
+      const fullText = `${shareText}\n\n${shareUrl}`;
+      navigator.clipboard.writeText(fullText).then(() => {
         window.open('https://www.threads.net', '_blank', 'width=600,height=400');
         alert('Link copied! Paste in Threads');
-      }).catch(err => {
+      }).catch(() => {
         window.open('https://www.threads.net', '_blank', 'width=600,height=400');
       });
     }
 
-    // Close menu
     const shareMenu = document.getElementById('lightboxShareMenu');
     if (shareMenu) shareMenu.style.display = 'none';
   };
 
   // Copy photo link to clipboard
   window.copyPhotoLink = function() {
-    const currentUrl = window.location.href;
-    navigator.clipboard.writeText(currentUrl).then(() => {
-      // Show confirmation
+    if (!window.currentPhotoShare) return;
+    const shareUrl = buildPhotoShareUrl(window.currentPhotoShare);
+    navigator.clipboard.writeText(shareUrl).then(() => {
       const shareBtn = document.getElementById('lightboxShareBtn');
       if (shareBtn) {
-        const originalText = shareBtn.querySelector('span').textContent;
-        shareBtn.querySelector('span').textContent = '✓ Copied!';
-        setTimeout(() => {
-          shareBtn.querySelector('span').textContent = originalText;
-        }, 2000);
+        const span = shareBtn.querySelector('span');
+        const orig = span.textContent;
+        span.textContent = '✓ Copied!';
+        setTimeout(() => { span.textContent = orig; }, 2000);
       }
     }).catch(err => {
-      console.error('Failed to copy link:', err);
-      alert('Failed to copy link. Please try again.');
+      prompt('Copy this link:', shareUrl);
     });
 
-    // Close menu
     const shareMenu = document.getElementById('lightboxShareMenu');
     if (shareMenu) shareMenu.style.display = 'none';
   };

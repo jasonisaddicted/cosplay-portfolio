@@ -204,10 +204,12 @@ function openPhotoLightbox(index) {
 
   // Set share context for this photo
   window.currentPhotoShare = {
-    character: photo.character || 'Unknown Character',
-    series: photo.series || 'Unknown Series',
+    character: photo.character || '',
+    series: photo.series || '',
     coser: photo.coser ? `@${photo.coser}` : '',
-    photoUrl: photo.src
+    photoUrl: photo.src,
+    albumId: currentAlbumId,
+    albumType: currentAlbumType,
   };
 
   lightbox.classList.add('active');

@@ -54,11 +54,7 @@ module.exports = async function handler(req, res) {
       console.error('Firestore fetch error:', e);
     }
 
-    // Always use static thumbnail from /public/og-thumbnails/{albumId}.jpg
-    const albumIdEncoded = encodeURIComponent(id);
-    ogImage = `https://cosplay-portfolio.vercel.app/og-thumbnails/${albumIdEncoded}.jpg`;
-
-    // Use image from query param if provided (override)
+    // Use image from query param if provided (override), otherwise use first photo from Firestore
     const queryImage = req.query.image || req.query.img;
     if (queryImage) {
       ogImage = decodeURIComponent(queryImage);
