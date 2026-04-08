@@ -857,8 +857,10 @@ const Lightbox = (() => {
   lb.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    console.log('Touch ended: dx=' + dx + ', dy=' + dy + ', current=' + current);
     // Only swipe horizontally (not vertical scrolling), ignore edge swipes
     if (Math.abs(dx) > 50 && dy < 50 && touchStartX > 30 && touchStartX < window.innerWidth - 30) {
+      console.log('Swipe detected! Moving to photo', current + (dx < 0 ? 1 : -1));
       show(current + (dx < 0 ? 1 : -1));
     }
   });
