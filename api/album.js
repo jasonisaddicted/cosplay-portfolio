@@ -65,6 +65,21 @@ function firstPhotoSrc(fields) {
   return fields.coverImageUrl?.stringValue || '';
 }
 
+function extractStoragePath(firebaseUrl) {
+  // Extract path from Firebase Storage URL
+  // Input: https://firebasestorage.googleapis.com/v0/b/bucket.firebasestorage.app/o/photos%2Fevents%2Fimage.jpg?alt=media&token=...
+  // Output: photos/events/image.jpg
+  if (!firebaseUrl) return '';
+  try {
+    const url = new URL(firebaseUrl);
+    const pathMatch = url.pathname.match(/\/o\/(.*?)$/);
+    if (pathMatch) {
+      return decodeURIComponent(pathMatch[1]);
+    }
+  } catch (_) {}
+  return '';
+}
+
 function serveAlbumHtml(res) {
   try {
     // Inject <base href="/"> so relative CSS/JS paths resolve correctly
@@ -110,8 +125,10 @@ module.exports = async function handler(req, res) {
 
   const pageUrl  = `${BASE_URL}/album.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
   // Route og:image through our proxy so Facebook can always load it
-  const ogImageProxied = ogImage
-    ? `${BASE_URL}/api/img?url=${encodeURIComponent(ogImage)}`
+  // Extract storage path and pass to proxy for reliable access
+  const storagePath = extractStoragePath(ogImage);
+  const ogImageProxied = storagePath
+    ? `${BASE_URL}/api/img?path=${encodeURIComponent(storagePath)}`
     : '';
 
   const html = `<!DOCTYPE html>

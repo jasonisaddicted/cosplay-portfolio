@@ -14,8 +14,29 @@
 const BOT_UA   = /facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Discordbot|Googlebot|bingbot|ia_archiver|curl|python-requests|PostmanRuntime/i;
 const BASE_URL = 'https://cosplay-portfolio.vercel.app';
 
+function extractStoragePath(firebaseUrl) {
+  // Extract storage path from Firebase URL for reliable proxy access
+  // Input: https://firebasestorage.googleapis.com/.../o/photos%2Fevents%2Fimage.jpg?alt=media&token=...
+  // Output: photos/events/image.jpg
+  if (!firebaseUrl) return '';
+  try {
+    const url = new URL(firebaseUrl);
+    const pathMatch = url.pathname.match(/\/o\/(.*?)$/);
+    if (pathMatch) {
+      return decodeURIComponent(pathMatch[1]);
+    }
+  } catch (_) {}
+  return '';
+}
+
 function proxyImage(url) {
-  return url ? `${BASE_URL}/api/img?url=${encodeURIComponent(url)}` : '';
+  if (!url) return '';
+  const storagePath = extractStoragePath(url);
+  if (storagePath) {
+    return `${BASE_URL}/api/img?path=${encodeURIComponent(storagePath)}`;
+  }
+  // Fallback to passing full URL if we can't extract path
+  return `${BASE_URL}/api/img?url=${encodeURIComponent(url)}`;
 }
 
 function esc(s) {
