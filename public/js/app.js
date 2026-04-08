@@ -1926,7 +1926,9 @@ async function initAlbum() {
         src:       p.src,
         coser:     p.coser || coser.handle,
         character: p.character || coser.character,
-        series:    p.series || coser.series || ''
+        series:    p.series || coser.series || '',
+        albumId:   id,        // Include album ID for photo sharing
+        albumType: type       // Include album type (studio)
       }));
 
       const section = document.createElement('div');
@@ -1968,12 +1970,15 @@ async function initAlbum() {
   //   - app.js lightbox (which must use same indices)
   } else if (album.photos) {
     // Convert photos to lightbox format (same as album.js does)
+    // Include albumId and albumType so sharePhotoTo() can generate proper share links
     const allPhotos = album.photos.map((p, idx) => ({
       src:       p.src,
       coser:     p.coser || p.caption || '',
       character: p.character || '',
       series:    p.series || '',
-      index:     idx
+      index:     idx,
+      albumId:   id,              // Include album ID for photo sharing
+      albumType: type || 'events' // Include album type for proper redirect
     }));
 
     // Render photos as a single grid (no cosplayer sections)
