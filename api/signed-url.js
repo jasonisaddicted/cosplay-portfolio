@@ -14,11 +14,11 @@ if (!admin.apps.length) {
   const credentials = JSON.parse(process.env.FIREBASE_CREDENTIALS);
   admin.initializeApp({
     credential: admin.credential.cert(credentials),
-    storageBucket: 'jianshencosvisual-328dc.appspot.com',
   });
 }
 
-const bucket = admin.storage().bucket();
+// Use the Firebase Storage bucket
+const bucket = admin.storage().bucket('jianshencosvisual-328dc.firebasestorage.app');
 
 module.exports = async function handler(req, res) {
   const { path: storagePath } = req.query;
