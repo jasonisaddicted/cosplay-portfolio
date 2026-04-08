@@ -706,11 +706,7 @@ const Lightbox = (() => {
     buildInfoPanel(p);
 
     // Fire share-context callback so currentPhotoShare stays in sync on prev/next
-    console.log('show() called with index:', current, 'onPhotoChangeCb defined:', typeof onPhotoChangeCb !== 'undefined');
-    if (onPhotoChangeCb) {
-      console.log('Firing onPhotoChangeCb');
-      onPhotoChangeCb(p, current);
-    }
+    if (onPhotoChangeCb) onPhotoChangeCb(p, current);
 
     // Update like button for current photo
     if (likeBtn && window.db && p.eventId) {
@@ -862,10 +858,8 @@ const Lightbox = (() => {
   lb.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-    console.log('Touch ended: dx=' + dx + ', dy=' + dy + ', current=' + current);
     // Only swipe horizontally (not vertical scrolling), ignore edge swipes
     if (Math.abs(dx) > 50 && dy < 50 && touchStartX > 30 && touchStartX < window.innerWidth - 30) {
-      console.log('Swipe detected! Moving to photo', current + (dx < 0 ? 1 : -1));
       show(current + (dx < 0 ? 1 : -1));
     }
   });

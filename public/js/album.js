@@ -237,8 +237,8 @@ function openPhotoLightbox(index) {
   };
 
   // Update URL to reflect current photo so it can be shared/bookmarked
-  const newUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${index}`;
-  window.history.replaceState({ photoIndex: index }, '', newUrl);
+  const photoUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${index}`;
+  window.history.replaceState({ photoIndex: index }, '', photoUrl);
 
   lightbox.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -311,7 +311,7 @@ function closeLightbox() {
   lightbox.classList.remove('active');
   document.body.style.overflow = '';
 
-  // Update URL to remove photo parameter when lightbox closes
+  // Clean URL when lightbox closes (remove photo parameter)
   const cleanUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}`;
   window.history.replaceState({}, '', cleanUrl);
 }
@@ -552,25 +552,21 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Starting album data load...');
   loadAlbumData();
 
-  // Monitor lightbox image changes to update URL
-  // This catches swipe/next/prev navigation since app.js handles those
+  // Monitor lightbox image changes to update URL when swiping/navigating
   setTimeout(() => {
     const lightbox = document.getElementById('lightbox');
     if (lightbox) {
       const imgEl = lightbox.querySelector('.lightbox__img');
       let lastSrc = '';
 
-      // Watch for image source changes (which happen on swipe/next/prev)
       const checkImageChange = () => {
         if (imgEl && imgEl.src && imgEl.src !== lastSrc) {
           lastSrc = imgEl.src;
-          console.log('Image source changed, updating URL for current index:', window.currentLightboxIndex);
           const newUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${window.currentLightboxIndex}`;
           window.history.replaceState({ photoIndex: window.currentLightboxIndex }, '', newUrl);
         }
       };
 
-      // Poll for image changes when lightbox is active
       setInterval(() => {
         if (lightbox.classList.contains('active')) {
           checkImageChange();
