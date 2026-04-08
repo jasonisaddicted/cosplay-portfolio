@@ -1963,11 +1963,9 @@ async function initAlbum() {
 
     Lightbox.init(allPhotos);
 
-  // ── Events: render photos in original Firestore order ───
-  // IMPORTANT: Use photos in their original Firestore order (no regrouping!)
-  // This ensures photo indices match between:
-  //   - album.js share links (which use original order)
-  //   - app.js lightbox (which must use same indices)
+  // ── Events: render photos grouped by cosplayer ───
+  // IMPORTANT: Keep original photo indices for lightbox and sharing
+  // While grouping by cosplayer for visual organization
   } else if (album.photos) {
     // Convert photos to lightbox format (same as album.js does)
     // Include albumId and albumType so sharePhotoTo() can generate proper share links
@@ -1981,23 +1979,50 @@ async function initAlbum() {
       albumType: type || 'events' // Include album type for proper redirect
     }));
 
-    // Render photos as a single grid (no cosplayer sections)
-    // This maintains the original Firestore photo order for consistency with album.js
-    const grid = document.createElement('div');
-    grid.className = 'photo-grid';
-
+    // Group photos by cosplayer while maintaining original indices
+    const cosplayerGroups = {};
     album.photos.forEach((photo, idx) => {
-      const item = document.createElement('div');
-      item.className = 'photo-grid__item';
-      item.innerHTML = `<img src="${photo.src}" alt="${photo.character || 'Photo'}" loading="lazy">`;
-      item.addEventListener('click', () => {
-        Lightbox.setBack(() => Lightbox.close());
-        Lightbox.open(idx);  // Use original index, no offset
-      });
-      grid.appendChild(item);
+      const coserName = photo.coser || photo.caption || 'Unknown';
+      if (!cosplayerGroups[coserName]) {
+        cosplayerGroups[coserName] = [];
+      }
+      cosplayerGroups[coserName].push({ photo, originalIndex: idx });
     });
 
-    photoGrid.appendChild(grid);
+    // Render photos grouped by cosplayer
+    const cosplayerNames = Object.keys(cosplayerGroups).sort();
+
+    cosplayerNames.forEach(coserName => {
+      const coserPhotos = cosplayerGroups[coserName];
+
+      // Create cosplayer section
+      const section = document.createElement('div');
+      section.className = 'cosplayer-section';
+      section.innerHTML = `
+        <div class="cosplayer-header">
+          <span class="cosplayer-header__name">${coserName}</span>
+          <span class="cosplayer-header__count">${coserPhotos.length} photo${coserPhotos.length !== 1 ? 's' : ''}</span>
+        </div>
+      `;
+
+      // Create grid for this cosplayer's photos
+      const grid = document.createElement('div');
+      grid.className = 'photo-grid';
+
+      coserPhotos.forEach(({ photo, originalIndex }) => {
+        const item = document.createElement('div');
+        item.className = 'photo-grid__item';
+        item.innerHTML = `<img src="${photo.src}" alt="${photo.character || 'Photo'}" loading="lazy">`;
+        item.addEventListener('click', () => {
+          Lightbox.setBack(() => Lightbox.close());
+          Lightbox.open(originalIndex);  // Use original index, not offset
+        });
+        grid.appendChild(item);
+      });
+
+      section.appendChild(grid);
+      photoGrid.appendChild(section);
+    });
 
     // Pass photos in original order to lightbox
     Lightbox.init(allPhotos);
