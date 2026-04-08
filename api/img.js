@@ -33,12 +33,16 @@ module.exports = async function handler(req, res) {
   try {
     // Use Fetch API with Facebook's User-Agent for crawler recognition
     console.log('Fetching image from:', decoded);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
     const response = await fetch(decoded, {
       headers: {
         'User-Agent': 'facebookexternalhit/1.1',
       },
-      timeout: 8000,
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     console.log('Response status:', response.status);
     console.log('Response headers:', JSON.stringify(Object.fromEntries(response.headers)));
