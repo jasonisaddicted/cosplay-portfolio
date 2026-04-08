@@ -551,4 +551,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load album data
   console.log('Starting album data load...');
   loadAlbumData();
+
+  // Hook into global Lightbox to update URL whenever photo changes
+  // This catches navigation from prev/next buttons (which app.js handles)
+  if (typeof Lightbox !== 'undefined' && Lightbox.onPhotoChange) {
+    Lightbox.onPhotoChange((photo, index) => {
+      // Update URL to reflect current photo
+      const newUrl = `${window.location.pathname}?id=${encodeURIComponent(currentAlbumId)}&type=${encodeURIComponent(currentAlbumType)}&photo=${index}`;
+      window.history.replaceState({ photoIndex: index }, '', newUrl);
+    });
+  }
 });
