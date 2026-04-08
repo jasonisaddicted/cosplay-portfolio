@@ -55,7 +55,8 @@ async function loadAlbumData() {
   }
 
   currentAlbumId = getQueryParam('id');
-  currentAlbumType = getQueryParam('type') || 'events';
+  const typeParam = getQueryParam('type');
+  currentAlbumType = typeParam || 'events';
 
   if (!currentAlbumId) {
     console.error('No album ID provided');
@@ -64,8 +65,20 @@ async function loadAlbumData() {
   }
 
   try {
-    const docRef = doc(db, currentAlbumType, currentAlbumId);
-    const docSnap = await getDoc(docRef);
+    let docSnap = await getDoc(doc(db, currentAlbumType, currentAlbumId));
+
+    // If not found and type wasn't explicitly provided, try other collections
+    if (!docSnap.exists() && !typeParam) {
+      const typesToTry = ['studio', 'outdoor', 'albums'];
+      for (const tryType of typesToTry) {
+        docSnap = await getDoc(doc(db, tryType, currentAlbumId));
+        if (docSnap.exists()) {
+          currentAlbumType = tryType;  // Update to correct type
+          console.log('Album found in', tryType, 'collection');
+          break;
+        }
+      }
+    }
 
     if (!docSnap.exists()) {
       console.error('Album not found in Firestore:', currentAlbumId, 'Type:', currentAlbumType);

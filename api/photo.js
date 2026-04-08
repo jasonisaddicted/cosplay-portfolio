@@ -76,9 +76,12 @@ module.exports = async function handler(req, res) {
     resolvedAlbumId = extractAlbumIdFromUrl(photoUrl);
   }
 
+  // If type missing, default to 'events' (album.js will auto-detect if wrong)
+  let resolvedType = type || 'events';
+
   let albumPageUrl = BASE_URL;
-  if (resolvedAlbumId && type) {
-    albumPageUrl = `${BASE_URL}/album.html?id=${encodeURIComponent(resolvedAlbumId)}&type=${encodeURIComponent(type)}`;
+  if (resolvedAlbumId) {
+    albumPageUrl = `${BASE_URL}/album.html?id=${encodeURIComponent(resolvedAlbumId)}&type=${encodeURIComponent(resolvedType)}`;
     if (index !== undefined && index !== '') {
       albumPageUrl += `&photo=${encodeURIComponent(index)}`;
     }
@@ -96,7 +99,7 @@ module.exports = async function handler(req, res) {
   // Bots: OG page — og:url points to this same /photo URL so Facebook doesn't re-scrape
   const selfUrl = `${BASE_URL}/photo?src=${encodeURIComponent(src)}` +
     (resolvedAlbumId ? `&albumId=${encodeURIComponent(resolvedAlbumId)}` : '') +
-    (type            ? `&type=${encodeURIComponent(type)}`                : '') +
+    `&type=${encodeURIComponent(resolvedType)}` +
     (index !== undefined ? `&index=${encodeURIComponent(index)}`          : '');
 
   const html = `<!DOCTYPE html>
