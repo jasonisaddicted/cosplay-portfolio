@@ -180,6 +180,41 @@
     @media (max-width: 600px) {
       .studio-photo-grid, .collab-photo-grid { grid-template-columns: repeat(1, 1fr) !important; }
     }
+
+    /* Collapsible Sections */
+    .collapsible-header {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: #c8a46e;
+      transition: opacity 0.2s;
+    }
+    .collapsible-header:hover {
+      opacity: 0.8;
+    }
+    .collapsible-header::before {
+      content: '▼';
+      display: inline-block;
+      margin-right: 8px;
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+    }
+    .collapsible-header.collapsed::before {
+      transform: rotate(-90deg);
+    }
+    .collapsible-content {
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      max-height: 2000px;
+      overflow: hidden;
+      opacity: 1;
+    }
+    .collapsible-content.collapsed {
+      max-height: 0;
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -261,33 +296,35 @@
       <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
 
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:15px;">Batch Upload Photos</h3>
-        <div class="form-group">
-          <label>Drop photos here</label>
-          <div class="upload-area" id="uploadFeaturedBatch" onclick="document.getElementById('uploadFeaturedFiles').click()">
-            <p>Click or drag multiple photos</p>
-            <input type="file" id="uploadFeaturedFiles" accept="image/*" multiple style="display:none;">
+        <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin: 0;">Batch Upload Photos</h3>
+        <div class="collapsible-content">
+          <div class="form-group">
+            <label>Drop photos here</label>
+            <div class="upload-area" id="uploadFeaturedBatch" onclick="document.getElementById('uploadFeaturedFiles').click()">
+              <p>Click or drag multiple photos</p>
+              <input type="file" id="uploadFeaturedFiles" accept="image/*" multiple style="display:none;">
+            </div>
+            <div class="upload-progress" id="uploadFeaturedBatchStatus"></div>
           </div>
-          <div class="upload-progress" id="uploadFeaturedBatchStatus"></div>
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" id="batchFeaturedChar" placeholder="e.g., Hu Tao">
+          </div>
+          <div class="form-group">
+            <label>Series</label>
+            <input type="text" id="batchFeaturedSeries" placeholder="e.g., Genshin Impact">
+          </div>
+          <div class="form-group">
+            <label>Cosplayer Handle</label>
+            <input type="text" id="batchFeaturedCredit" placeholder="e.g., @sakurahime_cos">
+          </div>
+          <div class="form-group">
+            <label>Caption (Optional)</label>
+            <input type="text" id="batchFeaturedCaption" placeholder="e.g., Photo shoot details">
+          </div>
+          <button onclick="saveBatchFeatured()" style="width:100%;">Upload & Add Featured</button>
+          <div id="batchFeaturedMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
-        <div class="form-group">
-          <label>Character Name</label>
-          <input type="text" id="batchFeaturedChar" placeholder="e.g., Hu Tao">
-        </div>
-        <div class="form-group">
-          <label>Series</label>
-          <input type="text" id="batchFeaturedSeries" placeholder="e.g., Genshin Impact">
-        </div>
-        <div class="form-group">
-          <label>Cosplayer Handle</label>
-          <input type="text" id="batchFeaturedCredit" placeholder="e.g., @sakurahime_cos">
-        </div>
-        <div class="form-group">
-          <label>Caption (Optional)</label>
-          <input type="text" id="batchFeaturedCaption" placeholder="e.g., Photo shoot details">
-        </div>
-        <button onclick="saveBatchFeatured()" style="width:100%;">Upload & Add Featured</button>
-        <div id="batchFeaturedMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
       <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
@@ -333,85 +370,89 @@
       <h2 style="margin-bottom:20px;">Events</h2>
 
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:15px;">Batch Upload Event Photos</h3>
-        <div class="form-group">
-          <label>Drop photos here</label>
-          <div class="upload-area" id="uploadEventBatch" onclick="document.getElementById('uploadEventFiles').click()">
-            <p>Click or drag multiple photos</p>
-            <input type="file" id="uploadEventFiles" accept="image/*" multiple style="display:none;">
-          </div>
-          <div class="upload-progress" id="uploadEventBatchStatus"></div>
-        </div>
-        <div class="form-group">
-          <label>Event</label>
-          <div style="display:flex; gap:10px;">
-            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="eventMode" value="new" checked onchange="toggleEventMode('new')"> <span style="margin-left:5px;">Create New</span></label>
-            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="eventMode" value="existing" onchange="toggleEventMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
-          </div>
-        </div>
-        <div id="newEventFields">
+        <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin: 0;">Batch Upload Event Photos</h3>
+        <div class="collapsible-content">
           <div class="form-group">
-            <label>Event Name</label>
-            <input type="text" id="batchEventName" placeholder="e.g., FanimeCon 2024">
+            <label>Drop photos here</label>
+            <div class="upload-area" id="uploadEventBatch" onclick="document.getElementById('uploadEventFiles').click()">
+              <p>Click or drag multiple photos</p>
+              <input type="file" id="uploadEventFiles" accept="image/*" multiple style="display:none;">
+            </div>
+            <div class="upload-progress" id="uploadEventBatchStatus"></div>
           </div>
           <div class="form-group">
-            <label>Date</label>
-            <input type="text" id="batchEventDate" placeholder="e.g., May 2024">
+            <label>Event</label>
+            <div style="display:flex; gap:10px;">
+              <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="eventMode" value="new" checked onchange="toggleEventMode('new')"> <span style="margin-left:5px;">Create New</span></label>
+              <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="eventMode" value="existing" onchange="toggleEventMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
+            </div>
+          </div>
+          <div id="newEventFields">
+            <div class="form-group">
+              <label>Event Name</label>
+              <input type="text" id="batchEventName" placeholder="e.g., FanimeCon 2024">
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="text" id="batchEventDate" placeholder="e.g., May 2024">
+            </div>
+            <div class="form-group">
+              <label>Location</label>
+              <input type="text" id="batchEventLoc" placeholder="e.g., San Jose, CA">
+            </div>
+          </div>
+          <div id="existingEventFields" style="display:none;">
+            <div class="form-group">
+              <label>Select Event</label>
+              <select id="batchEventSelect" style="width:100%; padding:10px; background:#111; border:1px solid #2e2e2e; color:#e4e4e4;">
+                <option value="">Loading events...</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
-            <label>Location</label>
-            <input type="text" id="batchEventLoc" placeholder="e.g., San Jose, CA">
+            <label>Character Name</label>
+            <input type="text" id="batchEventChar" placeholder="e.g., Hu Tao">
           </div>
-        </div>
-        <div id="existingEventFields" style="display:none;">
           <div class="form-group">
-            <label>Select Event</label>
-            <select id="batchEventSelect" style="width:100%; padding:10px; background:#111; border:1px solid #2e2e2e; color:#e4e4e4;">
-              <option value="">Loading events...</option>
-            </select>
+            <label>Series</label>
+            <input type="text" id="batchEventSeries" placeholder="e.g., Genshin Impact">
           </div>
+          <div class="form-group">
+            <label>Cosplayer Handle</label>
+            <input type="text" id="batchEventHandle" placeholder="e.g., @sakurahime_cos">
+          </div>
+          <div class="form-group">
+            <label>Caption (Optional)</label>
+            <input type="text" id="batchEventCaption" placeholder="e.g., Photo shoot details">
+          </div>
+          <button onclick="saveBatchEvent()" style="width:100%;">Upload Photos</button>
+          <div id="batchEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
-        <div class="form-group">
-          <label>Character Name</label>
-          <input type="text" id="batchEventChar" placeholder="e.g., Hu Tao">
-        </div>
-        <div class="form-group">
-          <label>Series</label>
-          <input type="text" id="batchEventSeries" placeholder="e.g., Genshin Impact">
-        </div>
-        <div class="form-group">
-          <label>Cosplayer Handle</label>
-          <input type="text" id="batchEventHandle" placeholder="e.g., @sakurahime_cos">
-        </div>
-        <div class="form-group">
-          <label>Caption (Optional)</label>
-          <input type="text" id="batchEventCaption" placeholder="e.g., Photo shoot details">
-        </div>
-        <button onclick="saveBatchEvent()" style="width:100%;">Upload Photos</button>
-        <div id="batchEventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
       <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
 
-      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
-      <div class="form-group" style="max-width:400px;">
-        <label>Event Name</label>
-        <input type="text" id="eventName" placeholder="e.g., FanimeCon 2024">
+      <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin-bottom: 0;">Or Create Manually</h3>
+      <div class="collapsible-content">
+        <div class="form-group" style="max-width:400px;">
+          <label>Event Name</label>
+          <input type="text" id="eventName" placeholder="e.g., FanimeCon 2024">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Date</label>
+          <input type="text" id="eventDate" placeholder="e.g., May 2024">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Location</label>
+          <input type="text" id="eventLoc" placeholder="e.g., San Jose, CA">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Description</label>
+          <textarea id="eventDesc" placeholder="Event description..."></textarea>
+        </div>
+        <button id="saveEventBtn" onclick="saveEvent()" style="max-width:400px; width:100%;">Create Event</button>
+        <div id="eventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Date</label>
-        <input type="text" id="eventDate" placeholder="e.g., May 2024">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Location</label>
-        <input type="text" id="eventLoc" placeholder="e.g., San Jose, CA">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Description</label>
-        <textarea id="eventDesc" placeholder="Event description..."></textarea>
-      </div>
-      <button id="saveEventBtn" onclick="saveEvent()" style="max-width:400px; width:100%;">Create Event</button>
-      <div id="eventMsg" style="margin-top:10px; font-size:0.85rem;"></div>
 
       <!-- Photo Management Section -->
       <div id="eventPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
@@ -443,85 +484,89 @@
       <h2 style="margin-bottom:20px;">Outdoor Sessions</h2>
 
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:15px;">Batch Upload Outdoor Photos</h3>
-        <div class="form-group">
-          <label>Drop photos here</label>
-          <div class="upload-area" id="uploadOutdoorBatch" onclick="document.getElementById('uploadOutdoorFiles').click()">
-            <p>Click or drag multiple photos</p>
-            <input type="file" id="uploadOutdoorFiles" accept="image/*" multiple style="display:none;">
-          </div>
-          <div class="upload-progress" id="uploadOutdoorBatchStatus"></div>
-        </div>
-        <div class="form-group">
-          <label>Outdoor Session</label>
-          <div style="display:flex; gap:10px;">
-            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="new" checked onchange="window.toggleOutdoorMode('new')"> <span style="margin-left:5px;">Create New</span></label>
-            <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="existing" onchange="window.toggleOutdoorMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
-          </div>
-        </div>
-        <div id="newOutdoorFields">
+        <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin: 0;">Batch Upload Outdoor Photos</h3>
+        <div class="collapsible-content">
           <div class="form-group">
-            <label>Session Name</label>
-            <input type="text" id="outdoorName" placeholder="e.g., Mountain Peak Session">
+            <label>Drop photos here</label>
+            <div class="upload-area" id="uploadOutdoorBatch" onclick="document.getElementById('uploadOutdoorFiles').click()">
+              <p>Click or drag multiple photos</p>
+              <input type="file" id="uploadOutdoorFiles" accept="image/*" multiple style="display:none;">
+            </div>
+            <div class="upload-progress" id="uploadOutdoorBatchStatus"></div>
           </div>
           <div class="form-group">
-            <label>Date</label>
-            <input type="text" id="outdoorDate" placeholder="e.g., May 2024">
+            <label>Outdoor Session</label>
+            <div style="display:flex; gap:10px;">
+              <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="new" checked onchange="window.toggleOutdoorMode('new')"> <span style="margin-left:5px;">Create New</span></label>
+              <label style="flex:1; display:flex; align-items:center;"><input type="radio" name="outdoorMode" value="existing" onchange="window.toggleOutdoorMode('existing')"> <span style="margin-left:5px;">Add to Existing</span></label>
+            </div>
+          </div>
+          <div id="newOutdoorFields">
+            <div class="form-group">
+              <label>Session Name</label>
+              <input type="text" id="outdoorName" placeholder="e.g., Mountain Peak Session">
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="text" id="outdoorDate" placeholder="e.g., May 2024">
+            </div>
+            <div class="form-group">
+              <label>Location</label>
+              <input type="text" id="outdoorLoc" placeholder="e.g., Big Sur, CA">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="outdoorDesc" placeholder="Session description..."></textarea>
+            </div>
+          </div>
+          <div id="existingOutdoorFields" style="display:none;">
+            <div class="form-group">
+              <label>Add to Session</label>
+              <select id="existingOutdoorSelect">
+                <option value="">Select an outdoor session...</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
-            <label>Location</label>
-            <input type="text" id="outdoorLoc" placeholder="e.g., Big Sur, CA">
+            <label>Character Name</label>
+            <input type="text" id="batchOutdoorChar" placeholder="e.g., Hu Tao">
           </div>
           <div class="form-group">
-            <label>Description</label>
-            <textarea id="outdoorDesc" placeholder="Session description..."></textarea>
+            <label>Series</label>
+            <input type="text" id="batchOutdoorSeries" placeholder="e.g., Genshin Impact">
           </div>
-        </div>
-        <div id="existingOutdoorFields" style="display:none;">
           <div class="form-group">
-            <label>Add to Session</label>
-            <select id="existingOutdoorSelect">
-              <option value="">Select an outdoor session...</option>
-            </select>
+            <label>Cosplayer Handle</label>
+            <input type="text" id="batchOutdoorHandle" placeholder="e.g., @sakurahime_cos">
           </div>
+          <button onclick="window.saveBatchOutdoor()" style="width:100%;">Upload & Create/Add Session</button>
+          <div id="batchOutdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
-        <div class="form-group">
-          <label>Character Name</label>
-          <input type="text" id="batchOutdoorChar" placeholder="e.g., Hu Tao">
-        </div>
-        <div class="form-group">
-          <label>Series</label>
-          <input type="text" id="batchOutdoorSeries" placeholder="e.g., Genshin Impact">
-        </div>
-        <div class="form-group">
-          <label>Cosplayer Handle</label>
-          <input type="text" id="batchOutdoorHandle" placeholder="e.g., @sakurahime_cos">
-        </div>
-        <button onclick="window.saveBatchOutdoor()" style="width:100%;">Upload & Create/Add Session</button>
-        <div id="batchOutdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
       <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
 
-      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
-      <div class="form-group" style="max-width:400px;">
-        <label>Session Name</label>
-        <input type="text" id="outdoorSessionName" placeholder="e.g., Outdoor Session 2025">
+      <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin-bottom: 0;">Or Create Manually</h3>
+      <div class="collapsible-content">
+        <div class="form-group" style="max-width:400px;">
+          <label>Session Name</label>
+          <input type="text" id="outdoorSessionName" placeholder="e.g., Outdoor Session 2025">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Date</label>
+          <input type="text" id="outdoorSessionDate" placeholder="e.g., May 2024">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Location</label>
+          <input type="text" id="outdoorSessionLoc" placeholder="e.g., Big Sur, CA">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Description</label>
+          <textarea id="outdoorSessionDesc" placeholder="Session description..."></textarea>
+        </div>
+        <button id="saveOutdoorBtn" onclick="window.saveOutdoor()" style="max-width:400px; width:100%;">Create Outdoor Session</button>
+        <div id="outdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Date</label>
-        <input type="text" id="outdoorSessionDate" placeholder="e.g., May 2024">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Location</label>
-        <input type="text" id="outdoorSessionLoc" placeholder="e.g., Big Sur, CA">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Description</label>
-        <textarea id="outdoorSessionDesc" placeholder="Session description..."></textarea>
-      </div>
-      <button id="saveOutdoorBtn" onclick="window.saveOutdoor()" style="max-width:400px; width:100%;">Create Outdoor Session</button>
-      <div id="outdoorMsg" style="margin-top:10px; font-size:0.85rem;"></div>
 
       <!-- Outdoor Photo Management Section -->
       <div id="outdoorPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
@@ -551,60 +596,64 @@
       <h2 style="margin-bottom:20px;">Studio Sessions</h2>
 
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:15px;">Batch Upload Photos</h3>
-        <div class="form-group">
-          <label>Drop all photos here</label>
-          <div class="upload-area" id="uploadStudioBatch" onclick="document.getElementById('uploadStudioFiles').click()">
-            <p>Click or drag multiple photos</p>
-            <input type="file" id="uploadStudioFiles" accept="image/*" multiple style="display:none;">
+        <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin: 0;">Batch Upload Photos</h3>
+        <div class="collapsible-content">
+          <div class="form-group">
+            <label>Drop all photos here</label>
+            <div class="upload-area" id="uploadStudioBatch" onclick="document.getElementById('uploadStudioFiles').click()">
+              <p>Click or drag multiple photos</p>
+              <input type="file" id="uploadStudioFiles" accept="image/*" multiple style="display:none;">
+            </div>
+            <div class="upload-progress" id="uploadStudioStatus"></div>
           </div>
-          <div class="upload-progress" id="uploadStudioStatus"></div>
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" id="batchCharacter" placeholder="e.g., Hu Tao">
+          </div>
+          <div class="form-group">
+            <label>Series</label>
+            <input type="text" id="batchSeries" placeholder="e.g., Genshin Impact">
+          </div>
+          <div class="form-group">
+            <label>Cosplayer Handle</label>
+            <input type="text" id="batchHandle" placeholder="e.g., @sakurahime_cos">
+          </div>
+          <div class="form-group">
+            <label>Caption (Optional)</label>
+            <input type="text" id="batchCaption" placeholder="e.g., Photo shoot details">
+          </div>
+          <div class="form-group">
+            <label>Session Name</label>
+            <input type="text" id="batchSessionName" placeholder="e.g., Genshin Impact Session">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="text" id="batchSessionDate" placeholder="e.g., January 2025">
+          </div>
+          <button onclick="saveBatchStudio()" style="width:100%;">Upload & Create Session</button>
+          <div id="batchMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
-        <div class="form-group">
-          <label>Character Name</label>
-          <input type="text" id="batchCharacter" placeholder="e.g., Hu Tao">
-        </div>
-        <div class="form-group">
-          <label>Series</label>
-          <input type="text" id="batchSeries" placeholder="e.g., Genshin Impact">
-        </div>
-        <div class="form-group">
-          <label>Cosplayer Handle</label>
-          <input type="text" id="batchHandle" placeholder="e.g., @sakurahime_cos">
-        </div>
-        <div class="form-group">
-          <label>Caption (Optional)</label>
-          <input type="text" id="batchCaption" placeholder="e.g., Photo shoot details">
-        </div>
-        <div class="form-group">
-          <label>Session Name</label>
-          <input type="text" id="batchSessionName" placeholder="e.g., Genshin Impact Session">
-        </div>
-        <div class="form-group">
-          <label>Date</label>
-          <input type="text" id="batchSessionDate" placeholder="e.g., January 2025">
-        </div>
-        <button onclick="saveBatchStudio()" style="width:100%;">Upload & Create Session</button>
-        <div id="batchMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
       <hr style="border:none; border-top:1px solid #2e2e2e; margin:30px 0;">
 
-      <h3 style="margin-bottom:15px;">Or Create Manually</h3>
-      <div class="form-group" style="max-width:400px;">
-        <label>Session Name</label>
-        <input type="text" id="studioName" placeholder="e.g., Studio Session 2025">
+      <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin-bottom: 0;">Or Create Manually</h3>
+      <div class="collapsible-content">
+        <div class="form-group" style="max-width:400px;">
+          <label>Session Name</label>
+          <input type="text" id="studioName" placeholder="e.g., Studio Session 2025">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Date</label>
+          <input type="text" id="studioDate" placeholder="e.g., January 2025">
+        </div>
+        <div class="form-group" style="max-width:400px;">
+          <label>Description</label>
+          <textarea id="studioDesc" placeholder="Session description..."></textarea>
+        </div>
+        <button id="saveStudioBtn" onclick="window.saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
+        <div id="studioMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Date</label>
-        <input type="text" id="studioDate" placeholder="e.g., January 2025">
-      </div>
-      <div class="form-group" style="max-width:400px;">
-        <label>Description</label>
-        <textarea id="studioDesc" placeholder="Session description..."></textarea>
-      </div>
-      <button id="saveStudioBtn" onclick="window.saveStudio()" style="max-width:400px; width:100%;">Create Studio Session</button>
-      <div id="studioMsg" style="margin-top:10px; font-size:0.85rem;"></div>
 
       <!-- Studio Photo Management Section -->
       <div id="studioPhotosSection" style="display:none; margin-top:30px; background:#181818; border:1px solid #2e2e2e; padding:20px;">
@@ -656,33 +705,35 @@
       </div>
 
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
-        <h3 style="margin-bottom:15px;">Batch Upload Collab Photos</h3>
-        <div class="form-group">
-          <label>Drop photos here</label>
-          <div class="upload-area" id="uploadCollabBatch" onclick="document.getElementById('uploadCollabFiles').click()">
-            <p>Click or drag multiple photos</p>
-            <input type="file" id="uploadCollabFiles" accept="image/*" multiple style="display:none;">
+        <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin: 0;">Batch Upload Collab Photos</h3>
+        <div class="collapsible-content">
+          <div class="form-group">
+            <label>Drop photos here</label>
+            <div class="upload-area" id="uploadCollabBatch" onclick="document.getElementById('uploadCollabFiles').click()">
+              <p>Click or drag multiple photos</p>
+              <input type="file" id="uploadCollabFiles" accept="image/*" multiple style="display:none;">
+            </div>
+            <div class="upload-progress" id="uploadCollabBatchStatus"></div>
           </div>
-          <div class="upload-progress" id="uploadCollabBatchStatus"></div>
+          <div class="form-group">
+            <label>Cosplayer Handle (IG)</label>
+            <input type="text" id="batchCollabHandle" placeholder="e.g., @sakurahime_cos">
+          </div>
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" id="batchCollabCharacter" placeholder="Character name">
+          </div>
+          <div class="form-group">
+            <label>Series</label>
+            <input type="text" id="batchCollabSeries" placeholder="Series name">
+          </div>
+          <div class="form-group">
+            <label>Caption (Optional)</label>
+            <input type="text" id="batchCollabCaption" placeholder="Photo shoot details">
+          </div>
+          <button onclick="saveBatchCollab()" style="width:100%;">Upload & Add Collab</button>
+          <div id="batchCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
         </div>
-        <div class="form-group">
-          <label>Cosplayer Handle (IG)</label>
-          <input type="text" id="batchCollabHandle" placeholder="e.g., @sakurahime_cos">
-        </div>
-        <div class="form-group">
-          <label>Character Name</label>
-          <input type="text" id="batchCollabCharacter" placeholder="Character name">
-        </div>
-        <div class="form-group">
-          <label>Series</label>
-          <input type="text" id="batchCollabSeries" placeholder="Series name">
-        </div>
-        <div class="form-group">
-          <label>Caption (Optional)</label>
-          <input type="text" id="batchCollabCaption" placeholder="Photo shoot details">
-        </div>
-        <button onclick="saveBatchCollab()" style="width:100%;">Upload & Add Collab</button>
-        <div id="batchCollabMsg" style="margin-top:10px; font-size:0.85rem;"></div>
       </div>
 
     </div>
@@ -4195,6 +4246,14 @@
     if (panel && panel.id === 'managePhotosPanel') {
       panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
       header.style.opacity = panel.style.display === 'none' ? '0.6' : '1';
+    }
+  };
+
+  window.toggleCollapsibleSection = (header) => {
+    const content = header.nextElementSibling;
+    if (content && content.classList.contains('collapsible-content')) {
+      content.classList.toggle('collapsed');
+      header.classList.toggle('collapsed');
     }
   };
 
