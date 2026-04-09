@@ -369,6 +369,17 @@
     <div id="events" class="content">
       <h2 style="margin-bottom:20px;">Events</h2>
 
+      <!-- Arrange Events Panel -->
+      <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
+        <h3 class="collapsible-header" onclick="window.toggleCollapsibleSection(this)" style="margin: 0;">📋 Arrange Events by Display Order</h3>
+        <div class="collapsible-content">
+          <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Drag to reorder events. Click event name to edit metadata.</p>
+          <div id="eventOrderPanel" style="background:#0d0d0d; padding:15px; border-radius:3px; border:1px solid #333;">
+            <!-- Event list will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+
       <div style="background:#181818; border:1px solid #2e2e2e; padding:20px; margin-bottom:30px;">
         <h3 class="collapsible-header collapsed" onclick="window.toggleCollapsibleSection(this)" style="margin: 0;">Batch Upload Event Photos</h3>
         <div class="collapsible-content collapsed">
@@ -1009,6 +1020,11 @@
       loadFeatured();
       displayFeaturedRowPanel();
       loadAlbumPhotos('events');
+    }
+
+    // Load event order when events tab is opened
+    if (tab === 'events') {
+      window.loadEventOrder();
     }
 
     // Load collaborators when collabs tab is opened
@@ -1742,6 +1758,139 @@
     } catch (err) {
       document.getElementById('eventMsg').textContent = 'Error: ' + err.message;
       document.getElementById('eventMsg').className = 'error';
+    }
+  };
+
+  // Load and display events for arrangement
+  window.loadEventOrder = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'events'));
+      const events = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        displayOrder: doc.data().displayOrder || 0
+      })).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+      window.displayEventOrderPanel(events);
+    } catch (err) {
+      console.error('Error loading events:', err);
+    }
+  };
+
+  window.displayEventOrderPanel = (events) => {
+    const container = document.getElementById('eventOrderPanel');
+    if (events.length === 0) {
+      container.innerHTML = '<p style="color:#666;">No events found</p>';
+      return;
+    }
+
+    let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+    events.forEach((event, idx) => {
+      html += `
+        <div draggable="true" ondragstart="window.dragEventStart(event)" ondragover="window.dragEventOver(event)" ondrop="window.dragEventDrop(event, '${event.id}')" ondragend="window.dragEventEnd(event)" class="event-order-item" data-event-id="${event.id}" style="padding:15px; margin-bottom:8px; background:#0d0d0d; border:2px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none; transition: all 0.2s ease;">
+          <div style="display:flex; align-items:center; flex:1;">
+            <span style="color:#aaa; font-size:0.9rem; margin-right:10px; min-width:30px; font-weight:bold;">⋮⋮</span>
+            <div style="flex:1;">
+              <div style="color:#fff; font-size:0.95rem; margin-bottom:8px; cursor:pointer; padding:5px; border-radius:2px;" onclick="window.editEventMetadata('${event.id}', '${(event.name || '').replace(/'/g, "\\'")}', '${(event.date || '').replace(/'/g, "\\'")}', '${(event.location || '').replace(/'/g, "\\'")}')">
+                <strong>${event.name || 'Unnamed Event'}</strong>
+              </div>
+              <div style="color:#666; font-size:0.8rem;">📅 ${event.date || 'No date'} • 📍 ${event.location || 'No location'}</div>
+            </div>
+          </div>
+          <div style="color:#666; font-size:0.75rem; margin-right:10px; min-width:30px; text-align:right; font-weight:bold;">#${idx + 1}</div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  };
+
+  let draggedEvent = null;
+
+  window.dragEventStart = (e) => {
+    draggedEvent = e.target.closest('.event-order-item');
+    draggedEvent.style.opacity = '0.5';
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  window.dragEventOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const item = e.target.closest('.event-order-item');
+    if (item && item !== draggedEvent) {
+      const rect = item.getBoundingClientRect();
+      const mouseY = e.clientY;
+      const itemMid = rect.top + rect.height / 2;
+
+      document.querySelectorAll('.event-order-item').forEach(el => el.style.borderTop = '');
+      if (mouseY < itemMid) {
+        item.style.borderTop = '3px solid #c8a46e';
+      }
+    }
+  };
+
+  window.dragEventDrop = async (e, eventId) => {
+    e.preventDefault();
+    const draggedId = draggedEvent.getAttribute('data-event-id');
+    if (draggedId === eventId) {
+      draggedEvent.style.opacity = '1';
+      return;
+    }
+
+    try {
+      const snap = await getDocs(collection(db, 'events'));
+      const events = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        displayOrder: doc.data().displayOrder || 0
+      })).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+      const draggedIdx = events.findIndex(e => e.id === draggedId);
+      const targetIdx = events.findIndex(e => e.id === eventId);
+
+      [events[draggedIdx], events[targetIdx]] = [events[targetIdx], events[draggedIdx]];
+
+      for (let i = 0; i < events.length; i++) {
+        await updateDoc(doc(db, 'events', events[i].id), { displayOrder: i });
+      }
+
+      window.loadEventOrder();
+    } catch (err) {
+      console.error('Error reordering events:', err);
+    }
+
+    draggedEvent.style.opacity = '1';
+  };
+
+  window.dragEventEnd = (e) => {
+    document.querySelectorAll('.event-order-item').forEach(el => el.style.borderTop = '');
+    draggedEvent.style.opacity = '1';
+  };
+
+  window.editEventMetadata = (eventId, currentName, currentDate, currentLocation) => {
+    const newName = prompt('Event Name:', currentName);
+    if (newName === null) return;
+
+    const newDate = prompt('Date:', currentDate);
+    if (newDate === null) return;
+
+    const newLocation = prompt('Location:', currentLocation);
+    if (newLocation === null) return;
+
+    window.saveEventMetadata(eventId, newName, newDate, newLocation);
+  };
+
+  window.saveEventMetadata = async (eventId, name, date, location) => {
+    try {
+      await updateDoc(doc(db, 'events', eventId), {
+        name: name || 'Unnamed Event',
+        date: date || '',
+        location: location || ''
+      });
+      window.loadEventOrder();
+    } catch (err) {
+      console.error('Error updating event metadata:', err);
+      alert('Error updating event: ' + err.message);
     }
   };
 
