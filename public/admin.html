@@ -4112,6 +4112,33 @@
   };
 
   // ── Cosplayer Order Management ──────────────────────────────
+  window.moveCoserUp = async (eventId, idx) => {
+    if (idx <= 0) return;
+    const container = document.getElementById('coserOrderList');
+    const items = Array.from(container.querySelectorAll('.coser-order-item'));
+    const coserKeys = items.map(item => item.getAttribute('data-coser-key'));
+
+    // Swap positions
+    [coserKeys[idx - 1], coserKeys[idx]] = [coserKeys[idx], coserKeys[idx - 1]];
+
+    // Save and refresh
+    await window.saveCoserOrder(eventId, coserKeys);
+  };
+
+  window.moveCoserDown = async (eventId, idx) => {
+    const container = document.getElementById('coserOrderList');
+    const items = Array.from(container.querySelectorAll('.coser-order-item'));
+    if (idx >= items.length - 1) return;
+
+    const coserKeys = items.map(item => item.getAttribute('data-coser-key'));
+
+    // Swap positions
+    [coserKeys[idx], coserKeys[idx + 1]] = [coserKeys[idx + 1], coserKeys[idx]];
+
+    // Save and refresh
+    await window.saveCoserOrder(eventId, coserKeys);
+  };
+
   window.displayCoserOrderPanel = (eventId, coserKeys) => {
     const container = document.getElementById('coserOrderList');
     if (coserKeys.length === 0) {
@@ -4123,12 +4150,19 @@
     coserKeys.forEach((coserKey, idx) => {
       const { coser, day } = window.parseCoserKey(coserKey);
       const displayName = `${coser} (${day})`;
+      const upBtn = idx > 0 ? `<button onclick="window.moveCoserUp('${eventId}', ${idx})" style="padding:4px 8px; background:#5a7d3d; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; margin-right:5px; font-size:0.8rem;">↑ Up</button>` : '';
+      const downBtn = idx < coserKeys.length - 1 ? `<button onclick="window.moveCoserDown('${eventId}', ${idx})" style="padding:4px 8px; background:#5a7d3d; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; margin-right:5px; font-size:0.8rem;">↓ Down</button>` : '';
+
       html += `
-        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserDrop(event, '${eventId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser-key="${coserKey}" data-event-id="${eventId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:1px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none;">
+        <div draggable="true" ondragstart="window.dragCoserStart(event)" ondragover="window.dragCoserOver(event)" ondrop="window.dragCoserDrop(event, '${eventId}', ${idx})" ondragend="window.dragCoserEnd(event)" class="coser-order-item" data-coser-key="${coserKey}" data-event-id="${eventId}" style="padding:10px; margin-bottom:8px; background:#0d0d0d; border:2px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none; transition: all 0.2s ease;">
           <div style="display:flex; align-items:center; flex:1;">
-            <span style="color:#aaa; font-size:0.8rem; margin-right:10px; min-width:30px;">⋮⋮</span>
+            <span style="color:#aaa; font-size:0.9rem; margin-right:10px; min-width:30px; font-weight:bold;">⋮⋮</span>
             <span style="flex:1; color:#fff; font-size:0.9rem;">${displayName}</span>
-            <span style="color:#666; font-size:0.75rem;">#${idx + 1}</span>
+            <span style="color:#666; font-size:0.75rem; margin-right:10px;">#${idx + 1}</span>
+          </div>
+          <div style="display:flex; gap:5px;">
+            ${upBtn}
+            ${downBtn}
           </div>
           <div style="display:flex; gap:6px;">
             <button onclick="openCoserEditModal('${eventId}', '${coserKey}')" style="padding:5px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:2px; cursor:pointer;">Edit</button>
@@ -4183,13 +4217,22 @@
       const mouseY = e.clientY;
       const itemMid = rect.top + rect.height / 2;
 
-      // Show insertion indicator (above or below)
+      // Clear all other items
+      document.querySelectorAll('.coser-order-item').forEach(el => {
+        el.style.borderTop = '2px solid #333';
+        el.style.borderBottom = '2px solid #333';
+        el.style.backgroundColor = '#0d0d0d';
+      });
+
+      // Show insertion indicator with MUCH more visible styling
       if (mouseY < itemMid) {
-        item.style.borderTop = '3px solid #c8a46e';
-        item.style.borderBottom = 'none';
+        // Inserting ABOVE this item
+        item.style.borderTop = '6px solid #ffcc00';
+        item.style.backgroundColor = '#1a1a00';
       } else {
-        item.style.borderBottom = '3px solid #c8a46e';
-        item.style.borderTop = 'none';
+        // Inserting BELOW this item
+        item.style.borderBottom = '6px solid #ffcc00';
+        item.style.backgroundColor = '#1a1a00';
       }
     }
   };
