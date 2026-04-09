@@ -1985,18 +1985,20 @@ async function initAlbum() {
       albumType: type || 'events' // Include album type for proper redirect
     }));
 
-    // Group photos by cosplayer while maintaining original indices
+    // Group photos by cosplayer while maintaining original indices and order
     const cosplayerGroups = {};
+    const cosplayerOrder = []; // Track order cosplayers appear in photos array
     album.photos.forEach((photo, idx) => {
       const coserName = photo.coser || photo.caption || 'Unknown';
       if (!cosplayerGroups[coserName]) {
         cosplayerGroups[coserName] = [];
+        cosplayerOrder.push(coserName); // Add to order only on first appearance
       }
       cosplayerGroups[coserName].push({ photo, originalIndex: idx });
     });
 
-    // Render photos grouped by cosplayer
-    const cosplayerNames = Object.keys(cosplayerGroups).sort();
+    // Render photos grouped by cosplayer in the order they appear in the photos array
+    const cosplayerNames = cosplayerOrder;
 
     cosplayerNames.forEach(coserName => {
       const coserPhotos = cosplayerGroups[coserName];
