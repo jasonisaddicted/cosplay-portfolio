@@ -1901,13 +1901,22 @@
     const photos = event.photos || [];
 
     // Group photos by cosplayer handle and day (composite key)
+    // Handle both single cosplayer (string) and multiple cosplayers (array)
     const grouped = {};
     photos.forEach((photo, index) => {
-      const handle = photo.coser || 'Unknown';
       const day = photo.day || 'Unknown';
-      const groupKey = window.buildCoserKey(handle, day);  // Composite key
-      if (!grouped[groupKey]) grouped[groupKey] = [];
-      grouped[groupKey].push({ ...photo, index });
+
+      // Check if photo has multiple cosplayers
+      const cosers = Array.isArray(photo.coser)
+        ? photo.coser
+        : (photo.coser ? [photo.coser] : ['Unknown']);
+
+      // Add photo to each cosplayer's group
+      cosers.forEach(coser => {
+        const groupKey = window.buildCoserKey(coser, day);
+        if (!grouped[groupKey]) grouped[groupKey] = [];
+        grouped[groupKey].push({ ...photo, index });
+      });
     });
 
     // Display cosplayer order panel
@@ -3429,11 +3438,19 @@
     const photos = session.photos || [];
 
     // Group photos by cosplayer handle
+    // Handle both single cosplayer (string) and multiple cosplayers (array)
     const grouped = {};
     photos.forEach((photo, index) => {
-      const handle = photo.coser || 'Unknown';
-      if (!grouped[handle]) grouped[handle] = [];
-      grouped[handle].push({ ...photo, index });
+      // Check if photo has multiple cosplayers
+      const cosers = Array.isArray(photo.coser)
+        ? photo.coser
+        : (photo.coser ? [photo.coser] : ['Unknown']);
+
+      // Add photo to each cosplayer's group
+      cosers.forEach(coser => {
+        if (!grouped[coser]) grouped[coser] = [];
+        grouped[coser].push({ ...photo, index });
+      });
     });
 
     // Display cosplayer order panel
