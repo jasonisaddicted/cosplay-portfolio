@@ -331,12 +331,26 @@ async function uploadPhotoBatch(eventId, photos, dayName, eventName) {
   let successCount = 0;
   let failCount = 0;
   let duplicateCount = 0;
+  let extractionErrorCount = 0;
+  const extractionErrors = [];
 
   // Get existing photos to avoid duplicates
   const existingPhotos = await getExistingPhotos(eventId);
 
-  // Filter out duplicates (by filename, or filename + size if size exists)
+  // Check for extraction errors and filter duplicates
   const newPhotos = photos.filter(photo => {
+    // Check if cosplayer name couldn't be extracted
+    if (photo.coser === null) {
+      extractionErrorCount++;
+      extractionErrors.push({
+        filename: photo.filename,
+        reason: 'Could not extract cosplayer name from filename. Expected patterns: coser_name_1, coser-1, web-_coser-1, web__coser__1'
+      });
+      console.log(`  ⚠️  ${photo.filename}: ❌ EXTRACTION ERROR - Could not parse cosplayer name`);
+      console.log(`      Expected: coser_name_1, coser-1, web-_coser-1, or web__coser__1`);
+      return false; // Skip files that can't be extracted
+    }
+
     const isDuplicate = existingPhotos.some(existing => {
       // Match by filename alone if no size data exists yet
       if (!existing.size) {
@@ -384,7 +398,7 @@ async function uploadPhotoBatch(eventId, photos, dayName, eventName) {
     successCount += results.filter(r => r !== null).length;
   }
 
-  return { uploadedPhotos, successCount, failCount, duplicateCount };
+  return { uploadedPhotos, successCount, failCount, duplicateCount, extractionErrorCount, extractionErrors };
 }
 
 /**
@@ -457,7 +471,7 @@ async function main() {
       for (const batch of batches) {
         console.log(`   Uploading ${batch.day} (${batch.count} photos)...`);
 
-        const { uploadedPhotos, successCount, failCount, duplicateCount } = await uploadPhotoBatch(
+        const { uploadedPhotos, successCount, failCount, duplicateCount, extractionErrorCount, extractionErrors } = await uploadPhotoBatch(
           eventId,
           batch.photos,
           batch.day,
@@ -465,7 +479,24 @@ async function main() {
         );
 
         eventPhotos.push(...uploadedPhotos);
-        console.log(`   ✓ ${successCount} uploaded, ${failCount} failed, ${duplicateCount} skipped (duplicates)`);
+
+        // Build summary message
+        const summaryParts = [`${successCount} uploaded`];
+        if (duplicateCount > 0) summaryParts.push(`${duplicateCount} skipped (duplicates)`);
+        if (extractionErrorCount > 0) summaryParts.push(`${extractionErrorCount} failed (extraction error)`);
+        if (failCount > 0) summaryParts.push(`${failCount} failed (upload error)`);
+
+        console.log(`   ✓ ${summaryParts.join(', ')}`);
+
+        // Show extraction errors if any
+        if (extractionErrors.length > 0) {
+          console.log(`\n   ❌ EXTRACTION ERRORS - ${extractionErrorCount} file(s) could not be parsed:`);
+          extractionErrors.forEach(err => {
+            console.log(`      - ${err.filename}`);
+            console.log(`        Reason: ${err.reason}`);
+          });
+          console.log();
+        }
       }
 
       // Save all photos to Firestore
