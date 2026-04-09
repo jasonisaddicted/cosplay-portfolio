@@ -45,23 +45,40 @@ const DRY_RUN = process.argv.includes('--dry-run');
 // ─ Helper Functions ─
 
 /**
- * Extract cosplayer name from filename
- * Pattern: web_cosername_#-post-vfx-edr.jpg
+ * Extract cosplayer name (IG handle) from filename
+ * Pattern: web-coser_name_123.33-1-edr-vfx.jpg
+ * - web-: prefix
+ * - coser_name_123.33: IG handle (extract this)
+ * - -1 or _1: numeric order (skip)
+ * - -edr-vfx: workflow metadata (skip)
  */
 function extractCoserFromFilename(filename) {
   const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
-  const match = nameWithoutExt.match(/web_([^_]+)_/);
+
+  // Find the first dash (after "web-")
+  const firstDashIndex = nameWithoutExt.indexOf('-');
+  if (firstDashIndex === -1) {
+    return null; // No dash found
+  }
+
+  // Get everything after the first dash
+  const afterFirstDash = nameWithoutExt.substring(firstDashIndex + 1);
+
+  // The IG handle ends at either:
+  // 1. _[digits]- (underscore followed by digits and dash)
+  // 2. -[digits]- (dash followed by digits and dash)
+  // These markers indicate the numeric order
+
+  // Match pattern: everything until _[digits]- or -[digits]-
+  const match = afterFirstDash.match(/^(.+?)(_\d+\-|-\d+\-)/);
 
   if (match && match[1]) {
     return match[1].trim();
   }
 
-  const parts = nameWithoutExt.split('_');
-  if (parts.length > 1 && parts[1] !== '#') {
-    return parts[1].trim();
-  }
-
-  return null;
+  // Fallback: if no order marker found, return everything after first dash
+  // (in case file doesn't have the order marker)
+  return afterFirstDash.trim() || null;
 }
 
 /**
