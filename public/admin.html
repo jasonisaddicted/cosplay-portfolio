@@ -425,9 +425,11 @@
           </div>
         </div>
 
-        <h3 style="margin-bottom:15px;">Manage Photos in This Event</h3>
-        <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (6 columns) — Edit position numbers and drag photos to reorder</p>
-        <div id="eventPhotosList" style="margin-bottom:15px;"></div>
+        <h3 style="margin:0 0 15px 0; color:#c8a46e; cursor:pointer; user-select:none;" onclick="window.toggleManagePhotosPanel(this)">📷 Manage Photos in This Event (Click to expand/collapse)</h3>
+        <div id="managePhotosPanel" style="display:block;">
+          <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Grid layout (6 columns) — Edit position numbers and drag photos to reorder</p>
+          <div id="eventPhotosList" style="margin-bottom:15px;"></div>
+        </div>
         <div id="eventPhotosError" style="display:none; padding:10px; background:#8b0000; color:#fff; border-radius:3px; margin-bottom:15px; font-size:0.9rem;"></div>
         <button onclick="applyEventPhotoReorder()" style="width:100%; padding:10px; background:#c9a961; color:#000; border:none; border-radius:3px; cursor:pointer; font-weight:bold; margin-bottom:20px;">Apply Position Changes</button>
 
@@ -4154,6 +4156,14 @@
     }
   };
 
+  window.toggleManagePhotosPanel = (header) => {
+    const panel = header.nextElementSibling;
+    if (panel && panel.id === 'managePhotosPanel') {
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      header.style.opacity = panel.style.display === 'none' ? '0.6' : '1';
+    }
+  };
+
   // Cosplayer drag handlers
   let draggedCoser = null;
 
@@ -4168,7 +4178,19 @@
     e.dataTransfer.dropEffect = 'move';
     const item = e.target.closest('.coser-order-item');
     if (item && item !== draggedCoser) {
-      item.style.borderTop = '2px solid #c8a46e';
+      // Get the bounding rect and mouse position
+      const rect = item.getBoundingClientRect();
+      const mouseY = e.clientY;
+      const itemMid = rect.top + rect.height / 2;
+
+      // Show insertion indicator (above or below)
+      if (mouseY < itemMid) {
+        item.style.borderTop = '3px solid #c8a46e';
+        item.style.borderBottom = 'none';
+      } else {
+        item.style.borderBottom = '3px solid #c8a46e';
+        item.style.borderTop = 'none';
+      }
     }
   };
 
@@ -4191,12 +4213,23 @@
     const allItems = Array.from(container.querySelectorAll('.coser-order-item'));
     const coserKeyOrder = allItems.map(item => item.getAttribute('data-coser-key'));
 
-    // Swap positions
+    // Determine insertion position based on drop location (above or below target)
+    const rect = toItem.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const itemMid = rect.top + rect.height / 2;
+    const insertBelow = mouseY >= itemMid;
+
+    // Remove from original position
     const fromIdx = coserKeyOrder.indexOf(fromCoserKey);
-    [coserKeyOrder[fromIdx], coserKeyOrder[targetIdx]] = [coserKeyOrder[targetIdx], coserKeyOrder[fromIdx]];
+    coserKeyOrder.splice(fromIdx, 1);
+
+    // Insert at new position
+    const toIdx = coserKeyOrder.indexOf(toCoserKey);
+    const insertIdx = insertBelow ? toIdx + 1 : toIdx;
+    coserKeyOrder.splice(insertIdx, 0, fromCoserKey);
 
     // Save reordered cosers to Firebase (update photos order)
-    saveCoserOrder(eventId, coserKeyOrder);
+    window.saveCoserOrder(eventId, coserKeyOrder);
 
     draggedCoser.style.opacity = '1';
     draggedCoser = null;
@@ -4206,9 +4239,10 @@
     if (draggedCoser) {
       draggedCoser.style.opacity = '1';
     }
-    // Remove border from all items
+    // Remove insertion indicators from all items
     document.querySelectorAll('.coser-order-item').forEach(item => {
       item.style.borderTop = '1px solid #333';
+      item.style.borderBottom = '1px solid #333';
     });
   };
 
