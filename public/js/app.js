@@ -1989,12 +1989,26 @@ async function initAlbum() {
     const cosplayerGroups = {};
     const cosplayerOrder = []; // Track order cosplayers appear in photos array
     album.photos.forEach((photo, idx) => {
-      const coserName = photo.coser || photo.caption || 'Unknown';
-      if (!cosplayerGroups[coserName]) {
-        cosplayerGroups[coserName] = [];
-        cosplayerOrder.push(coserName); // Add to order only on first appearance
+      // Handle both single cosplayer (string) and multiple (array)
+      let cosers = [];
+      if (Array.isArray(photo.coser)) {
+        cosers = photo.coser; // Multiple cosplayers
+      } else if (photo.coser) {
+        cosers = [photo.coser]; // Single cosplayer
+      } else if (photo.caption) {
+        cosers = [photo.caption]; // Fallback to caption
+      } else {
+        cosers = ['Unknown']; // Last resort
       }
-      cosplayerGroups[coserName].push({ photo, originalIndex: idx });
+
+      // Add photo to each cosplayer's group
+      cosers.forEach(coserName => {
+        if (!cosplayerGroups[coserName]) {
+          cosplayerGroups[coserName] = [];
+          cosplayerOrder.push(coserName); // Add to order only on first appearance
+        }
+        cosplayerGroups[coserName].push({ photo, originalIndex: idx });
+      });
     });
 
     // Render photos grouped by cosplayer in the order they appear in the photos array
