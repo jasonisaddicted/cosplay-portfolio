@@ -46,39 +46,47 @@ const DRY_RUN = process.argv.includes('--dry-run');
 
 /**
  * Extract cosplayer name (IG handle) from filename
- * Pattern: web-coser_name_123.33-1-edr-vfx.jpg
- * - web-: prefix
- * - coser_name_123.33: IG handle (extract this)
- * - -1 or _1: numeric order (skip)
- * - -edr-vfx: workflow metadata (skip)
+ *
+ * Patterns supported:
+ * 1. web-coser_name_123.33-1-edr-vfx.jpg (new: web- prefix)
+ * 2. web_coser_name_123.33_1-edr-vfx.jpg (old: web_ prefix)
+ * 3. coser_name_123.33-1-edr-vfx.jpg (no prefix)
+ * 4. _coser_name_123.33_-1-edr-vfx.jpg (with leading/trailing underscores)
+ *
+ * IG handles can only contain: letters, numbers, periods (.), and underscores (_)
+ * NO dashes allowed in IG handles
+ *
+ * Structure: [prefix]-[ig_handle][-or_][order_number]-[metadata]...
  */
 function extractCoserFromFilename(filename) {
   const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
 
-  // Find the first dash (after "web-")
-  const firstDashIndex = nameWithoutExt.indexOf('-');
-  if (firstDashIndex === -1) {
-    return null; // No dash found
+  // Step 1: Remove prefix if present (web- or web_)
+  let afterPrefix = nameWithoutExt;
+  if (nameWithoutExt.startsWith('web-')) {
+    afterPrefix = nameWithoutExt.substring(4); // Remove "web-"
+  } else if (nameWithoutExt.startsWith('web_')) {
+    afterPrefix = nameWithoutExt.substring(4); // Remove "web_"
   }
 
-  // Get everything after the first dash
-  const afterFirstDash = nameWithoutExt.substring(firstDashIndex + 1);
-
-  // The IG handle ends at either:
-  // 1. _[digits]- (underscore followed by digits and dash)
-  // 2. -[digits]- (dash followed by digits and dash)
-  // These markers indicate the numeric order
-
-  // Match pattern: everything until _[digits]- or -[digits]-
-  const match = afterFirstDash.match(/^(.+?)(_\d+\-|-\d+\-)/);
+  // Step 2: Extract IG handle
+  // The IG handle ends at the order marker: _[digits]- or -[digits]-
+  // IG handles can only have letters, numbers, periods, and underscores
+  const match = afterPrefix.match(/^(.+?)(_\d+\-|-\d+\-)/);
 
   if (match && match[1]) {
     return match[1].trim();
   }
 
-  // Fallback: if no order marker found, return everything after first dash
-  // (in case file doesn't have the order marker)
-  return afterFirstDash.trim() || null;
+  // Fallback: if no order marker found, try to extract until first dash
+  // (for files that might not have the complete naming structure)
+  const dashIndex = afterPrefix.indexOf('-');
+  if (dashIndex > 0) {
+    return afterPrefix.substring(0, dashIndex).trim();
+  }
+
+  // Last resort: return everything if no clear markers found
+  return afterPrefix.trim() || null;
 }
 
 /**
