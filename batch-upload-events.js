@@ -49,11 +49,10 @@ const DRY_RUN = process.argv.includes('--dry-run');
  * Supports single or multiple cosplayers separated by " & "
  *
  * Patterns supported:
- * 1. web-coser_name_123.33-1-edr-vfx.jpg (single cosplayer)
- * 2. web-coser_name2 & coser_name1-1-edr-vfx.jpg (two cosplayers with & separator)
- * 3. web-coser_name3 & coser_name2 & coser_name1-1-edr-vfx.jpg (three cosplayers)
- * 4. web_coser_name_123.33_1-edr-vfx.jpg (old web_ prefix)
- * 5. coser_name_123.33-1-edr-vfx.jpg (no prefix)
+ * 1. web-_coser_name_123.33_-1-edr.jpg (web- prefix, numeric order -#)
+ * 2. web__coser_name_123.33__1-edr.jpg (web_ prefix, numeric order _#)
+ * 3. coser_name_123.33_1-edr.jpg (no prefix, numeric order _#)
+ * 4. web-_coser_name2 & coser_name1_-1-edr.jpg (multiple cosplayers with & separator)
  *
  * Returns: Single handle string OR array of handles if multiple cosplayers detected
  *
@@ -63,28 +62,42 @@ const DRY_RUN = process.argv.includes('--dry-run');
 function extractCoserFromFilename(filename) {
   const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
 
-  // Step 1: Remove prefix if present (web- or web_)
+  // Step 1: Check for prefix and determine numeric order marker pattern
   let afterPrefix = nameWithoutExt;
+  let numericOrderPattern = null;
+
   if (nameWithoutExt.startsWith('web-')) {
     afterPrefix = nameWithoutExt.substring(4); // Remove "web-"
+    numericOrderPattern = /-\d+/; // Numeric order is -[digits]
   } else if (nameWithoutExt.startsWith('web_')) {
     afterPrefix = nameWithoutExt.substring(4); // Remove "web_"
+    numericOrderPattern = /_\d+/; // Numeric order is _[digits]
+  } else {
+    // No prefix - numeric order is _[digits]
+    numericOrderPattern = /_\d+/;
   }
 
-  // Step 2: Extract the full cosplayer section (may contain multiple names with & separator)
-  // Ends at order marker: _[digits]- or -[digits]-
-  const match = afterPrefix.match(/^(.+?)(_\d+\-|-\d+\-)/);
-
+  // Step 2: Extract cosplayer section up to numeric order marker
   let cosplayerSection = null;
-  if (match && match[1]) {
-    cosplayerSection = match[1].trim();
+
+  // Use the appropriate pattern based on prefix type
+  if (nameWithoutExt.startsWith('web-')) {
+    // After web-, look for -[digits]
+    const match = afterPrefix.match(/^(.+?)(-\d+)/);
+    if (match && match[1]) {
+      cosplayerSection = match[1];
+    }
+  } else if (nameWithoutExt.startsWith('web_')) {
+    // After web_, look for _[digits]
+    const match = afterPrefix.match(/^(.+?)(_\d+)/);
+    if (match && match[1]) {
+      cosplayerSection = match[1];
+    }
   } else {
-    // Fallback: try to extract until first dash
-    const dashIndex = afterPrefix.indexOf('-');
-    if (dashIndex > 0) {
-      cosplayerSection = afterPrefix.substring(0, dashIndex).trim();
-    } else {
-      cosplayerSection = afterPrefix.trim();
+    // No prefix, look for _[digits]
+    const match = nameWithoutExt.match(/^(.+?)(_\d+)/);
+    if (match && match[1]) {
+      cosplayerSection = match[1];
     }
   }
 
