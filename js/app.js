@@ -1775,7 +1775,7 @@ async function initAlbum() {
   } else if (type === 'events') {
     // Try Firebase first (for Cosmic 2025 and dynamic albums)
     try {
-      const docSnap = await getDoc(doc(db, 'albums', id));
+      const docSnap = await getDoc(doc(db, 'events', id));
       if (docSnap.exists()) {
         album = { id: docSnap.id, ...docSnap.data() };
       } else {
