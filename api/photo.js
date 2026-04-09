@@ -80,14 +80,21 @@ module.exports = async function handler(req, res) {
   const photoUrl   = decodeURIComponent(src);
   const charName   = character ? decodeURIComponent(character) : '';
   const seriesName = series    ? decodeURIComponent(series)    : '';
-  const coserName  = coser     ? decodeURIComponent(coser)     : '';
+  const coserParam = coser     ? decodeURIComponent(coser)     : '';
+
+  // Handle single or multiple cosplayers
+  // If coserParam contains ' & ', split and display all
+  const cosers = coserParam ? coserParam.split(' & ').map(c => c.trim()).filter(c => c) : [];
+  const coserDisplay = cosers.length > 0
+    ? (cosers.length > 1 ? `cosplayed by ${cosers.join(' and ')}` : `by ${cosers[0]}`)
+    : '';
 
   const title = charName
-    ? `${charName}${seriesName ? ` · ${seriesName}` : ''}${coserName ? ` by ${coserName}` : ''}`
+    ? `${charName}${seriesName ? ` · ${seriesName}` : ''}${coserDisplay ? ` ${coserDisplay}` : ''}`
     : 'Cosplay Photo';
 
   const description = charName
-    ? `${charName}${seriesName ? ` from ${seriesName}` : ''}${coserName ? `, cosplayed by ${coserName}` : ''} — cosplay photography`
+    ? `${charName}${seriesName ? ` from ${seriesName}` : ''}${coserDisplay ? `, ${coserDisplay}` : ''} — cosplay photography`
     : 'Professional cosplay photography';
 
   // Build the album page URL with photo index so lightbox auto-opens

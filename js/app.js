@@ -374,30 +374,40 @@ const Lightbox = (() => {
     clearPanelTimers();
     infoPanel.innerHTML = '';
 
-    const handle   = photo.coser || '';
-    const igHandle = handle ? (handle.startsWith('@') ? handle : '@' + handle) : '';
-    const igUrl    = igHandle ? `https://www.instagram.com/${igHandle.slice(1)}/` : '';
+    // Handle single or multiple cosplayers
+    const cosers = Array.isArray(photo.coser) ? photo.coser : (photo.coser ? [photo.coser] : []);
+    const primaryHandle = cosers[0] || '';
+    const primaryIgHandle = primaryHandle ? (primaryHandle.startsWith('@') ? primaryHandle : '@' + primaryHandle) : '';
+    const primaryIgUrl = primaryIgHandle ? `https://www.instagram.com/${primaryIgHandle.slice(1)}/` : '';
 
-    if (!igHandle && !photo.character && !photo.series) {
+    if (!primaryIgHandle && !photo.character && !photo.series) {
       lb.classList.remove('panel-open');
       return;
     }
 
-    const coserAlbums = findCoserAlbums(handle);
+    const coserAlbums = findCoserAlbums(primaryHandle);
     const isMobile    = window.innerWidth <= 767;
 
     // ── Coser identity block ──────────────────────────────
-    const coserHtml = `
-      <div class="info-panel__section">
-        <span class="info-panel__section-label">COSPLAYER</span>
-        ${igUrl
+    // Build HTML for all cosplayers (stacked if multiple)
+    let cosplayerRows = '';
+    cosers.forEach((coserHandle, idx) => {
+      const igHandle = coserHandle ? (coserHandle.startsWith('@') ? coserHandle : '@' + coserHandle) : '';
+      const igUrl = igHandle ? `https://www.instagram.com/${igHandle.slice(1)}/` : '';
+
+      if (igHandle) {
+        cosplayerRows += igUrl
           ? `<a class="info-panel__ig-row" href="${igUrl}" target="_blank" rel="noopener noreferrer">
                ${igSVG}<span class="info-panel__ig-handle">${igHandle}</span>
              </a>`
-          : (igHandle
-              ? `<div class="info-panel__ig-row">${igSVG}<span class="info-panel__ig-handle">${igHandle}</span></div>`
-              : '')
-        }
+          : `<div class="info-panel__ig-row">${igSVG}<span class="info-panel__ig-handle">${igHandle}</span></div>`;
+      }
+    });
+
+    const coserHtml = `
+      <div class="info-panel__section">
+        <span class="info-panel__section-label">COSPLAYER${cosers.length > 1 ? 'S' : ''}</span>
+        ${cosplayerRows}
         ${photo.character ? `<div class="info-panel__character" style="cursor:pointer; color:#c8a46e; text-decoration:underline;" data-character="${photo.character}">${photo.character}</div>` : ''}
         ${photo.series    ? `<div class="info-panel__series">${photo.series}</div>`       : ''}
         ${coserAlbums.length > 0 ? `<div class="info-panel__project-count" style="font-size:0.75rem; color:#999; margin-top:8px;">Appears in ${coserAlbums.length} project${coserAlbums.length !== 1 ? 's' : ''}</div>` : ''}
@@ -1891,10 +1901,25 @@ async function initAlbum() {
 
       // Build overlay HTML if coser data exists
       const hasCoser = photo.coser || photo.caption;
+
+      // Handle single or multiple cosplayers in overlay
+      let coserDisplay = '';
+      if (photo.coser) {
+        if (Array.isArray(photo.coser)) {
+          // Multiple cosplayers: display each on its own line
+          coserDisplay = photo.coser.map(c => `<span class="photo-overlay__coser">${c}</span>`).join('');
+        } else {
+          // Single cosplayer
+          coserDisplay = `<span class="photo-overlay__coser">${photo.coser}</span>`;
+        }
+      } else if (photo.caption) {
+        coserDisplay = `<span class="photo-overlay__coser">${photo.caption}</span>`;
+      }
+
       const overlayHtml = hasCoser ? `
         <div class="photo-overlay">
-          <span class="photo-overlay__label">COSER</span>
-          <span class="photo-overlay__coser">${photo.coser || photo.caption || ''}</span>
+          <span class="photo-overlay__label">COSER${Array.isArray(photo.coser) && photo.coser.length > 1 ? 'S' : ''}</span>
+          ${coserDisplay}
           ${photo.character ? `<span class="photo-overlay__character">${photo.character}</span>` : ''}
           ${photo.series    ? `<span class="photo-overlay__series">${photo.series}</span>`    : ''}
         </div>

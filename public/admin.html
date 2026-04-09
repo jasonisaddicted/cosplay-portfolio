@@ -828,8 +828,16 @@
       </div>
 
       <div class="form-group" style="margin-bottom:15px;">
-        <label>Cosplayer Handle</label>
+        <label>Cosplayer Handle (1st)</label>
         <input type="text" id="photoEditHandle" placeholder="@handle" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+      </div>
+      <div class="form-group" style="margin-bottom:15px;">
+        <label>Cosplayer Handle (2nd) - Optional</label>
+        <input type="text" id="photoEditHandle2" placeholder="@handle (if multiple cosplayers)" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
+      </div>
+      <div class="form-group" style="margin-bottom:15px;">
+        <label>Cosplayer Handle (3rd) - Optional</label>
+        <input type="text" id="photoEditHandle3" placeholder="@handle (if multiple cosplayers)" style="width:100%; padding:8px; background:#0d0d0d; color:#fff; border:1px solid #333; border-radius:3px;">
       </div>
       <div class="form-group" style="margin-bottom:15px;">
         <label>Character</label>
@@ -2065,9 +2073,25 @@
 
     document.getElementById('photoModalTitle').textContent = 'Edit Photo';
     document.getElementById('photoEditThumbnail').src = photo.src || '';
-    document.getElementById('photoEditHandle').value = '';
-    document.getElementById('photoEditHandle').style.display = 'none';
-    document.getElementById('photoEditHandle').parentElement.style.display = 'none';
+
+    // Handle single or multiple cosplayers
+    if (Array.isArray(photo.coser)) {
+      // Multiple cosplayers stored as array
+      document.getElementById('photoEditHandle').value = photo.coser[0] || '';
+      document.getElementById('photoEditHandle2').value = photo.coser[1] || '';
+      document.getElementById('photoEditHandle3').value = photo.coser[2] || '';
+    } else if (photo.coser) {
+      // Single cosplayer stored as string
+      document.getElementById('photoEditHandle').value = photo.coser;
+      document.getElementById('photoEditHandle2').value = '';
+      document.getElementById('photoEditHandle3').value = '';
+    } else {
+      // No cosplayer data
+      document.getElementById('photoEditHandle').value = '';
+      document.getElementById('photoEditHandle2').value = '';
+      document.getElementById('photoEditHandle3').value = '';
+    }
+
     document.getElementById('photoEditCharacter').value = photo.character || '';
     document.getElementById('photoEditSeries').value = photo.series || '';
     document.getElementById('photoEditCaption').value = photo.caption || '';
@@ -2078,16 +2102,30 @@
 
   window.savePhotoEditModal = async () => {
     const type = window.currentPhotoType;
-    const handle = document.getElementById('photoEditHandle').value;
+    const handle1 = document.getElementById('photoEditHandle').value.trim();
+    const handle2 = document.getElementById('photoEditHandle2').value.trim();
+    const handle3 = document.getElementById('photoEditHandle3').value.trim();
     const character = document.getElementById('photoEditCharacter').value;
     const series = document.getElementById('photoEditSeries').value;
     const caption = document.getElementById('photoEditCaption').value || '';
     const sourceType = document.getElementById('photoEditSourceType').value;
     const sourceId = document.getElementById('photoEditSourceId').value;
 
-    if (!character || !series || (type !== 'collab' && !handle)) {
+    if (!character || !series || (type !== 'collab' && !handle1)) {
       console.log('Please fill in all fields');
       return;
+    }
+
+    // Combine multiple cosplayers into array or single string
+    let coser;
+    if (handle2 || handle3) {
+      // Multiple cosplayers: store as array
+      coser = [handle1];
+      if (handle2) coser.push(handle2);
+      if (handle3) coser.push(handle3);
+    } else {
+      // Single cosplayer: store as string
+      coser = handle1;
     }
 
     // Build source object
@@ -2100,7 +2138,7 @@
         const docSnap = await getDoc(doc(db, 'events', eventId));
         const event = docSnap.data();
         const photos = [...event.photos];
-        photos[photoIndex] = { ...photos[photoIndex], coser: handle, character, series, caption, source };
+        photos[photoIndex] = { ...photos[photoIndex], coser, character, series, caption, source };
         await updateDoc(doc(db, 'events', eventId), { photos });
         await displayEventPhotos(eventId);
       } else if (type === 'studio') {
@@ -2110,7 +2148,7 @@
         const docSnap = await getDoc(doc(db, 'studio', sessionId));
         const session = docSnap.data();
         const cosplayers = JSON.parse(JSON.stringify(session.cosplayers));
-        cosplayers[cosplayerIdx].photos[photoIdx] = { ...cosplayers[cosplayerIdx].photos[photoIdx], coser: handle, character, series, caption, source };
+        cosplayers[cosplayerIdx].photos[photoIdx] = { ...cosplayers[cosplayerIdx].photos[photoIdx], coser, character, series, caption, source };
         await updateDoc(doc(db, 'studio', sessionId), { cosplayers });
         await displayStudioPhotos(sessionId);
       } else if (type === 'collab') {

@@ -45,18 +45,20 @@ const DRY_RUN = process.argv.includes('--dry-run');
 // ─ Helper Functions ─
 
 /**
- * Extract cosplayer name (IG handle) from filename
+ * Extract cosplayer name(s) (IG handle) from filename
+ * Supports single or multiple cosplayers separated by " & "
  *
  * Patterns supported:
- * 1. web-coser_name_123.33-1-edr-vfx.jpg (new: web- prefix)
- * 2. web_coser_name_123.33_1-edr-vfx.jpg (old: web_ prefix)
- * 3. coser_name_123.33-1-edr-vfx.jpg (no prefix)
- * 4. _coser_name_123.33_-1-edr-vfx.jpg (with leading/trailing underscores)
+ * 1. web-coser_name_123.33-1-edr-vfx.jpg (single cosplayer)
+ * 2. web-coser_name2 & coser_name1-1-edr-vfx.jpg (two cosplayers with & separator)
+ * 3. web-coser_name3 & coser_name2 & coser_name1-1-edr-vfx.jpg (three cosplayers)
+ * 4. web_coser_name_123.33_1-edr-vfx.jpg (old web_ prefix)
+ * 5. coser_name_123.33-1-edr-vfx.jpg (no prefix)
+ *
+ * Returns: Single handle string OR array of handles if multiple cosplayers detected
  *
  * IG handles can only contain: letters, numbers, periods (.), and underscores (_)
- * NO dashes allowed in IG handles
- *
- * Structure: [prefix]-[ig_handle][-or_][order_number]-[metadata]...
+ * NO dashes allowed in IG handles (except to separate order/metadata)
  */
 function extractCoserFromFilename(filename) {
   const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
@@ -69,24 +71,36 @@ function extractCoserFromFilename(filename) {
     afterPrefix = nameWithoutExt.substring(4); // Remove "web_"
   }
 
-  // Step 2: Extract IG handle
-  // The IG handle ends at the order marker: _[digits]- or -[digits]-
-  // IG handles can only have letters, numbers, periods, and underscores
+  // Step 2: Extract the full cosplayer section (may contain multiple names with & separator)
+  // Ends at order marker: _[digits]- or -[digits]-
   const match = afterPrefix.match(/^(.+?)(_\d+\-|-\d+\-)/);
 
+  let cosplayerSection = null;
   if (match && match[1]) {
-    return match[1].trim();
+    cosplayerSection = match[1].trim();
+  } else {
+    // Fallback: try to extract until first dash
+    const dashIndex = afterPrefix.indexOf('-');
+    if (dashIndex > 0) {
+      cosplayerSection = afterPrefix.substring(0, dashIndex).trim();
+    } else {
+      cosplayerSection = afterPrefix.trim();
+    }
   }
 
-  // Fallback: if no order marker found, try to extract until first dash
-  // (for files that might not have the complete naming structure)
-  const dashIndex = afterPrefix.indexOf('-');
-  if (dashIndex > 0) {
-    return afterPrefix.substring(0, dashIndex).trim();
+  if (!cosplayerSection) {
+    return null;
   }
 
-  // Last resort: return everything if no clear markers found
-  return afterPrefix.trim() || null;
+  // Step 3: Check if multiple cosplayers (separated by " & ")
+  if (cosplayerSection.includes(' & ')) {
+    // Split by " & " and return array of trimmed handles
+    const handles = cosplayerSection.split(' & ').map(h => h.trim()).filter(h => h);
+    return handles.length > 0 ? handles : null;
+  }
+
+  // Step 4: Single cosplayer - return as string
+  return cosplayerSection;
 }
 
 /**
