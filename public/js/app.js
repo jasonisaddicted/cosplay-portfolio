@@ -2596,6 +2596,41 @@ window.addEventListener('firebase-config-loaded', () => {
         shareMenu.style.display = 'none';
       }
     });
+
+    // Dynamically position the share button on top of the actual image
+    // The image might be smaller than the wrapper, so we need to calculate its actual bounds
+    function repositionShareButton() {
+      const img = document.querySelector('.lightbox__img-wrap img');
+      const wrapper = document.querySelector('.lightbox__img-wrap');
+      if (!img || !wrapper || !shareBtn) return;
+
+      // Get the actual image dimensions and position within the wrapper
+      const imgRect = img.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
+
+      // Calculate position of button relative to wrapper, placing it on the actual image
+      const bottomOffset = wrapperRect.bottom - imgRect.bottom + 12; // 12px from image bottom
+      const rightOffset = wrapperRect.right - imgRect.right + 12;    // 12px from image right
+
+      console.log('📍 Repositioning share button:', {
+        imgHeight: imgRect.height,
+        wrapperHeight: wrapperRect.height,
+        bottomOffset,
+        rightOffset
+      });
+
+      shareBtn.style.bottom = bottomOffset + 'px';
+      shareBtn.style.right = rightOffset + 'px';
+    }
+
+    // Reposition button when image loads and on window resize
+    const img = document.querySelector('.lightbox__img-wrap img');
+    if (img) {
+      img.addEventListener('load', repositionShareButton);
+      window.addEventListener('resize', repositionShareButton);
+      // Also run immediately in case image is already cached/loaded
+      setTimeout(repositionShareButton, 100);
+    }
   }
 
   // Build a /photo share URL with OG metadata + deep-link index
