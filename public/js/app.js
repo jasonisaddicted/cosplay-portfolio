@@ -279,14 +279,23 @@ const Lightbox = (() => {
 
     // Extract Firebase path for comparison (ignores query parameters/tokens)
     const searchPath = extractFirebasePath(photoUrl);
-    console.log('🔍 findPhotoIndexInFullAlbum: Searching in', allPhotos.length, 'photos | Path:', searchPath.substring(0, 40));
+    console.log('🔍 findPhotoIndexInFullAlbum: Searching in', allPhotos.length, 'photos');
+    console.log('🔍 Search path:', searchPath);
 
     // Find photo by Firebase path (more reliable than full URL)
     const index = allPhotos.findIndex(p => {
       const configPath = extractFirebasePath(p.src);
       return configPath === searchPath;
     });
-    console.log('🔍 findPhotoIndexInFullAlbum: Found index:', index >= 0 ? index : 'NOT FOUND ✗', '| will use', index >= 0 ? 'full album index' : 'filtered index');
+
+    if (index < 0) {
+      console.log('🔍 NOT FOUND - Showing first 3 paths in CONFIG:');
+      allPhotos.slice(0, 3).forEach((p, i) => {
+        console.log(`  [${i}]:`, extractFirebasePath(p.src));
+      });
+    }
+
+    console.log('🔍 Result: index=', index >= 0 ? index : 'NOT FOUND ✗', '| using', index >= 0 ? 'full album index' : 'filtered index (11)');
     return index >= 0 ? index : undefined;
   };
 
