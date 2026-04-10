@@ -1640,7 +1640,7 @@ async function initEvents() {
       id: doc.id,
       type: 'events',
       ...doc.data()
-    }));
+    })).sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 
     // Use only Firestore albums (no duplicates from CONFIG.events)
     const allAlbums = firestoreAlbums;
