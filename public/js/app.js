@@ -596,7 +596,8 @@ const Lightbox = (() => {
           const ai    = parseInt(div.dataset.ai);
           const pi    = parseInt(div.dataset.pi);
           const album = coserAlbums[ai];
-          console.log('📱 Mobile sub-grid photo clicked → album:', ai, 'photo:', pi, 'totalPhotos:', album.photos.length);
+          console.log('📱 Mobile sub-grid photo clicked → album:', ai, 'photo index in sub-album:', pi, 'total:', album.photos.length);
+          console.log('📱 → current URL:', window.location.href);
           // Save original state before switching to project browsing
           Lightbox.saveState();
           // Map to structured photo objects so prev/next navigation keeps coser info
@@ -608,7 +609,9 @@ const Lightbox = (() => {
           photos  = albumObjs;
           current = pi;
           window.currentLightboxIndex = pi;  // Update URL index for this sub-album photo
-          console.log('📱 → photos array now:', albumObjs.length, 'photos, current:', pi);
+          console.log('📱 → photos array now:', albumObjs.length, 'photos');
+          console.log('📱 → Setting window.currentLightboxIndex:', pi);
+          console.log('📱 → Expected URL param: photo=' + pi);
           fadeUpdateImage(imgEl, album.photos[pi].src);
           if (counter) counter.textContent = `${pi + 1} / ${album.photos.length}`;
           infoPanel.querySelectorAll('.info-panel__acc-photo').forEach(d => d.classList.remove('selected'));
@@ -694,11 +697,15 @@ const Lightbox = (() => {
       infoPanel.querySelectorAll('.info-panel__subgrid-photo').forEach(div => {
         div.addEventListener('click', () => {
           const i = parseInt(div.dataset.i);
+          console.log('🖥️ Desktop sub-grid photo clicked → index in sub-album:', i, 'total:', albumObjs.length);
+          console.log('🖥️ → current URL:', window.location.href);
           // Save original state before switching to project browsing
           Lightbox.saveState();
           photos  = albumObjs;
           current = i;
           window.currentLightboxIndex = i;  // Update URL index for this sub-album photo
+          console.log('🖥️ → Setting window.currentLightboxIndex:', i);
+          console.log('🖥️ → Expected URL param: photo=' + i);
           fadeUpdateImage(imgEl, albumObjs[i].src);
           if (counter) counter.textContent = `${i + 1} / ${albumObjs.length}`;
           buildInfoPanel(albumObjs[i]);
@@ -2569,6 +2576,7 @@ window.addEventListener('firebase-config-loaded', () => {
   // Build a /photo share URL with OG metadata + deep-link index
   function buildPhotoShareUrl(photoShare) {
     const { photoUrl, albumId, albumType, character, series, coser, index } = photoShare;
+    console.log('🔗 buildPhotoShareUrl called:', { index, albumId, albumType, photoUrl: photoUrl?.substring(0, 50) });
     const base   = 'https://cosplay-portfolio.vercel.app/photo';
     const params = new URLSearchParams({ src: photoUrl });
     if (albumId)              params.set('albumId', albumId);
@@ -2577,7 +2585,9 @@ window.addEventListener('firebase-config-loaded', () => {
     if (series)               params.set('series', series);
     if (coser)                params.set('coser', coser);
     if (index !== undefined)  params.set('index', index);
-    return `${base}?${params.toString()}`;
+    const url = `${base}?${params.toString()}`;
+    console.log('🔗 Generated URL:', url);
+    return url;
   }
 
   // Share to Facebook / Threads
@@ -2630,6 +2640,12 @@ window.addEventListener('firebase-config-loaded', () => {
   // albumId/albumType are injected by the calling context (album.js sets them separately)
   if (Lightbox.onPhotoChange) {
     Lightbox.onPhotoChange((photo, index) => {
+      console.log('📣 Lightbox.onPhotoChange fired:', {
+        index,
+        photoSrc: photo.src?.substring(0, 50),
+        albumId: photo.albumId,
+        albumType: photo.albumType
+      });
       // Only set if album.js hasn't already set a richer context for this photo
       if (!window.currentPhotoShare || window.currentPhotoShare.index !== index) {
         window.currentPhotoShare = {
