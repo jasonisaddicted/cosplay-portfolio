@@ -1011,7 +1011,7 @@ ul { list-style: none; }
   max-width: var(--max-width);
   margin: 0 auto;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 .album-header__breadcrumb {
   font-size: 0.65rem;
