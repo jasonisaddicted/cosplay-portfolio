@@ -595,6 +595,7 @@ const Lightbox = (() => {
           const ai    = parseInt(div.dataset.ai);
           const pi    = parseInt(div.dataset.pi);
           const album = coserAlbums[ai];
+          console.log('📱 Mobile sub-grid photo clicked → album:', ai, 'photo:', pi, 'totalPhotos:', album.photos.length);
           // Save original state before switching to project browsing
           Lightbox.saveState();
           // Map to structured photo objects so prev/next navigation keeps coser info
@@ -606,6 +607,7 @@ const Lightbox = (() => {
           photos  = albumObjs;
           current = pi;
           window.currentLightboxIndex = pi;  // Update URL index for this sub-album photo
+          console.log('📱 → photos array now:', albumObjs.length, 'photos, current:', pi);
           fadeUpdateImage(imgEl, album.photos[pi].src);
           if (counter) counter.textContent = `${pi + 1} / ${album.photos.length}`;
           infoPanel.querySelectorAll('.info-panel__acc-photo').forEach(d => d.classList.remove('selected'));
@@ -708,9 +710,11 @@ const Lightbox = (() => {
   }
 
   function show(index) {
+    console.log('📷 Lightbox.show() called with index:', index, '| photos.length:', photos.length);
     current = (index + photos.length) % photos.length;
     window.currentLightboxIndex = current;  // Update global index for URL tracking
     const p = photos[current];
+    console.log('📷 → Setting to current:', current, '| photo src:', p?.src?.substring(0, 50));
     fadeUpdateImage(imgEl, p.src);
     if (capEl) capEl.textContent = '';
     if (counter) counter.textContent = `${current + 1} / ${photos.length}`;
@@ -759,6 +763,7 @@ const Lightbox = (() => {
   }
 
   function hide(fromPopstate = false) {
+    console.log('❌ Lightbox.hide() called');
     lb.classList.remove('active', 'panel-open');
     document.body.style.overflow = '';
     imgEl.src = '';
@@ -899,13 +904,25 @@ const Lightbox = (() => {
     saveState() {
       savedPhotos = photos;
       savedCurrent = current;
+      console.log('🔵 Lightbox.saveState() → Saved state:', {
+        photosLength: photos.length,
+        currentIndex: current,
+        photoSrc: photos[current]?.src?.substring(0, 50)
+      });
     },
     restoreState() {
       if (savedPhotos !== null) {
+        console.log('🟢 Lightbox.restoreState() → Restoring to:', {
+          photosLength: savedPhotos.length,
+          currentIndex: savedCurrent,
+          photoSrc: savedPhotos[savedCurrent]?.src?.substring(0, 50)
+        });
         photos = savedPhotos;
         current = savedCurrent;
         savedPhotos = null;
         savedCurrent = null;
+      } else {
+        console.log('🟡 Lightbox.restoreState() → Nothing to restore (savedPhotos is null)');
       }
     }
   };
@@ -2067,6 +2084,7 @@ async function initAlbum() {
         item.innerHTML = `<img src="${photo.src}" alt="${photo.character || 'Photo'}" loading="lazy">`;
         item.addEventListener('click', () => {
           // Restore original album state in case user was browsing projects in info panel
+          console.log('📸 Album photo clicked → index:', originalIndex);
           Lightbox.restoreState();
           Lightbox.setBack(() => Lightbox.close());
           Lightbox.open(originalIndex);  // Use original index, not offset
