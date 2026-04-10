@@ -150,16 +150,6 @@ const Lightbox = (() => {
   infoPanel.className = 'lightbox__info-panel';
   lb.appendChild(infoPanel);
 
-  // Handle scroll transparency for info panel
-  let scrollTimeout;
-  const handleInfoPanelScroll = (e) => {
-    const scrollContainer = e.target;
-    scrollContainer.style.opacity = '0.5';
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      scrollContainer.style.opacity = '1';
-    }, 300);
-  };
 
   function clearPanelTimers() {
     panelTimers.forEach(t => clearInterval(t));
@@ -371,12 +361,6 @@ const Lightbox = (() => {
         ${projectsHtml}
       </div>`;
 
-    // Attach scroll event for transparency effect
-    const charScrollContainer = infoPanel.querySelector('.info-panel__scroll');
-    if (charScrollContainer) {
-      charScrollContainer.addEventListener('scroll', handleInfoPanelScroll);
-    }
-
     // ── Filter tabs ──
     infoPanel.querySelectorAll('.info-panel__filter-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -549,12 +533,6 @@ const Lightbox = (() => {
         ${workHtml}
       </div>`;
 
-    // Attach scroll event for transparency effect
-    const scrollContainer = infoPanel.querySelector('.info-panel__scroll');
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleInfoPanelScroll);
-    }
-
     // ── Character click: show all photos of this character ──
     const characterEl = infoPanel.querySelector('[data-character]');
     if (characterEl) {
@@ -692,12 +670,6 @@ const Lightbox = (() => {
           <div class="info-panel__album-view-subtitle">${igHandle} · ${album.photos.length} photo${album.photos.length !== 1 ? 's' : ''}</div>
           <div class="info-panel__subgrid">${gridHtml}</div>
         </div>`;
-
-      // Attach scroll event for transparency effect
-      const subScrollContainer = infoPanel.querySelector('.info-panel__scroll');
-      if (subScrollContainer) {
-        subScrollContainer.addEventListener('scroll', handleInfoPanelScroll);
-      }
 
       // Back → restore original photo and panel view
       infoPanel.querySelector('.info-panel__back-btn').addEventListener('click', () => {
