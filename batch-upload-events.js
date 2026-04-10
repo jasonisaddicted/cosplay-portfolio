@@ -67,7 +67,10 @@ function extractCoserFromFilename(filename) {
 
   // Step 0: Remove " (N)" pattern if present (space + numeric index in parentheses)
   // This pattern should NOT be part of the coser name
-  nameWithoutExt = nameWithoutExt.replace(/\s+\(\d+\)$/g, '');
+  // Remove " (N)" anywhere in the filename, even if followed by other metadata
+  nameWithoutExt = nameWithoutExt.replace(/\s+\(\d+\)/g, '');
+  // Clean up any double spaces that may have been created
+  nameWithoutExt = nameWithoutExt.replace(/\s+/g, ' ').trim();
 
   // Step 1: Check for prefix and determine numeric order marker pattern
   let afterPrefix = nameWithoutExt;
@@ -104,18 +107,29 @@ function extractCoserFromFilename(filename) {
     }
   }
 
+  // Step 3: Fallback - if no numeric pattern matched, use the whole name as cosplayer section
+  // This handles plain cosplayer names without numeric markers
   if (!cosplayerSection) {
-    return null;
+    cosplayerSection = nameWithoutExt.trim();
+    if (!cosplayerSection) {
+      return null;
+    }
   }
 
-  // Step 3: Check if multiple cosplayers (separated by " & ")
+  // Step 4: Check if multiple cosplayers (separated by " & " or comma)
   if (cosplayerSection.includes(' & ')) {
     // Split by " & " and return array of trimmed handles
     const handles = cosplayerSection.split(' & ').map(h => h.trim()).filter(h => h);
     return handles.length > 0 ? handles : null;
   }
 
-  // Step 4: Single cosplayer - return as string
+  if (cosplayerSection.includes(',')) {
+    // Also support comma separation for multiple cosplayers
+    const handles = cosplayerSection.split(',').map(h => h.trim()).filter(h => h);
+    return handles.length > 0 ? handles : null;
+  }
+
+  // Step 5: Single cosplayer - return as string
   return cosplayerSection;
 }
 
