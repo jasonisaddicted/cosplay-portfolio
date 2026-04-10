@@ -1981,7 +1981,7 @@ async function initAlbum() {
     // Include albumId and albumType so sharePhotoTo() can generate proper share links
     const allPhotos = album.photos.map((p, idx) => ({
       src:       p.src,
-      coser:     p.coser || p.caption || '',
+      coser:     (Array.isArray(p.coser) ? p.coser[0] : p.coser) || p.caption || '',
       character: p.character || '',
       series:    p.series || '',
       index:     idx,
