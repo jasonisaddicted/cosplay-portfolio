@@ -2069,123 +2069,24 @@
 
   window.loadEvents = async () => {
     const snap = await getDocs(collection(db, 'events'));
-    const events = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    // Sort by order field (default to index if not set)
-    events.sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
-
-    const html = events.map((d, idx) => {
+    const html = snap.docs.map(doc => {
+      const d = doc.data();
       return `
-        <div class="item" draggable="true" data-event-id="${d.id}" data-order="${d.order ?? idx}" style="cursor: grab; opacity: 1; transition: opacity 0.2s;">
+        <div class="item">
           <div class="item-header">
-            <div style="flex: 1;">
+            <div>
               <div class="item-title">${d.name}</div>
               <div style="font-size:0.8rem; color:#666;">${d.date} · ${d.location}</div>
             </div>
             <div class="item-actions">
-              <button onclick="editEvent('${d.id}')">Edit</button>
-              <button onclick="deleteEvent('${d.id}')">Delete</button>
+              <button onclick="editEvent('${doc.id}')">Edit</button>
+              <button onclick="deleteEvent('${doc.id}')">Delete</button>
             </div>
           </div>
         </div>
       `;
     }).join('');
-
-    const container = document.getElementById('eventsList');
-    container.innerHTML = html || '<p style="color:#666;">No events yet</p>';
-
-    // Setup drag-and-drop handlers
-    setupEventsDragAndDrop();
-  };
-
-  window.setupEventsDragAndDrop = () => {
-    const items = document.querySelectorAll('#eventsList .item[draggable="true"]');
-    let draggedItem = null;
-
-    items.forEach(item => {
-      item.addEventListener('dragstart', (e) => {
-        draggedItem = item;
-        item.style.opacity = '0.5';
-        item.style.cursor = 'grabbing';
-        e.dataTransfer.effectAllowed = 'move';
-      });
-
-      item.addEventListener('dragend', (e) => {
-        item.style.opacity = '1';
-        item.style.cursor = 'grab';
-        draggedItem = null;
-        // Clear all drag-over styles
-        items.forEach(i => {
-          i.style.borderTop = '';
-          i.style.borderBottom = '';
-        });
-      });
-
-      item.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-
-        if (draggedItem && draggedItem !== item) {
-          const rect = item.getBoundingClientRect();
-          const midpoint = rect.top + rect.height / 2;
-
-          // Visual indicator
-          if (e.clientY < midpoint) {
-            item.style.borderTop = '2px solid #c8a46e';
-            item.style.borderBottom = '';
-          } else {
-            item.style.borderTop = '';
-            item.style.borderBottom = '2px solid #c8a46e';
-          }
-        }
-      });
-
-      item.addEventListener('dragleave', (e) => {
-        item.style.borderTop = '';
-        item.style.borderBottom = '';
-      });
-
-      item.addEventListener('drop', async (e) => {
-        e.preventDefault();
-
-        if (draggedItem && draggedItem !== item) {
-          const rect = item.getBoundingClientRect();
-          const midpoint = rect.top + rect.height / 2;
-
-          // Insert before or after based on mouse position
-          if (e.clientY < midpoint) {
-            item.parentNode.insertBefore(draggedItem, item);
-          } else {
-            item.parentNode.insertBefore(draggedItem, item.nextSibling);
-          }
-
-          // Save new order to Firestore
-          await saveEventsOrder();
-        }
-
-        item.style.borderTop = '';
-        item.style.borderBottom = '';
-      });
-    });
-  };
-
-  window.saveEventsOrder = async () => {
-    try {
-      const items = document.querySelectorAll('#eventsList .item[data-event-id]');
-      const updates = [];
-
-      items.forEach((item, index) => {
-        const eventId = item.dataset.eventId;
-        updates.push(
-          updateDoc(doc(db, 'events', eventId), { order: index })
-        );
-      });
-
-      await Promise.all(updates);
-      console.log('Event order saved successfully');
-    } catch (err) {
-      console.error('Error saving event order:', err);
-    }
+    document.getElementById('eventsList').innerHTML = html || '<p style="color:#666;">No events yet</p>';
   };
 
   window.editEvent = async (id) => {
