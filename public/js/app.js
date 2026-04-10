@@ -140,6 +140,7 @@ const Lightbox = (() => {
   // Save/restore state for info panel browsing
   let savedPhotos = null;
   let savedCurrent = null;
+  let inSubGridMode = false;  // Track if currently browsing sub-grid photos
 
   const lb = document.getElementById('lightbox');
   if (!lb) return {};
@@ -902,8 +903,14 @@ const Lightbox = (() => {
     openCoser(handle) { buildCoserPanel(handle); lb.style.display = 'flex'; },
     // Save/restore state for info panel browsing mode
     saveState() {
+      // Only save once when entering sub-grid mode, not on every sub-grid photo click
+      if (inSubGridMode) {
+        console.log('🟠 Lightbox.saveState() → Already in sub-grid mode, skipping');
+        return;
+      }
       savedPhotos = photos;
       savedCurrent = current;
+      inSubGridMode = true;
       console.log('🔵 Lightbox.saveState() → Saved state:', {
         photosLength: photos.length,
         currentIndex: current,
@@ -921,6 +928,7 @@ const Lightbox = (() => {
         current = savedCurrent;
         savedPhotos = null;
         savedCurrent = null;
+        inSubGridMode = false;  // Clear flag when exiting sub-grid mode
       } else {
         console.log('🟡 Lightbox.restoreState() → Nothing to restore (savedPhotos is null)');
       }
