@@ -615,7 +615,7 @@ const Lightbox = (() => {
             photoUrl:  album.photos[pi].src || '',
             character: album.photos[pi].character || '',
             series:    album.photos[pi].series || '',
-            coser:     handle || '',
+            coser:     album.photos[pi].coser || handle || '',
             index:     pi,
             albumId:   photo.albumId || window.currentPhotoShare?.albumId || null,
             albumType: photo.albumType || window.currentPhotoShare?.albumType || null
@@ -721,7 +721,7 @@ const Lightbox = (() => {
             photoUrl:  album.photos[i].src || '',
             character: album.photos[i].character || '',
             series:    album.photos[i].series || '',
-            coser:     igHandle.slice(igHandle.startsWith('@') ? 1 : 0) || '',
+            coser:     album.photos[i].coser || igHandle.slice(igHandle.startsWith('@') ? 1 : 0) || '',
             index:     i,
             albumId:   originalPhoto.albumId || window.currentPhotoShare?.albumId || null,
             albumType: originalPhoto.albumType || window.currentPhotoShare?.albumType || null
