@@ -605,6 +605,7 @@ const Lightbox = (() => {
           }));
           photos  = albumObjs;
           current = pi;
+          window.currentLightboxIndex = pi;  // Update URL index for this sub-album photo
           fadeUpdateImage(imgEl, album.photos[pi].src);
           if (counter) counter.textContent = `${pi + 1} / ${album.photos.length}`;
           infoPanel.querySelectorAll('.info-panel__acc-photo').forEach(d => d.classList.remove('selected'));
@@ -694,6 +695,7 @@ const Lightbox = (() => {
           Lightbox.saveState();
           photos  = albumObjs;
           current = i;
+          window.currentLightboxIndex = i;  // Update URL index for this sub-album photo
           fadeUpdateImage(imgEl, albumObjs[i].src);
           if (counter) counter.textContent = `${i + 1} / ${albumObjs.length}`;
           buildInfoPanel(albumObjs[i]);
