@@ -2563,13 +2563,39 @@ window.addEventListener('firebase-config-loaded', () => {
   initHome();
   initEvents();
   initOutdoor();
+  // ── Lightbox Photo Sharing Setup (BEFORE any album/photo initialization) ───
+  // Store current photo context when opening lightbox
+  window.currentPhotoShare = null;
+
+  // Register onPhotoChange callback FIRST - BEFORE albums are initialized
+  // This ensures currentPhotoShare is set for all photos, including the initial one
+  if (Lightbox && Lightbox.onPhotoChange) {
+    console.log('📝 Registering Lightbox.onPhotoChange callback...');
+    Lightbox.onPhotoChange((photo, index) => {
+      console.log('📣 Lightbox.onPhotoChange fired:', {
+        index,
+        photoSrc: photo.src?.substring(0, 50),
+        albumId: photo.albumId,
+        albumType: photo.albumType
+      });
+      // Only set if album.js hasn't already set a richer context for this photo
+      if (!window.currentPhotoShare || window.currentPhotoShare.index !== index) {
+        window.currentPhotoShare = {
+          photoUrl:  photo.src       || '',
+          character: photo.character || '',
+          series:    photo.series    || '',
+          coser:     photo.coser     || photo.credit || '',
+          index:     index,
+          albumId:   photo.albumId   || window.currentPhotoShare?.albumId   || null,
+          albumType: photo.albumType || window.currentPhotoShare?.albumType || null,
+        };
+      }
+    });
+  }
+
   initStudio();
   initAlbum();
   initCollabs();
-
-  // ── Lightbox Photo Sharing ───────────────────────────────────
-  // Store current photo context when opening lightbox
-  window.currentPhotoShare = null;
 
   // Setup lightbox share button
   const shareBtn = document.getElementById('lightboxShareBtn');
@@ -2704,28 +2730,4 @@ window.addEventListener('firebase-config-loaded', () => {
     if (shareMenu) shareMenu.style.display = 'none';
   };
 
-  // Keep currentPhotoShare in sync whenever the lightbox shows a photo
-  // albumId/albumType are injected by the calling context (album.js sets them separately)
-  if (Lightbox.onPhotoChange) {
-    Lightbox.onPhotoChange((photo, index) => {
-      console.log('📣 Lightbox.onPhotoChange fired:', {
-        index,
-        photoSrc: photo.src?.substring(0, 50),
-        albumId: photo.albumId,
-        albumType: photo.albumType
-      });
-      // Only set if album.js hasn't already set a richer context for this photo
-      if (!window.currentPhotoShare || window.currentPhotoShare.index !== index) {
-        window.currentPhotoShare = {
-          photoUrl:  photo.src       || '',
-          character: photo.character || '',
-          series:    photo.series    || '',
-          coser:     photo.coser     || photo.credit || '',
-          index:     index,
-          albumId:   photo.albumId   || window.currentPhotoShare?.albumId   || null,
-          albumType: photo.albumType || window.currentPhotoShare?.albumType || null,
-        };
-      }
-    });
-  }
 });
