@@ -675,8 +675,9 @@ const Lightbox = (() => {
           // Sub-grid browsing is temporary; URL should stay valid for sharing
           // Update currentPhotoShare so Share button uses correct sub-grid photo data
           const photoUrl = album.photos[pi].src || '';
-          const albumId = photo.albumId || window.currentPhotoShare?.albumId || null;
-          const albumType = photo.albumType || window.currentPhotoShare?.albumType || null;
+          // Use the subgrid album's id, not the original photo's albumId
+          const albumId = album.id || photo.albumId || window.currentPhotoShare?.albumId || null;
+          const albumType = album.type || photo.albumType || window.currentPhotoShare?.albumType || 'events';
           // Find the correct index in the FULL unfiltered album for sharing
           const fullAlbumIndex = window.findPhotoIndexInFullAlbum(albumId, albumType, photoUrl);
           const shareIndex = fullAlbumIndex !== undefined ? fullAlbumIndex : pi;
@@ -690,7 +691,7 @@ const Lightbox = (() => {
             albumId:   albumId,
             albumType: albumType
           };
-          console.log('📱 → Updated currentPhotoShare:', { filteredIndex: pi, shareIndex, photoUrl: photoUrl.substring(0, 50) });
+          console.log('📱 → Updated currentPhotoShare:', { filteredIndex: pi, shareIndex, albumId, albumType, photoUrl: photoUrl.substring(0, 50) });
           console.log('📱 → photos array now:', albumObjs.length, 'photos');
           console.log('📱 → URL stays at original album photo (for valid sharing)');
           fadeUpdateImage(imgEl, album.photos[pi].src);
@@ -788,8 +789,9 @@ const Lightbox = (() => {
           // Sub-grid browsing is temporary; URL should stay valid for sharing
           // Update currentPhotoShare so Share button uses correct sub-grid photo data
           const photoUrl = album.photos[i].src || '';
-          const albumId = originalPhoto.albumId || window.currentPhotoShare?.albumId || null;
-          const albumType = originalPhoto.albumType || window.currentPhotoShare?.albumType || null;
+          // Use the subgrid album's id, not the original photo's albumId
+          const albumId = album.id || originalPhoto.albumId || window.currentPhotoShare?.albumId || null;
+          const albumType = album.type || originalPhoto.albumType || window.currentPhotoShare?.albumType || 'events';
           // Find the correct index in the FULL unfiltered album for sharing
           const fullAlbumIndex = window.findPhotoIndexInFullAlbum(albumId, albumType, photoUrl);
           const shareIndex = fullAlbumIndex !== undefined ? fullAlbumIndex : i;
@@ -803,7 +805,7 @@ const Lightbox = (() => {
             albumId:   albumId,
             albumType: albumType
           };
-          console.log('🖥️ → Updated currentPhotoShare:', { filteredIndex: i, shareIndex, photoUrl: photoUrl.substring(0, 50) });
+          console.log('🖥️ → Updated currentPhotoShare:', { filteredIndex: i, shareIndex, albumId, albumType, photoUrl: photoUrl.substring(0, 50) });
           console.log('🖥️ → URL stays at original album photo (for valid sharing)');
           fadeUpdateImage(imgEl, albumObjs[i].src);
           if (counter) counter.textContent = `${i + 1} / ${albumObjs.length}`;
