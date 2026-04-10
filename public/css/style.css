@@ -1119,7 +1119,7 @@ ul { list-style: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid var(--border);
+  border-top: none;
   width: 100%;
 }
 .cosplayer-header__name {
