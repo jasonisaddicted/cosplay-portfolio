@@ -2575,9 +2575,12 @@ window.addEventListener('firebase-config-loaded', () => {
   const shareBtn = document.getElementById('lightboxShareBtn');
   const shareMenu = document.getElementById('lightboxShareMenu');
   if (shareBtn && shareMenu) {
+    console.log('✅ Share button setup: Found elements', { shareBtn, shareMenu });
     shareBtn.addEventListener('click', (e) => {
+      console.log('🖱️ Share button clicked!', { display: shareMenu.style.display });
       e.stopPropagation();
       shareMenu.style.display = shareMenu.style.display === 'none' ? 'block' : 'none';
+      console.log('📂 Menu toggled to:', shareMenu.style.display);
     });
 
     // Close menu when clicking outside
@@ -2614,7 +2617,11 @@ window.addEventListener('firebase-config-loaded', () => {
 
   // Share to Facebook / Threads
   window.sharePhotoTo = function(platform) {
-    if (!window.currentPhotoShare) return;
+    console.log('🔄 sharePhotoTo called:', { platform, currentPhotoShare: window.currentPhotoShare });
+    if (!window.currentPhotoShare) {
+      console.error('❌ No currentPhotoShare set!');
+      return;
+    }
     const { character, series, coser } = window.currentPhotoShare;
     const shareUrl  = buildPhotoShareUrl(window.currentPhotoShare);
     const shareText = `Check out this${character ? ` ${character}` : ''} cosplay${series ? ` from ${series}` : ''}${coser ? ` by ${coser}` : ''}`;
@@ -2640,7 +2647,11 @@ window.addEventListener('firebase-config-loaded', () => {
 
   // Copy photo link to clipboard
   window.copyPhotoLink = function() {
-    if (!window.currentPhotoShare) return;
+    console.log('📋 copyPhotoLink called:', { currentPhotoShare: window.currentPhotoShare });
+    if (!window.currentPhotoShare) {
+      console.error('❌ No currentPhotoShare set!');
+      return;
+    }
     const shareUrl = buildPhotoShareUrl(window.currentPhotoShare);
     navigator.clipboard.writeText(shareUrl).then(() => {
       const shareBtn = document.getElementById('lightboxShareBtn');
