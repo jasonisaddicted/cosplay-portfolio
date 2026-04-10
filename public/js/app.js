@@ -236,6 +236,16 @@ const Lightbox = (() => {
     return results;
   };
 
+  // Extract Firebase storage path from full URL for reliable comparison
+  function extractFirebasePath(url) {
+    if (!url) return '';
+    try {
+      const match = url.match(/\/o\/([^?]+)/);
+      if (match) return decodeURIComponent(match[1]);
+    } catch (_) {}
+    return url;
+  }
+
   // Find the correct photo index in the FULL album (not filtered)
   // Used for sharing links to ensure the correct photo is opened
   window.findPhotoIndexInFullAlbum = function(albumId, albumType, photoUrl) {
@@ -267,11 +277,16 @@ const Lightbox = (() => {
       allPhotos = fullAlbum.photos || [];
     }
 
-    console.log('🔍 findPhotoIndexInFullAlbum: Searching in', allPhotos.length, 'photos for URL:', photoUrl.substring(0, 50));
+    // Extract Firebase path for comparison (ignores query parameters/tokens)
+    const searchPath = extractFirebasePath(photoUrl);
+    console.log('🔍 findPhotoIndexInFullAlbum: Searching in', allPhotos.length, 'photos | Path:', searchPath.substring(0, 40));
 
-    // Find photo by URL
-    const index = allPhotos.findIndex(p => p.src === photoUrl);
-    console.log('🔍 findPhotoIndexInFullAlbum: Found index:', index, index >= 0 ? '✓' : '✗ (URL not found, will use filtered index)');
+    // Find photo by Firebase path (more reliable than full URL)
+    const index = allPhotos.findIndex(p => {
+      const configPath = extractFirebasePath(p.src);
+      return configPath === searchPath;
+    });
+    console.log('🔍 findPhotoIndexInFullAlbum: Found index:', index >= 0 ? index : 'NOT FOUND ✗', '| will use', index >= 0 ? 'full album index' : 'filtered index');
     return index >= 0 ? index : undefined;
   };
 
