@@ -236,6 +236,39 @@ const Lightbox = (() => {
     return results;
   };
 
+  // Find the correct photo index in the FULL album (not filtered)
+  // Used for sharing links to ensure the correct photo is opened
+  window.findPhotoIndexInFullAlbum = function(albumId, albumType, photoUrl) {
+    if (!albumId || !albumType || !photoUrl || typeof CONFIG === 'undefined') return undefined;
+
+    let fullAlbum = null;
+    if (albumType === 'events') {
+      fullAlbum = (CONFIG.events || []).find(a => a.id === albumId);
+    } else if (albumType === 'studio') {
+      fullAlbum = (CONFIG.studio || []).find(a => a.id === albumId);
+    } else if (albumType === 'collab') {
+      fullAlbum = (CONFIG.collaborators || []).find(a => a.id === albumId);
+    } else if (albumType === 'outdoor') {
+      fullAlbum = (CONFIG.outdoor || []).find(a => a.id === albumId);
+    }
+
+    if (!fullAlbum) return undefined;
+
+    // For studio, photos are nested in cosplayers - flatten them
+    let allPhotos = [];
+    if (albumType === 'studio' && fullAlbum.cosplayers) {
+      fullAlbum.cosplayers.forEach(c => {
+        allPhotos.push(...(c.photos || []));
+      });
+    } else {
+      allPhotos = fullAlbum.photos || [];
+    }
+
+    // Find photo by URL
+    const index = allPhotos.findIndex(p => p.src === photoUrl);
+    return index >= 0 ? index : undefined;
+  };
+
   // Auto-discovers all albums featuring this character
   function findCharacterAlbums(character) {
     const results = [];
@@ -611,16 +644,23 @@ const Lightbox = (() => {
           // Keep URL at original album photo - don't update window.currentLightboxIndex
           // Sub-grid browsing is temporary; URL should stay valid for sharing
           // Update currentPhotoShare so Share button uses correct sub-grid photo data
+          const photoUrl = album.photos[pi].src || '';
+          const albumId = photo.albumId || window.currentPhotoShare?.albumId || null;
+          const albumType = photo.albumType || window.currentPhotoShare?.albumType || null;
+          // Find the correct index in the FULL unfiltered album for sharing
+          const fullAlbumIndex = window.findPhotoIndexInFullAlbum(albumId, albumType, photoUrl);
+          const shareIndex = fullAlbumIndex !== undefined ? fullAlbumIndex : pi;
+
           window.currentPhotoShare = {
-            photoUrl:  album.photos[pi].src || '',
+            photoUrl:  photoUrl,
             character: album.photos[pi].character || '',
             series:    album.photos[pi].series || '',
             coser:     album.photos[pi].coser || handle || '',
-            index:     pi,
-            albumId:   photo.albumId || window.currentPhotoShare?.albumId || null,
-            albumType: photo.albumType || window.currentPhotoShare?.albumType || null
+            index:     shareIndex,
+            albumId:   albumId,
+            albumType: albumType
           };
-          console.log('📱 → Updated currentPhotoShare:', { index: pi, photoUrl: album.photos[pi].src?.substring(0, 50) });
+          console.log('📱 → Updated currentPhotoShare:', { filteredIndex: pi, shareIndex, photoUrl: photoUrl.substring(0, 50) });
           console.log('📱 → photos array now:', albumObjs.length, 'photos');
           console.log('📱 → URL stays at original album photo (for valid sharing)');
           fadeUpdateImage(imgEl, album.photos[pi].src);
@@ -717,16 +757,23 @@ const Lightbox = (() => {
           // Keep URL at original album photo - don't update window.currentLightboxIndex
           // Sub-grid browsing is temporary; URL should stay valid for sharing
           // Update currentPhotoShare so Share button uses correct sub-grid photo data
+          const photoUrl = album.photos[i].src || '';
+          const albumId = originalPhoto.albumId || window.currentPhotoShare?.albumId || null;
+          const albumType = originalPhoto.albumType || window.currentPhotoShare?.albumType || null;
+          // Find the correct index in the FULL unfiltered album for sharing
+          const fullAlbumIndex = window.findPhotoIndexInFullAlbum(albumId, albumType, photoUrl);
+          const shareIndex = fullAlbumIndex !== undefined ? fullAlbumIndex : i;
+
           window.currentPhotoShare = {
-            photoUrl:  album.photos[i].src || '',
+            photoUrl:  photoUrl,
             character: album.photos[i].character || '',
             series:    album.photos[i].series || '',
             coser:     album.photos[i].coser || igHandle.slice(igHandle.startsWith('@') ? 1 : 0) || '',
-            index:     i,
-            albumId:   originalPhoto.albumId || window.currentPhotoShare?.albumId || null,
-            albumType: originalPhoto.albumType || window.currentPhotoShare?.albumType || null
+            index:     shareIndex,
+            albumId:   albumId,
+            albumType: albumType
           };
-          console.log('🖥️ → Updated currentPhotoShare:', { index: i, photoUrl: album.photos[i].src?.substring(0, 50) });
+          console.log('🖥️ → Updated currentPhotoShare:', { filteredIndex: i, shareIndex, photoUrl: photoUrl.substring(0, 50) });
           console.log('🖥️ → URL stays at original album photo (for valid sharing)');
           fadeUpdateImage(imgEl, albumObjs[i].src);
           if (counter) counter.textContent = `${i + 1} / ${albumObjs.length}`;
