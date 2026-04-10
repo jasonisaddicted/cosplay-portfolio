@@ -52,16 +52,22 @@ const DRY_RUN = process.argv.includes('--dry-run');
  * 1. web-_coser_name_123.33_-1-edr.jpg (web- prefix, numeric order -#)
  * 2. web__coser_name_123.33__1-edr.jpg (web_ prefix, numeric order _#)
  * 3. coser_name_123.33_1-edr.jpg (underscore pattern, numeric order _#)
- * 4. coser_name-1-edr.jpg (dash pattern, numeric order -#, NEW)
- * 5. web-_coser_name2 & coser_name1_-1-edr.jpg (multiple cosplayers with & separator)
+ * 4. coser_name-1-edr.jpg (dash pattern, numeric order -#)
+ * 5. coser_name_123.33 (1).jpg (space + numeric index in parentheses, NEW)
+ * 6. web-_coser_name2 & coser_name1_-1-edr.jpg (multiple cosplayers with & separator)
  *
  * Returns: Single handle string OR array of handles if multiple cosplayers detected
  *
  * IG handles can only contain: letters, numbers, periods (.), and underscores (_)
  * NO dashes allowed in IG handles (except to separate order/metadata)
+ * Note: " (1)" pattern is extracted as index, not part of coser name
  */
 function extractCoserFromFilename(filename) {
-  const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+  let nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+
+  // Step 0: Remove " (N)" pattern if present (space + numeric index in parentheses)
+  // This pattern should NOT be part of the coser name
+  nameWithoutExt = nameWithoutExt.replace(/\s+\(\d+\)$/g, '');
 
   // Step 1: Check for prefix and determine numeric order marker pattern
   let afterPrefix = nameWithoutExt;
