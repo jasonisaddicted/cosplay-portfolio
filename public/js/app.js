@@ -608,8 +608,9 @@ const Lightbox = (() => {
           }));
           photos  = albumObjs;
           current = pi;
-          window.currentLightboxIndex = pi;  // Update URL index for this sub-album photo
-          // Update currentPhotoShare so Share button uses correct photo
+          // Keep URL at original album photo - don't update window.currentLightboxIndex
+          // Sub-grid browsing is temporary; URL should stay valid for sharing
+          // Update currentPhotoShare so Share button uses correct sub-grid photo data
           window.currentPhotoShare = {
             photoUrl:  album.photos[pi].src || '',
             character: album.photos[pi].character || '',
@@ -621,8 +622,7 @@ const Lightbox = (() => {
           };
           console.log('📱 → Updated currentPhotoShare:', { index: pi, photoUrl: album.photos[pi].src?.substring(0, 50) });
           console.log('📱 → photos array now:', albumObjs.length, 'photos');
-          console.log('📱 → Setting window.currentLightboxIndex:', pi);
-          console.log('📱 → Expected URL param: photo=' + pi);
+          console.log('📱 → URL stays at original album photo (for valid sharing)');
           fadeUpdateImage(imgEl, album.photos[pi].src);
           if (counter) counter.textContent = `${pi + 1} / ${album.photos.length}`;
           infoPanel.querySelectorAll('.info-panel__acc-photo').forEach(d => d.classList.remove('selected'));
@@ -714,8 +714,9 @@ const Lightbox = (() => {
           Lightbox.saveState();
           photos  = albumObjs;
           current = i;
-          window.currentLightboxIndex = i;  // Update URL index for this sub-album photo
-          // Update currentPhotoShare so Share button uses correct photo
+          // Keep URL at original album photo - don't update window.currentLightboxIndex
+          // Sub-grid browsing is temporary; URL should stay valid for sharing
+          // Update currentPhotoShare so Share button uses correct sub-grid photo data
           window.currentPhotoShare = {
             photoUrl:  album.photos[i].src || '',
             character: album.photos[i].character || '',
@@ -726,8 +727,7 @@ const Lightbox = (() => {
             albumType: originalPhoto.albumType || window.currentPhotoShare?.albumType || null
           };
           console.log('🖥️ → Updated currentPhotoShare:', { index: i, photoUrl: album.photos[i].src?.substring(0, 50) });
-          console.log('🖥️ → Setting window.currentLightboxIndex:', i);
-          console.log('🖥️ → Expected URL param: photo=' + i);
+          console.log('🖥️ → URL stays at original album photo (for valid sharing)');
           fadeUpdateImage(imgEl, albumObjs[i].src);
           if (counter) counter.textContent = `${i + 1} / ${albumObjs.length}`;
           buildInfoPanel(albumObjs[i]);
