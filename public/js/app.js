@@ -609,6 +609,17 @@ const Lightbox = (() => {
           photos  = albumObjs;
           current = pi;
           window.currentLightboxIndex = pi;  // Update URL index for this sub-album photo
+          // Update currentPhotoShare so Share button uses correct photo
+          window.currentPhotoShare = {
+            photoUrl:  album.photos[pi].src || '',
+            character: album.photos[pi].character || '',
+            series:    album.photos[pi].series || '',
+            coser:     handle || '',
+            index:     pi,
+            albumId:   photo.albumId || window.currentPhotoShare?.albumId || null,
+            albumType: photo.albumType || window.currentPhotoShare?.albumType || null
+          };
+          console.log('📱 → Updated currentPhotoShare:', { index: pi, photoUrl: album.photos[pi].src?.substring(0, 50) });
           console.log('📱 → photos array now:', albumObjs.length, 'photos');
           console.log('📱 → Setting window.currentLightboxIndex:', pi);
           console.log('📱 → Expected URL param: photo=' + pi);
@@ -704,6 +715,17 @@ const Lightbox = (() => {
           photos  = albumObjs;
           current = i;
           window.currentLightboxIndex = i;  // Update URL index for this sub-album photo
+          // Update currentPhotoShare so Share button uses correct photo
+          window.currentPhotoShare = {
+            photoUrl:  album.photos[i].src || '',
+            character: album.photos[i].character || '',
+            series:    album.photos[i].series || '',
+            coser:     originalPhoto.coser || '',
+            index:     i,
+            albumId:   originalPhoto.albumId || window.currentPhotoShare?.albumId || null,
+            albumType: originalPhoto.albumType || window.currentPhotoShare?.albumType || null
+          };
+          console.log('🖥️ → Updated currentPhotoShare:', { index: i, photoUrl: album.photos[i].src?.substring(0, 50) });
           console.log('🖥️ → Setting window.currentLightboxIndex:', i);
           console.log('🖥️ → Expected URL param: photo=' + i);
           fadeUpdateImage(imgEl, albumObjs[i].src);
