@@ -252,7 +252,10 @@ const Lightbox = (() => {
       fullAlbum = (CONFIG.outdoor || []).find(a => a.id === albumId);
     }
 
-    if (!fullAlbum) return undefined;
+    if (!fullAlbum) {
+      console.log('🔍 findPhotoIndexInFullAlbum: Album not found', { albumId, albumType });
+      return undefined;
+    }
 
     // For studio, photos are nested in cosplayers - flatten them
     let allPhotos = [];
@@ -264,8 +267,11 @@ const Lightbox = (() => {
       allPhotos = fullAlbum.photos || [];
     }
 
+    console.log('🔍 findPhotoIndexInFullAlbum: Searching in', allPhotos.length, 'photos for URL:', photoUrl.substring(0, 50));
+
     // Find photo by URL
     const index = allPhotos.findIndex(p => p.src === photoUrl);
+    console.log('🔍 findPhotoIndexInFullAlbum: Found index:', index, index >= 0 ? '✓' : '✗ (URL not found, will use filtered index)');
     return index >= 0 ? index : undefined;
   };
 
