@@ -137,6 +137,10 @@ const Lightbox = (() => {
   let onPhotoChangeCb = null;
   let historyState = null;
 
+  // Save/restore state for info panel browsing
+  let savedPhotos = null;
+  let savedCurrent = null;
+
   const lb = document.getElementById('lightbox');
   if (!lb) return {};
 
@@ -591,6 +595,8 @@ const Lightbox = (() => {
           const ai    = parseInt(div.dataset.ai);
           const pi    = parseInt(div.dataset.pi);
           const album = coserAlbums[ai];
+          // Save original state before switching to project browsing
+          Lightbox.saveState();
           // Map to structured photo objects so prev/next navigation keeps coser info
           const albumObjs = album.photos.map(p => ({
             src: p.src, coser: handle,
@@ -684,6 +690,8 @@ const Lightbox = (() => {
       infoPanel.querySelectorAll('.info-panel__subgrid-photo').forEach(div => {
         div.addEventListener('click', () => {
           const i = parseInt(div.dataset.i);
+          // Save original state before switching to project browsing
+          Lightbox.saveState();
           photos  = albumObjs;
           current = i;
           fadeUpdateImage(imgEl, albumObjs[i].src);
@@ -756,6 +764,9 @@ const Lightbox = (() => {
     backCallback = null;
     historyState = null;
     clearPanelTimers();
+    // Restore original album state when closing lightbox
+    // This ensures clean state if user goes back to album and clicks a new photo
+    Lightbox.restoreState();
   }
 
   if (backBtn) {
@@ -881,7 +892,20 @@ const Lightbox = (() => {
     setBack(callback) { backCallback = callback; },
     onPhotoChange(cb) { onPhotoChangeCb = cb; },
     openCharacter(character) { buildCharacterPanel(character); lb.style.display = 'flex'; },
-    openCoser(handle) { buildCoserPanel(handle); lb.style.display = 'flex'; }
+    openCoser(handle) { buildCoserPanel(handle); lb.style.display = 'flex'; },
+    // Save/restore state for info panel browsing mode
+    saveState() {
+      savedPhotos = photos;
+      savedCurrent = current;
+    },
+    restoreState() {
+      if (savedPhotos !== null) {
+        photos = savedPhotos;
+        current = savedCurrent;
+        savedPhotos = null;
+        savedCurrent = null;
+      }
+    }
   };
 })();
 
@@ -2040,6 +2064,8 @@ async function initAlbum() {
         item.className = 'photo-grid__item';
         item.innerHTML = `<img src="${photo.src}" alt="${photo.character || 'Photo'}" loading="lazy">`;
         item.addEventListener('click', () => {
+          // Restore original album state in case user was browsing projects in info panel
+          Lightbox.restoreState();
           Lightbox.setBack(() => Lightbox.close());
           Lightbox.open(originalIndex);  // Use original index, not offset
         });
