@@ -1784,20 +1784,23 @@
       return;
     }
 
-    let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+    let html = '<div style="display:flex; flex-direction:column; gap:0;">';
     events.forEach((event, idx) => {
+      const upBtn = idx > 0 ? `<button onclick="window.moveEventUp('${event.id}', ${idx})" style="padding:4px 8px; background:#5a7d3d; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; margin-right:5px; font-size:0.8rem;">↑ Up</button>` : '';
+      const downBtn = idx < events.length - 1 ? `<button onclick="window.moveEventDown('${event.id}', ${idx})" style="padding:4px 8px; background:#5a7d3d; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; margin-right:5px; font-size:0.8rem;">↓ Down</button>` : '';
+
       html += `
-        <div draggable="true" ondragstart="window.dragEventStart(event)" ondragover="window.dragEventOver(event)" ondrop="window.dragEventDrop(event, '${event.id}')" ondragend="window.dragEventEnd(event)" class="event-order-item" data-event-id="${event.id}" style="padding:15px; margin-bottom:8px; background:#0d0d0d; border:2px solid #333; border-radius:2px; cursor:grab; display:flex; align-items:center; justify-content:space-between; user-select:none; transition: all 0.2s ease;">
+        <div class="event-order-item" data-event-id="${event.id}" style="padding:10px; border-bottom:1px solid #333; display:flex; align-items:center; justify-content:space-between; user-select:none;">
           <div style="display:flex; align-items:center; flex:1;">
             <span style="color:#aaa; font-size:0.9rem; margin-right:10px; min-width:30px; font-weight:bold;">⋮⋮</span>
-            <div style="flex:1;">
-              <div style="color:#fff; font-size:0.95rem; margin-bottom:8px; cursor:pointer; padding:5px; border-radius:2px;" onclick="window.editEventMetadata('${event.id}', '${(event.name || '').replace(/'/g, "\\'")}', '${(event.date || '').replace(/'/g, "\\'")}', '${(event.location || '').replace(/'/g, "\\'")}')">
-                <strong>${event.name || 'Unnamed Event'}</strong>
-              </div>
-              <div style="color:#666; font-size:0.8rem;">📅 ${event.date || 'No date'} • 📍 ${event.location || 'No location'}</div>
-            </div>
+            <span style="flex:1; color:#fff; font-size:0.9rem;">${event.name || 'Unnamed Event'}</span>
+            <span style="color:#666; font-size:0.75rem; margin-right:10px; min-width:30px; text-align:right; font-weight:bold;">#${idx + 1}</span>
           </div>
-          <div style="color:#666; font-size:0.75rem; margin-right:10px; min-width:30px; text-align:right; font-weight:bold;">#${idx + 1}</div>
+          <div style="display:flex; gap:5px;">
+            ${upBtn}
+            ${downBtn}
+            <button onclick="window.editEventName('${event.id}', '${(event.name || '').replace(/'/g, "\\'")}');" style="padding:4px 8px; background:#4a7c2c; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; font-size:0.8rem;">Edit</button>
+          </div>
         </div>
       `;
     });
@@ -1805,37 +1808,8 @@
     container.innerHTML = html;
   };
 
-  let draggedEvent = null;
-
-  window.dragEventStart = (e) => {
-    draggedEvent = e.target.closest('.event-order-item');
-    draggedEvent.style.opacity = '0.5';
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  window.dragEventOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    const item = e.target.closest('.event-order-item');
-    if (item && item !== draggedEvent) {
-      const rect = item.getBoundingClientRect();
-      const mouseY = e.clientY;
-      const itemMid = rect.top + rect.height / 2;
-
-      document.querySelectorAll('.event-order-item').forEach(el => el.style.borderTop = '');
-      if (mouseY < itemMid) {
-        item.style.borderTop = '3px solid #c8a46e';
-      }
-    }
-  };
-
-  window.dragEventDrop = async (e, eventId) => {
-    e.preventDefault();
-    const draggedId = draggedEvent.getAttribute('data-event-id');
-    if (draggedId === eventId) {
-      draggedEvent.style.opacity = '1';
-      return;
-    }
+  window.moveEventUp = async (eventId, currentIdx) => {
+    if (currentIdx === 0) return;
 
     try {
       const snap = await getDocs(collection(db, 'events'));
@@ -1845,10 +1819,7 @@
         displayOrder: doc.data().displayOrder || 0
       })).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
-      const draggedIdx = events.findIndex(e => e.id === draggedId);
-      const targetIdx = events.findIndex(e => e.id === eventId);
-
-      [events[draggedIdx], events[targetIdx]] = [events[targetIdx], events[draggedIdx]];
+      [events[currentIdx], events[currentIdx - 1]] = [events[currentIdx - 1], events[currentIdx]];
 
       for (let i = 0; i < events.length; i++) {
         await updateDoc(doc(db, 'events', events[i].id), { displayOrder: i });
@@ -1856,40 +1827,48 @@
 
       window.loadEventOrder();
     } catch (err) {
-      console.error('Error reordering events:', err);
+      console.error('Error moving event up:', err);
     }
-
-    draggedEvent.style.opacity = '1';
   };
 
-  window.dragEventEnd = (e) => {
-    document.querySelectorAll('.event-order-item').forEach(el => el.style.borderTop = '');
-    draggedEvent.style.opacity = '1';
+  window.moveEventDown = async (eventId, currentIdx) => {
+    try {
+      const snap = await getDocs(collection(db, 'events'));
+      const events = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        displayOrder: doc.data().displayOrder || 0
+      })).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+      if (currentIdx >= events.length - 1) return;
+
+      [events[currentIdx], events[currentIdx + 1]] = [events[currentIdx + 1], events[currentIdx]];
+
+      for (let i = 0; i < events.length; i++) {
+        await updateDoc(doc(db, 'events', events[i].id), { displayOrder: i });
+      }
+
+      window.loadEventOrder();
+    } catch (err) {
+      console.error('Error moving event down:', err);
+    }
   };
 
-  window.editEventMetadata = (eventId, currentName, currentDate, currentLocation) => {
+  window.editEventName = (eventId, currentName) => {
     const newName = prompt('Event Name:', currentName);
-    if (newName === null) return;
+    if (newName === null || newName.trim() === '') return;
 
-    const newDate = prompt('Date:', currentDate);
-    if (newDate === null) return;
-
-    const newLocation = prompt('Location:', currentLocation);
-    if (newLocation === null) return;
-
-    window.saveEventMetadata(eventId, newName, newDate, newLocation);
+    window.saveEventName(eventId, newName);
   };
 
-  window.saveEventMetadata = async (eventId, name, date, location) => {
+  window.saveEventName = async (eventId, name) => {
     try {
       await updateDoc(doc(db, 'events', eventId), {
-        name: name || 'Unnamed Event',
-        date: date || '',
-        location: location || ''
+        name: name || 'Unnamed Event'
       });
       window.loadEventOrder();
     } catch (err) {
-      console.error('Error updating event metadata:', err);
+      console.error('Error updating event name:', err);
       alert('Error updating event: ' + err.message);
     }
   };
