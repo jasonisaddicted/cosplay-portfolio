@@ -2644,6 +2644,19 @@ window.addEventListener('firebase-config-loaded', () => {
 
       shareBtn.style.bottom = bottomFromViewport + 'px';
       shareBtn.style.right = rightFromViewport + 'px';
+
+      // Also reposition the menu to appear above the button
+      if (shareMenu) {
+        // Menu should be above the button (button height + spacing)
+        const buttonHeight = shareBtn.offsetHeight;
+        const menuBottomOffset = bottomFromViewport + buttonHeight + 8; // 8px gap
+        shareMenu.style.bottom = menuBottomOffset + 'px';
+        shareMenu.style.right = rightFromViewport + 'px';
+        console.log('📍 Share menu positioned above button:', {
+          menuBottom: menuBottomOffset,
+          menuRight: rightFromViewport
+        });
+      }
     }
 
     // Reposition on image load and window resize
