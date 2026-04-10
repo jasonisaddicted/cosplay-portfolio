@@ -1790,7 +1790,7 @@
       const downBtn = idx < events.length - 1 ? `<button onclick="window.moveEventDown('${event.id}', ${idx})" style="padding:4px 8px; background:#5a7d3d; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; margin-right:5px; font-size:0.8rem;">↓ Down</button>` : '';
 
       html += `
-        <div class="event-order-item" data-event-id="${event.id}" style="padding:10px; border-bottom:1px solid #333; display:flex; align-items:center; justify-content:space-between; user-select:none;">
+        <div class="event-order-item" data-event-id="${event.id}" draggable="true" style="padding:10px; border-bottom:1px solid #333; display:flex; align-items:center; justify-content:space-between; user-select:none; cursor:grab;">
           <div style="display:flex; align-items:center; flex:1;">
             <span style="color:#aaa; font-size:0.9rem; margin-right:10px; min-width:30px; font-weight:bold;">⋮⋮</span>
             <span style="flex:1; color:#fff; font-size:0.9rem;">${event.name || 'Unnamed Event'}</span>
@@ -1799,13 +1799,21 @@
           <div style="display:flex; gap:5px;">
             ${upBtn}
             ${downBtn}
-            <button onclick="window.editEventName('${event.id}', '${(event.name || '').replace(/'/g, "\\'")}');" style="padding:4px 8px; background:#4a7c2c; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; font-size:0.8rem;">Edit</button>
+            <button onclick="window.editEventMetadata('${event.id}');" style="padding:4px 8px; background:#4a7c2c; color:#fff; border:1px solid #7aaa3d; border-radius:2px; cursor:pointer; font-size:0.8rem;">Edit</button>
           </div>
         </div>
       `;
     });
     html += '</div>';
     container.innerHTML = html;
+
+    // Add drag-and-drop event listeners
+    document.querySelectorAll('.event-order-item').forEach(item => {
+      item.addEventListener('dragstart', window.dragEventStart);
+      item.addEventListener('dragover', window.dragEventOver);
+      item.addEventListener('drop', window.dragEventDrop);
+      item.addEventListener('dragend', window.dragEventEnd);
+    });
   };
 
   window.moveEventUp = async (eventId, currentIdx) => {
@@ -1854,21 +1862,110 @@
     }
   };
 
-  window.editEventName = (eventId, currentName) => {
-    const newName = prompt('Event Name:', currentName);
-    if (newName === null || newName.trim() === '') return;
+  let draggedEventId = null;
 
-    window.saveEventName(eventId, newName);
+  window.dragEventStart = (e) => {
+    draggedEventId = e.target.closest('.event-order-item')?.getAttribute('data-event-id');
+    e.dataTransfer.effectAllowed = 'move';
+    e.target.closest('.event-order-item').style.opacity = '0.5';
   };
 
-  window.saveEventName = async (eventId, name) => {
+  window.dragEventOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const item = e.target.closest('.event-order-item');
+    if (item) {
+      item.style.borderTop = '2px solid #c8a46e';
+    }
+  };
+
+  window.dragEventDrop = async (e) => {
+    e.preventDefault();
+    const dropTarget = e.target.closest('.event-order-item');
+    if (!dropTarget || !draggedEventId) return;
+
+    const targetEventId = dropTarget.getAttribute('data-event-id');
+    if (draggedEventId === targetEventId) return;
+
     try {
-      await updateDoc(doc(db, 'events', eventId), {
-        name: name || 'Unnamed Event'
-      });
+      const snap = await getDocs(collection(db, 'events'));
+      const events = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        displayOrder: doc.data().displayOrder || 0
+      })).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+      const draggedIdx = events.findIndex(e => e.id === draggedEventId);
+      const targetIdx = events.findIndex(e => e.id === targetEventId);
+
+      if (draggedIdx === -1 || targetIdx === -1) return;
+
+      [events[draggedIdx], events[targetIdx]] = [events[targetIdx], events[draggedIdx]];
+
+      for (let i = 0; i < events.length; i++) {
+        await updateDoc(doc(db, 'events', events[i].id), { displayOrder: i });
+      }
+
       window.loadEventOrder();
     } catch (err) {
-      console.error('Error updating event name:', err);
+      console.error('Error during drag-drop:', err);
+    }
+  };
+
+  window.dragEventEnd = (e) => {
+    document.querySelectorAll('.event-order-item').forEach(item => {
+      item.style.opacity = '1';
+      item.style.borderTop = 'none';
+    });
+    draggedEventId = null;
+  };
+
+  window.editEventMetadata = async (eventId) => {
+    try {
+      const snap = await getDoc(doc(db, 'events', eventId));
+      if (!snap.exists()) {
+        alert('Event not found');
+        return;
+      }
+
+      const event = snap.data();
+      document.getElementById('editEventId').value = eventId;
+      document.getElementById('editEventName').value = event.name || '';
+      document.getElementById('editEventDate').value = event.date || '';
+      document.getElementById('editEventLocation').value = event.location || '';
+
+      document.getElementById('eventEditModal').style.display = 'flex';
+    } catch (err) {
+      console.error('Error loading event:', err);
+      alert('Error loading event: ' + err.message);
+    }
+  };
+
+  window.closeEventEditModal = () => {
+    document.getElementById('eventEditModal').style.display = 'none';
+  };
+
+  window.saveEventMetadata = async () => {
+    const eventId = document.getElementById('editEventId').value;
+    const name = document.getElementById('editEventName').value.trim();
+    const date = document.getElementById('editEventDate').value;
+    const location = document.getElementById('editEventLocation').value.trim();
+
+    if (!name || !date || !location) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'events', eventId), {
+        name: name,
+        date: date,
+        location: location
+      });
+      window.closeEventEditModal();
+      window.loadEventOrder();
+    } catch (err) {
+      console.error('Error updating event:', err);
       alert('Error updating event: ' + err.message);
     }
   };
@@ -5045,6 +5142,35 @@
       <div style="display:flex; gap:10px; margin-top:20px;">
         <button onclick="saveCoserEditDetails()" style="flex:1; padding:10px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.95rem;">Apply to All Photos</button>
         <button onclick="closeCoserEditModal()" style="flex:1; padding:10px; background:#555; color:#fff; border:none; cursor:pointer; font-size:0.95rem;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Edit Modal -->
+  <div id="eventEditModal" onclick="if(event.target.id === 'eventEditModal') closeEventEditModal();" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#181818; border:1px solid #2e2e2e; padding:30px; max-width:500px; width:90%; border-radius:4px; max-height:90vh; overflow-y:auto;">
+      <h2 style="margin-top:0; margin-bottom:10px; color:#c8a46e;">Edit Event Details</h2>
+
+      <input type="hidden" id="editEventId">
+
+      <div class="form-group">
+        <label>Event Name *</label>
+        <input type="text" id="editEventName" placeholder="e.g., Summer Cosplay Convention" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div class="form-group">
+        <label>Event Date *</label>
+        <input type="date" id="editEventDate" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div class="form-group">
+        <label>Event Location *</label>
+        <input type="text" id="editEventLocation" placeholder="e.g., Los Angeles Convention Center" style="width:100%; padding:8px; background:#0d0d0d; border:1px solid #333; color:#fff; box-sizing:border-box;">
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button onclick="saveEventMetadata()" style="flex:1; padding:10px; background:#c8a46e; color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.95rem;">Save Changes</button>
+        <button onclick="closeEventEditModal()" style="flex:1; padding:10px; background:#555; color:#fff; border:none; cursor:pointer; font-size:0.95rem;">Cancel</button>
       </div>
     </div>
   </div>
