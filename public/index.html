@@ -118,12 +118,15 @@
   <div class="lightbox" id="lightbox">
     <div class="lightbox__inner">
       <div class="lightbox__img-wrap">
-        <img class="lightbox__img" src="" alt="">
+        <!-- Container for image with Share button anchored to it -->
+        <div class="lightbox__image-container" style="position:relative; display:inline-block;">
+          <img class="lightbox__img" src="" alt="">
+          <!-- Share Button - anchored to image container -->
+          <button class="lightbox__share-btn" id="lightboxShareBtn" aria-label="Share photo" title="Share this photo" style="position:absolute; bottom:50px; right:40px; background:rgba(255,255,255,0.3); border:1px solid rgba(255,255,255,0.6); color:#fff; padding:6px 12px; cursor:pointer; border-radius:2px; display:flex; align-items:center; gap:4px; transition:all 0.22s ease; font-size:0.8rem; z-index:999;">
+            <span>Share</span>
+          </button>
+        </div>
         <div class="lightbox__caption"></div>
-        <!-- Share Button - overlaid on bottom right of image -->
-        <button class="lightbox__share-btn" id="lightboxShareBtn" aria-label="Share photo" title="Share this photo" style="position:absolute; bottom:50px; right:40px; background:rgba(255,255,255,0.3); border:1px solid rgba(255,255,255,0.6); color:#fff; padding:6px 12px; cursor:pointer; border-radius:2px; display:flex; align-items:center; gap:4px; transition:all 0.22s ease; font-size:0.8rem; z-index:999;">
-          <span>Share</span>
-        </button>
       </div>
     </div>
     <button class="lightbox__back" aria-label="Back" style="display:none;">
