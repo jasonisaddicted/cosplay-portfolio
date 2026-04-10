@@ -2623,9 +2623,36 @@ window.addEventListener('firebase-config-loaded', () => {
       }
     });
 
-    // Share button is now anchored directly to lightbox__image-container
-    // No dynamic repositioning needed - CSS positioning handles it perfectly
-    console.log('✅ Share button anchored to image container');
+    // Dynamically position share button on the image using viewport coordinates
+    function repositionShareButton() {
+      const img = document.querySelector('.lightbox__img-wrap img');
+      if (!img || !shareBtn) return;
+
+      const imgRect = img.getBoundingClientRect();
+
+      // Position button 50px from bottom and 40px from right of the image
+      // Using viewport coordinates (since button is position:fixed)
+      const bottomFromViewport = window.innerHeight - imgRect.bottom + 50;
+      const rightFromViewport = window.innerWidth - imgRect.right + 40;
+
+      console.log('📍 Share button positioned:', {
+        imgBottom: imgRect.bottom,
+        imgRight: imgRect.right,
+        bottomFromViewport,
+        rightFromViewport
+      });
+
+      shareBtn.style.bottom = bottomFromViewport + 'px';
+      shareBtn.style.right = rightFromViewport + 'px';
+    }
+
+    // Reposition on image load and window resize
+    const img = document.querySelector('.lightbox__img-wrap img');
+    if (img) {
+      img.addEventListener('load', repositionShareButton);
+      window.addEventListener('resize', repositionShareButton);
+      setTimeout(repositionShareButton, 100);
+    }
   }
 
   // Build a /photo share URL with OG metadata + deep-link index
