@@ -1350,8 +1350,14 @@ img.fade-in {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  max-height: min(380px, 45vh);
   overflow-y: auto;
+}
+
+/* Mobile: limit height for compact view */
+@media (max-width: 767px) {
+  .info-panel__scroll {
+    max-height: min(380px, 45vh);
+  }
 }
 .info-panel__section { display: flex; flex-direction: column; }
 .info-panel__section-label {
