@@ -2570,18 +2570,20 @@ window.addEventListener('firebase-config-loaded', () => {
 
   // Keep currentPhotoShare in sync whenever the lightbox shows a photo
   // albumId/albumType are injected by the calling context (album.js sets them separately)
-  Lightbox.onPhotoChange((photo, index) => {
-    // Only set if album.js hasn't already set a richer context for this photo
-    if (!window.currentPhotoShare || window.currentPhotoShare.index !== index) {
-      window.currentPhotoShare = {
-        photoUrl:  photo.src       || '',
-        character: photo.character || '',
-        series:    photo.series    || '',
-        coser:     photo.coser     || photo.credit || '',
-        index:     index,
-        albumId:   photo.albumId   || window.currentPhotoShare?.albumId   || null,
-        albumType: photo.albumType || window.currentPhotoShare?.albumType || null,
-      };
-    }
-  });
+  if (Lightbox.onPhotoChange) {
+    Lightbox.onPhotoChange((photo, index) => {
+      // Only set if album.js hasn't already set a richer context for this photo
+      if (!window.currentPhotoShare || window.currentPhotoShare.index !== index) {
+        window.currentPhotoShare = {
+          photoUrl:  photo.src       || '',
+          character: photo.character || '',
+          series:    photo.series    || '',
+          coser:     photo.coser     || photo.credit || '',
+          index:     index,
+          albumId:   photo.albumId   || window.currentPhotoShare?.albumId   || null,
+          albumType: photo.albumType || window.currentPhotoShare?.albumType || null,
+        };
+      }
+    });
+  }
 });
