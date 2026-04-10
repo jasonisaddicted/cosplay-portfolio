@@ -1799,23 +1799,6 @@ async function initAlbum() {
 
   if (!album) { titleEl.textContent = 'Album not found'; return; }
 
-  // Load photos from Firestore subcollection if this is a Firebase album
-  if (type === 'events' && !album.photos) {
-    try {
-      const photosSnap = await getDocs(collection(db, 'albums', id, 'photos'));
-      album.photos = photosSnap.docs.map(doc => ({
-        id: doc.id,
-        src: doc.data().src,
-        coser: doc.data().coser || '',
-        character: doc.data().character || 'Unknown',
-        series: doc.data().series || ''
-      }));
-    } catch (err) {
-      console.error('Error loading album photos:', err);
-      album.photos = [];
-    }
-  }
-
   // Clear previous content
   photoGrid.innerHTML = '';
   photoGrid.className = 'photo-grid';

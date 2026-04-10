@@ -150,6 +150,17 @@ const Lightbox = (() => {
   infoPanel.className = 'lightbox__info-panel';
   lb.appendChild(infoPanel);
 
+  // Handle scroll transparency for info panel
+  let scrollTimeout;
+  const handleInfoPanelScroll = (e) => {
+    const scrollContainer = e.target;
+    scrollContainer.style.opacity = '0.5';
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      scrollContainer.style.opacity = '1';
+    }, 300);
+  };
+
   function clearPanelTimers() {
     panelTimers.forEach(t => clearInterval(t));
     panelTimers = [];
@@ -360,6 +371,12 @@ const Lightbox = (() => {
         ${projectsHtml}
       </div>`;
 
+    // Attach scroll event for transparency effect
+    const charScrollContainer = infoPanel.querySelector('.info-panel__scroll');
+    if (charScrollContainer) {
+      charScrollContainer.addEventListener('scroll', handleInfoPanelScroll);
+    }
+
     // ── Filter tabs ──
     infoPanel.querySelectorAll('.info-panel__filter-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -454,7 +471,6 @@ const Lightbox = (() => {
         }
         ${photo.character ? `<div class="info-panel__character" style="cursor:pointer; color:#c8a46e; text-decoration:underline;" data-character="${photo.character}">${photo.character}</div>` : ''}
         ${photo.series    ? `<div class="info-panel__series">${photo.series}</div>`       : ''}
-        ${coserAlbums.length > 0 ? `<div class="info-panel__project-count" style="font-size:0.75rem; color:#999; margin-top:8px;">Appears in ${coserAlbums.length} project${coserAlbums.length !== 1 ? 's' : ''}</div>` : ''}
       </div>`;
 
     // ── Work Together block ───────────────────────────────
@@ -497,8 +513,10 @@ const Lightbox = (() => {
 
         workHtml = `
           <div class="info-panel__section">
-            <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
-            <div style="font-size:0.8rem; color:#999; margin-bottom:12px;">See all of ${igHandle || 'this cosplayer'}'s work in different events, studio sessions, and collaborations</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
+              <div style="font-size:0.75rem; color:#999;">Appears in ${coserAlbums.length} project${coserAlbums.length !== 1 ? 's' : ''}</div>
+            </div>
             ${tabsHtml}
             <div class="info-panel__album-list">${accordions}</div>
           </div>`;
@@ -515,8 +533,10 @@ const Lightbox = (() => {
 
         workHtml = `
           <div class="info-panel__section">
-            <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
-            <div style="font-size:0.8rem; color:#999; margin-bottom:12px;">See all of ${igHandle || 'this cosplayer'}'s work in different events, studio sessions, and collaborations</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span class="info-panel__section-label">PROJECTS & APPEARANCES</span>
+              <div style="font-size:0.75rem; color:#999;">Appears in ${coserAlbums.length} project${coserAlbums.length !== 1 ? 's' : ''}</div>
+            </div>
             ${tabsHtml}
             <div class="info-panel__album-list">${cards}</div>
           </div>`;
@@ -528,6 +548,12 @@ const Lightbox = (() => {
         ${coserHtml}
         ${workHtml}
       </div>`;
+
+    // Attach scroll event for transparency effect
+    const scrollContainer = infoPanel.querySelector('.info-panel__scroll');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleInfoPanelScroll);
+    }
 
     // ── Character click: show all photos of this character ──
     const characterEl = infoPanel.querySelector('[data-character]');
@@ -666,6 +692,12 @@ const Lightbox = (() => {
           <div class="info-panel__album-view-subtitle">${igHandle} · ${album.photos.length} photo${album.photos.length !== 1 ? 's' : ''}</div>
           <div class="info-panel__subgrid">${gridHtml}</div>
         </div>`;
+
+      // Attach scroll event for transparency effect
+      const subScrollContainer = infoPanel.querySelector('.info-panel__scroll');
+      if (subScrollContainer) {
+        subScrollContainer.addEventListener('scroll', handleInfoPanelScroll);
+      }
 
       // Back → restore original photo and panel view
       infoPanel.querySelector('.info-panel__back-btn').addEventListener('click', () => {
