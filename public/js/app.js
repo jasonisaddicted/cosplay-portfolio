@@ -2605,7 +2605,10 @@ window.addEventListener('firebase-config-loaded', () => {
     shareBtn.addEventListener('click', (e) => {
       console.log('🖱️ Share button clicked!', { display: shareMenu.style.display });
       e.stopPropagation();
-      shareMenu.style.display = shareMenu.style.display === 'none' ? 'block' : 'none';
+      const isOpening = shareMenu.style.display === 'none';
+      shareMenu.style.display = isOpening ? 'block' : 'none';
+      shareMenu.classList.toggle('active', isOpening);
+      shareBtn.classList.toggle('active', isOpening);
       console.log('📂 Menu toggled to:', shareMenu.style.display);
     });
 
@@ -2613,6 +2616,8 @@ window.addEventListener('firebase-config-loaded', () => {
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.lightbox__share-btn') && !e.target.closest('.lightbox__share-menu')) {
         shareMenu.style.display = 'none';
+        shareMenu.classList.remove('active');
+        shareBtn.classList.remove('active');
       }
     });
 
@@ -2620,6 +2625,8 @@ window.addEventListener('firebase-config-loaded', () => {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && shareMenu.style.display === 'block') {
         shareMenu.style.display = 'none';
+        shareMenu.classList.remove('active');
+        shareBtn.classList.remove('active');
       }
     });
 
@@ -2630,10 +2637,10 @@ window.addEventListener('firebase-config-loaded', () => {
 
       const imgRect = img.getBoundingClientRect();
 
-      // Position button 50px from bottom and 40px from right of the image
+      // Position button 20px from bottom and 20px from right of the image (closer to corner)
       // Using viewport coordinates (since button is position:fixed)
-      const bottomFromViewport = window.innerHeight - imgRect.bottom + 50;
-      const rightFromViewport = window.innerWidth - imgRect.right + 40;
+      const bottomFromViewport = window.innerHeight - imgRect.bottom + 20;
+      const rightFromViewport = window.innerWidth - imgRect.right + 20;
 
       console.log('📍 Share button positioned:', {
         imgBottom: imgRect.bottom,
@@ -2712,7 +2719,12 @@ window.addEventListener('firebase-config-loaded', () => {
     }
 
     const shareMenu = document.getElementById('lightboxShareMenu');
-    if (shareMenu) shareMenu.style.display = 'none';
+    if (shareMenu) {
+      shareMenu.style.display = 'none';
+      shareMenu.classList.remove('active');
+      const shareBtn = document.getElementById('lightboxShareBtn');
+      if (shareBtn) shareBtn.classList.remove('active');
+    }
   };
 
   // Copy photo link to clipboard
@@ -2736,7 +2748,12 @@ window.addEventListener('firebase-config-loaded', () => {
     });
 
     const shareMenu = document.getElementById('lightboxShareMenu');
-    if (shareMenu) shareMenu.style.display = 'none';
+    if (shareMenu) {
+      shareMenu.style.display = 'none';
+      shareMenu.classList.remove('active');
+      const shareBtn = document.getElementById('lightboxShareBtn');
+      if (shareBtn) shareBtn.classList.remove('active');
+    }
   };
 
 });
