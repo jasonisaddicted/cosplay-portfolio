@@ -120,6 +120,10 @@
       <div class="lightbox__img-wrap">
         <img class="lightbox__img" src="" alt="">
         <div class="lightbox__caption"></div>
+        <!-- Share Button - overlaid on bottom right of image -->
+        <button class="lightbox__share-btn" id="lightboxShareBtn" aria-label="Share photo" title="Share this photo" style="position:absolute; bottom:12px; right:12px; background:rgba(255,255,255,0.3); border:1px solid rgba(255,255,255,0.6); color:#fff; padding:6px 12px; cursor:pointer; border-radius:2px; display:flex; align-items:center; gap:4px; transition:all 0.22s ease; font-size:0.8rem; z-index:999;">
+          <span>Share</span>
+        </button>
       </div>
     </div>
     <button class="lightbox__back" aria-label="Back" style="display:none;">
@@ -140,20 +144,8 @@
       <span class="lightbox__like-count">0</span>
     </button>
 
-    <!-- Share Button & Menu -->
-    <button class="lightbox__share-btn" id="lightboxShareBtn" aria-label="Share photo" title="Share this photo" style="position:fixed; bottom:60px; right:30px; background:none; border:1px solid #e4e4e4; color:#e4e4e4; padding:10px 16px; cursor:pointer; border-radius:3px; display:flex; align-items:center; gap:8px; transition:all 0.22s ease; font-size:0.9rem; z-index:999;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="18" cy="5" r="3"></circle>
-        <circle cx="6" cy="12" r="3"></circle>
-        <circle cx="18" cy="19" r="3"></circle>
-        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-      </svg>
-      <span>Share</span>
-    </button>
-
     <!-- Share Menu -->
-    <div class="lightbox__share-menu" id="lightboxShareMenu" style="display:none; position:fixed; bottom:115px; right:30px; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:3px; padding:8px 0; z-index:1002; min-width:200px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+    <div class="lightbox__share-menu" id="lightboxShareMenu" style="display:none; position:fixed; bottom:70px; right:12px; background:#0d0d0d; border:1px solid #2e2e2e; border-radius:3px; padding:8px 0; z-index:1002; min-width:140px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
       <button onclick="sharePhotoTo('facebook')" style="width:100%; text-align:left; padding:12px 16px; background:none; border:none; color:#e4e4e4; cursor:pointer; font-size:0.9rem; transition:all 0.22s ease;">
         Facebook
       </button>
