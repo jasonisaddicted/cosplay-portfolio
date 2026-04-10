@@ -2634,9 +2634,9 @@ window.addEventListener('firebase-config-loaded', () => {
       const imgRect = img.getBoundingClientRect();
       const wrapperRect = wrapper.getBoundingClientRect();
 
-      // Calculate position of button relative to wrapper, placing it on the actual image
-      const bottomOffset = wrapperRect.bottom - imgRect.bottom + 12; // 12px from image bottom
-      const rightOffset = wrapperRect.right - imgRect.right + 12;    // 12px from image right
+      // Calculate position of button relative to wrapper, placing it inward from bottom-right
+      const bottomOffset = wrapperRect.bottom - imgRect.bottom + 50; // 50px from image bottom (inside image)
+      const rightOffset = wrapperRect.right - imgRect.right + 40;    // 40px from image right (inside image)
 
       console.log('📍 Repositioning share button:', {
         imgHeight: imgRect.height,
