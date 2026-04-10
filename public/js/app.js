@@ -2639,8 +2639,8 @@ window.addEventListener('firebase-config-loaded', () => {
 
       // Position button 20px from bottom and 20px from right of the image (closer to corner)
       // Using viewport coordinates (since button is position:fixed)
-      const bottomFromViewport = window.innerHeight - imgRect.bottom + 20;
-      const rightFromViewport = window.innerWidth - imgRect.right + 20;
+      const bottomFromViewport = window.innerHeight - imgRect.bottom - 20;
+      const rightFromViewport = window.innerWidth - imgRect.right - 20;
 
       console.log('📍 Share button positioned:', {
         imgBottom: imgRect.bottom,
