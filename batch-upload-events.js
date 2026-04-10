@@ -67,8 +67,9 @@ function extractCoserFromFilename(filename) {
 
   // Step 0: Remove " (N)" pattern if present (space + numeric index in parentheses)
   // This pattern should NOT be part of the coser name
-  // Remove " (N)" anywhere in the filename, even if followed by other metadata
   nameWithoutExt = nameWithoutExt.replace(/\s+\(\d+\)/g, '');
+  // Step 0b: Remove metadata suffixes like -vfx, -edr, -copy, etc. (dash followed by non-digits)
+  nameWithoutExt = nameWithoutExt.replace(/-(?:vfx|edr|copy|final|v\d+|original|backup)$/i, '');
   // Clean up any double spaces that may have been created
   nameWithoutExt = nameWithoutExt.replace(/\s+/g, ' ').trim();
 
