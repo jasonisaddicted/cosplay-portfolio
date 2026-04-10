@@ -1865,17 +1865,37 @@
   let draggedEventId = null;
 
   window.dragEventStart = (e) => {
-    draggedEventId = e.target.closest('.event-order-item')?.getAttribute('data-event-id');
+    const item = e.target.closest('.event-order-item');
+    draggedEventId = item?.getAttribute('data-event-id');
     e.dataTransfer.effectAllowed = 'move';
-    e.target.closest('.event-order-item').style.opacity = '0.5';
+    e.dataTransfer.setDragImage(item, 0, 0);
+    item.style.opacity = '0.4';
+    item.style.backgroundColor = 'rgba(200, 164, 110, 0.2)';
+    item.style.transform = 'scale(0.98)';
   };
 
   window.dragEventOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     const item = e.target.closest('.event-order-item');
-    if (item) {
-      item.style.borderTop = '2px solid #c8a46e';
+    if (item && item.getAttribute('data-event-id') !== draggedEventId) {
+      // Remove previous indicator
+      document.querySelectorAll('.event-order-item').forEach(el => {
+        el.style.borderTop = 'none';
+        el.style.backgroundColor = '';
+      });
+      // Add indicator to current target
+      const rect = item.getBoundingClientRect();
+      const containerRect = item.parentElement.getBoundingClientRect();
+      const isUpperHalf = (e.clientY - rect.top) < (rect.height / 2);
+
+      if (isUpperHalf) {
+        item.style.borderTop = '3px solid #c8a46e';
+        item.style.backgroundColor = 'rgba(200, 164, 110, 0.1)';
+      } else {
+        item.style.borderBottom = '3px solid #c8a46e';
+        item.style.backgroundColor = 'rgba(200, 164, 110, 0.1)';
+      }
     }
   };
 
@@ -1916,6 +1936,9 @@
     document.querySelectorAll('.event-order-item').forEach(item => {
       item.style.opacity = '1';
       item.style.borderTop = 'none';
+      item.style.borderBottom = 'none';
+      item.style.backgroundColor = '';
+      item.style.transform = '';
     });
     draggedEventId = null;
   };
