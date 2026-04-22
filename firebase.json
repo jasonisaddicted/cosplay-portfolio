@@ -1,27 +1,21 @@
 {
-  "hosting": [
-    {
-      "target": "cosplay-portfolio",
-      "public": ".next/standalone/public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**",
-        ".DS_Store",
-        "README.md"
-      ],
-      "rewrites": [
-        {
-          "source": "**",
-          "function": "nextjsFunction"
-        }
-      ],
-      "cleanUrls": true
-    }
-  ],
+  "hosting": {
+    "public": ".next/standalone/public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      ".DS_Store"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "nextjsServer"
+      }
+    ]
+  },
   "functions": {
-    "source": ".next/standalone",
-    "runtime": "nodejs20",
-    "codebase": "default"
+    "source": "functions",
+    "runtime": "nodejs20"
   }
 }
