@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '../public/styles/global.css';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Cosplay Portfolio',
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head />
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
