@@ -1,52 +1,13 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import Link from 'next/link';
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
-  const session = useSession();
-  const router = useRouter();
-
-  // Handle useSession result safely
-  const status = session?.status || 'unauthenticated';
-  const sessionData = session?.data;
-
-  useEffect(() => {
-    // Redirect to login if not authenticated
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    }
-  }, [status, router]);
-
-  if (status === 'loading') {
-    return (
-      <div className="admin-loading">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  if (!sessionData) {
-    return null;
-  }
-
-  const handleLogout = async () => {
-    await signOut({ redirect: true, callbackUrl: '/admin/login' });
-  };
-
   return (
     <div className="admin-layout">
       {/* Admin Header */}
       <div className="admin-header">
         <h1 className="admin-title">Admin Dashboard</h1>
-        <div className="admin-user">
-          <span>{sessionData.user?.email}</span>
-          <button onClick={handleLogout} className="admin-logout">
-            Logout
-          </button>
-        </div>
       </div>
 
       {/* Admin Sidebar Navigation */}
@@ -69,6 +30,9 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
           </Link>
           <Link href="/admin/settings" className="admin-nav__link">
             Settings
+          </Link>
+          <Link href="/admin/photos" className="admin-nav__link">
+            Photos
           </Link>
         </nav>
       </div>
