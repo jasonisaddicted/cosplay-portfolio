@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "jianshencosvisual-328dc"
+  },
+  "targets": {
+    "jianshencosvisual-328dc": {
+      "hosting": {
+        "cosplay-portfolio": [
+          "cosplay-portfolio"
+        ]
+      }
+    }
+  }
+}

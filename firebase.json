@@ -1,50 +1,27 @@
 {
-  "hosting": {
-    "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      ".DS_Store",
-      "README.md",
-      ".git/**",
-      ".github/**",
-      "admin.html"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "/css/**",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600"
-          }
-        ]
-      },
-      {
-        "source": "/js/**",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600"
-          }
-        ]
-      },
-      {
-        "source": "/images/**",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=86400"
-          }
-        ]
-      }
-    ]
+  "hosting": [
+    {
+      "target": "cosplay-portfolio",
+      "public": ".next/standalone/public",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        ".DS_Store",
+        "README.md"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "function": "nextjsFunction"
+        }
+      ],
+      "cleanUrls": true
+    }
+  ],
+  "functions": {
+    "source": ".next/standalone",
+    "runtime": "nodejs20",
+    "codebase": "default"
   }
 }
