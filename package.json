@@ -1,12 +1,29 @@
 {
   "name": "cosplay-portfolio",
-  "version": "1.0.0",
-  "description": "Cosplay portfolio website with OG service",
+  "version": "2.0.0",
+  "description": "Cosplay portfolio website with Next.js",
   "private": true,
   "scripts": {
-    "update-og-images": "node scripts/update-og-images.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "firebase-admin": "^12.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "next": "^15.0.0",
+    "firebase": "^10.0.0",
+    "firebase-admin": "^12.0.0",
+    "next-auth": "^4.24.0",
+    "react-hot-toast": "^2.4.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^15.0.0"
   }
 }
