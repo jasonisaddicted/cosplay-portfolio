@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 
@@ -23,7 +23,7 @@ export default function AdminPhotosPage() {
   const [albumType, setAlbumType] = useState('events');
 
   // Load photos on mount
-  useState(() => {
+  useEffect(() => {
     loadPhotos();
   }, []);
 
