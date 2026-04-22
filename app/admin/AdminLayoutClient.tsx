@@ -6,8 +6,12 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+  const session = useSession();
   const router = useRouter();
+
+  // Handle useSession result safely
+  const status = session?.status || 'unauthenticated';
+  const sessionData = session?.data;
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -24,7 +28,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
     );
   }
 
-  if (!session) {
+  if (!sessionData) {
     return null;
   }
 
@@ -38,7 +42,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
       <div className="admin-header">
         <h1 className="admin-title">Admin Dashboard</h1>
         <div className="admin-user">
-          <span>{session.user?.email}</span>
+          <span>{sessionData.user?.email}</span>
           <button onClick={handleLogout} className="admin-logout">
             Logout
           </button>
