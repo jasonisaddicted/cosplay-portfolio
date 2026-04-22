@@ -1,4 +1,4 @@
-import { collection, getDocs, query, orderBy, limit, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from './config';
 
 export interface Album {
@@ -120,5 +120,24 @@ export async function getAlbumPhotos(type: string, albumId: string): Promise<Pho
   } catch (error) {
     console.error(`Error fetching photos for album ${albumId}:`, error);
     return [];
+  }
+}
+
+export async function addPhotoToAlbum(
+  type: 'events' | 'studio' | 'outdoor' | 'collabs',
+  albumId: string,
+  photo: Omit<Photo, 'id'>
+): Promise<string> {
+  try {
+    const photosRef = collection(db, type, albumId, 'photos');
+    const docRef = await addDoc(photosRef, {
+      ...photo,
+      order: Date.now(),
+      uploadedAt: new Date().toISOString(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error(`Error adding photo to album:`, error);
+    throw error;
   }
 }

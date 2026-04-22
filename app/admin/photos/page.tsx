@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useRef, useEffect } from 'react';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 interface UploadedPhoto {
   id: string;
@@ -14,68 +15,125 @@ interface UploadedPhoto {
   uploadedAt: string;
 }
 
+interface Album {
+  id: string;
+  name: string;
+  type: 'events' | 'studio' | 'outdoor' | 'collabs';
+}
+
 export default function AdminPhotosPage() {
-  const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [photos, setPhotos] = useState<Record<string, UploadedPhoto[]>>({});
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cosplayer, setCosplayer] = useState('');
-  const [albumType, setAlbumType] = useState('events');
+  const [albumType, setAlbumType] = useState<'events' | 'studio' | 'outdoor' | 'collabs'>('events');
+  const [selectedAlbumId, setSelectedAlbumId] = useState('');
+  const [newAlbumName, setNewAlbumName] = useState('');
 
-  // Load photos on mount
+  // Load albums and photos on mount
   useEffect(() => {
-    loadPhotos();
-  }, []);
+    loadData();
+  }, [albumType]);
 
-  const loadPhotos = async () => {
+  const loadData = async () => {
     try {
-      const db = getFirestore();
-      const photosRef = collection(db, 'photos');
-      const q = query(photosRef, orderBy('uploadedAt', 'desc'));
-      const snapshot = await getDocs(q);
-      const loadedPhotos = snapshot.docs.map(doc => ({
+      setLoading(true);
+
+      // Load albums for current type
+      const albumsRef = collection(db, albumType);
+      const albumsSnap = await getDocs(query(albumsRef, orderBy('displayOrder', 'asc')));
+      const loadedAlbums: Album[] = albumsSnap.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
-      })) as UploadedPhoto[];
-      setPhotos(loadedPhotos);
+        name: doc.data().name || 'Untitled',
+        type: albumType
+      }));
+      setAlbums(loadedAlbums);
+
+      // Load photos for each album
+      const photosByAlbum: Record<string, UploadedPhoto[]> = {};
+      for (const album of loadedAlbums) {
+        const photosRef = collection(db, albumType, album.id, 'photos');
+        const photosSnap = await getDocs(query(photosRef, orderBy('uploadedAt', 'desc')));
+        photosByAlbum[album.id] = photosSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as UploadedPhoto[];
+      }
+      setPhotos(photosByAlbum);
+
+      // Set first album as selected
+      if (loadedAlbums.length > 0 && !selectedAlbumId) {
+        setSelectedAlbumId(loadedAlbums[0].id);
+      }
     } catch (err) {
-      console.error('Error loading photos:', err);
+      console.error('Error loading data:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  const createAlbum = async () => {
+    if (!newAlbumName.trim()) {
+      alert('Please enter an album name');
+      return;
+    }
+
+    try {
+      const albumId = `${Date.now()}`;
+      await setDoc(doc(db, albumType, albumId), {
+        name: newAlbumName,
+        type: albumType,
+        displayOrder: (albums.length + 1) * 10,
+        coverImage: '',
+        photoCount: 0,
+        createdAt: new Date().toISOString()
+      });
+
+      setNewAlbumName('');
+      setSelectedAlbumId(albumId);
+      await loadData();
+      alert('✅ Album created');
+    } catch (err) {
+      console.error('Error creating album:', err);
+      alert('❌ Failed to create album');
+    }
+  };
+
   const handleFileUpload = async (files: FileList) => {
     if (!files.length) return;
+    if (!selectedAlbumId) {
+      alert('Please select or create an album first');
+      return;
+    }
 
     setUploading(true);
     try {
       const storage = getStorage();
-      const db = getFirestore();
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const timestamp = Date.now();
-        const filename = `${albumType}/${timestamp}_${file.name}`;
+        const filename = `${albumType}/${selectedAlbumId}/${timestamp}_${file.name}`;
 
         // Upload to Firebase Storage
         const storageRef = ref(storage, `photos/${filename}`);
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
 
-        // Save metadata to Firestore
-        const photosRef = collection(db, 'photos');
+        // Save to album subcollection
+        const photosRef = collection(db, albumType, selectedAlbumId, 'photos');
         await addDoc(photosRef, {
           url: downloadURL,
           cosplayer: cosplayer || 'Unknown',
-          album: albumType,
           uploadedAt: new Date().toISOString(),
-          filename: file.name
+          filename: file.name,
+          thumbUrl: downloadURL
         });
       }
 
-      // Reload photos
-      await loadPhotos();
+      await loadData();
       setCosplayer('');
       alert(`✅ Successfully uploaded ${files.length} photo(s)`);
     } catch (err) {
@@ -88,11 +146,11 @@ export default function AdminPhotosPage() {
 
   const handleDelete = async (photoId: string) => {
     if (!confirm('Delete this photo?')) return;
+    if (!selectedAlbumId) return;
 
     try {
-      const db = getFirestore();
-      await deleteDoc(doc(db, 'photos', photoId));
-      await loadPhotos();
+      await deleteDoc(doc(db, albumType, selectedAlbumId, 'photos', photoId));
+      await loadData();
       alert('✅ Photo deleted');
     } catch (err) {
       console.error('Delete error:', err);
@@ -116,7 +174,10 @@ export default function AdminPhotosPage() {
           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Album Type</label>
           <select
             value={albumType}
-            onChange={(e) => setAlbumType(e.target.value)}
+            onChange={(e) => {
+              setAlbumType(e.target.value as 'events' | 'studio' | 'outdoor' | 'collabs');
+              setSelectedAlbumId('');
+            }}
             style={{
               width: '100%',
               padding: '10px 12px',
@@ -132,6 +193,68 @@ export default function AdminPhotosPage() {
             <option value="outdoor">Outdoor</option>
             <option value="collabs">Collabs</option>
           </select>
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Album</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select
+              value={selectedAlbumId}
+              onChange={(e) => setSelectedAlbumId(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '10px 12px',
+                background: '#1a1a1a',
+                border: '1px solid #333333',
+                borderRadius: '4px',
+                color: 'var(--text)',
+                fontFamily: 'inherit'
+              }}
+            >
+              <option value="">Select an album...</option>
+              {albums.map((album) => (
+                <option key={album.id} value={album.id}>
+                  {album.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '16px', borderTop: '1px solid #333333', paddingTop: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Create New Album</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input
+              type="text"
+              value={newAlbumName}
+              onChange={(e) => setNewAlbumName(e.target.value)}
+              placeholder="e.g., Anime Expo 2024"
+              onKeyPress={(e) => e.key === 'Enter' && createAlbum()}
+              style={{
+                flex: 1,
+                padding: '10px 12px',
+                background: '#1a1a1a',
+                border: '1px solid #333333',
+                borderRadius: '4px',
+                color: 'var(--text)',
+                fontFamily: 'inherit'
+              }}
+            />
+            <button
+              onClick={createAlbum}
+              style={{
+                padding: '10px 20px',
+                background: '#666',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              ➕ Create
+            </button>
+          </div>
         </div>
 
         <div style={{ marginBottom: '16px' }}>
@@ -200,58 +323,71 @@ export default function AdminPhotosPage() {
 
       {/* Photos Grid */}
       <div>
-        <h2 style={{ marginTop: '24px', marginBottom: '16px' }}>All Photos ({photos.length})</h2>
+        <h2 style={{ marginTop: '24px', marginBottom: '16px' }}>Albums & Photos</h2>
 
-        {photos.length === 0 ? (
-          <p style={{ color: 'var(--text-light)' }}>No photos uploaded yet</p>
+        {albums.length === 0 ? (
+          <p style={{ color: 'var(--text-light)' }}>No albums yet. Create one above to get started!</p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
-            {photos.map((photo) => (
-              <div
-                key={photo.id}
-                style={{
-                  background: '#111111',
-                  border: '1px solid #2a2a2a',
-                  borderRadius: '4px',
-                  overflow: 'hidden'
-                }}
-              >
-                <div
-                  style={{
-                    width: '100%',
-                    aspectRatio: '1',
-                    backgroundImage: `url(${photo.url})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                />
-                <div style={{ padding: '12px' }}>
-                  <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: 600 }}>
-                    {photo.cosplayer}
-                  </p>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', color: 'var(--text-light)' }}>
-                    Album: {photo.album}
-                  </p>
-                  <button
-                    onClick={() => handleDelete(photo.id)}
-                    style={{
-                      width: '100%',
-                      padding: '8px',
-                      background: '#ff4444',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '0.9rem',
-                      fontWeight: 600
-                    }}
-                  >
-                    🗑️ Delete
-                  </button>
-                </div>
+          <>
+            {albums.map((album) => (
+              <div key={album.id} style={{ marginBottom: '32px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: 'var(--text)' }}>
+                  {album.name} ({photos[album.id]?.length || 0} photos)
+                </h3>
+                {(!photos[album.id] || photos[album.id].length === 0) ? (
+                  <p style={{ color: 'var(--text-light)', marginTop: 0 }}>No photos in this album yet</p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                    {photos[album.id].map((photo) => (
+                      <div
+                        key={photo.id}
+                        style={{
+                          background: '#111111',
+                          border: '1px solid #2a2a2a',
+                          borderRadius: '4px',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '100%',
+                            aspectRatio: '1',
+                            backgroundImage: `url(${photo.url})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        />
+                        <div style={{ padding: '12px' }}>
+                          <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: 600 }}>
+                            {photo.cosplayer}
+                          </p>
+                          <p style={{ margin: '0 0 8px 0', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                            {new Date(photo.uploadedAt).toLocaleDateString()}
+                          </p>
+                          <button
+                            onClick={() => handleDelete(photo.id)}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              background: '#ff4444',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.9rem',
+                              fontWeight: 600
+                            }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
-          </div>
+          </>
         )}
       </div>
     </div>
