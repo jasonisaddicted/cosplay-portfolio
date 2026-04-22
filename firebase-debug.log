@@ -1,0 +1,86 @@
+[debug] [2026-04-22T20:47:41.113Z] ----------------------------------------------------------------------
+[debug] [2026-04-22T20:47:41.116Z] Command:       /opt/homebrew/Cellar/node/25.8.1_1/bin/node /opt/homebrew/bin/firebase deploy
+[debug] [2026-04-22T20:47:41.117Z] CLI Version:   15.15.0
+[debug] [2026-04-22T20:47:41.117Z] Platform:      darwin
+[debug] [2026-04-22T20:47:41.117Z] Node Version:  v25.8.1
+[debug] [2026-04-22T20:47:41.117Z] Time:          Thu Apr 23 2026 04:47:41 GMT+0800 (Malaysia Time)
+[debug] [2026-04-22T20:47:41.117Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-22T20:47:41.576Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-22T20:47:41.576Z] > authorizing via signed-in user (jianshen.image.visual@gmail.com)
+[debug] [2026-04-22T20:47:41.576Z] [iam] checking project jianshencosvisual-328dc for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-04-22T20:47:41.577Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:41.577Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:41.577Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc:testIamPermissions [none]
+[debug] [2026-04-22T20:47:41.577Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc:testIamPermissions  x-goog-user-project=jianshencosvisual-328dc
+[debug] [2026-04-22T20:47:41.577Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-04-22T20:47:42.690Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc:testIamPermissions 200
+[debug] [2026-04-22T20:47:42.690Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-04-22T20:47:42.690Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:42.690Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:42.690Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/jianshencosvisual-328dc/serviceAccounts/jianshencosvisual-328dc@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-04-22T20:47:42.690Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/jianshencosvisual-328dc/serviceAccounts/jianshencosvisual-328dc@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-22T20:47:44.017Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/jianshencosvisual-328dc/serviceAccounts/jianshencosvisual-328dc@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-04-22T20:47:44.018Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/jianshencosvisual-328dc/serviceAccounts/jianshencosvisual-328dc@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-22T20:47:44.018Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:44.018Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:44.018Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/jianshencosvisual-328dc [none]
+[debug] [2026-04-22T20:47:44.636Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/jianshencosvisual-328dc 200
+[debug] [2026-04-22T20:47:44.636Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/jianshencosvisual-328dc {"projectId":"jianshencosvisual-328dc","projectNumber":"190010774007","displayName":"jianshencosvisual","name":"projects/jianshencosvisual-328dc","resources":{"hostingSite":"jianshencosvisual-328dc"},"state":"ACTIVE","etag":"1_52b96ae3-ee73-4eff-8b6b-4b75449939be"}
+[debug] [2026-04-22T20:47:44.637Z] Specified "public" directory ".next/standalone/public" does not exist; Deploy to Hosting site "jianshencosvisual-328dc" may fail or be empty.
+[info] 
+[info] === Deploying to 'jianshencosvisual-328dc'...
+[info] 
+[info] i  deploying functions, hosting 
+[debug] [2026-04-22T20:47:44.638Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:44.638Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:44.638Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc [none]
+[debug] [2026-04-22T20:47:44.882Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc 200
+[debug] [2026-04-22T20:47:44.882Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/jianshencosvisual-328dc {"projectNumber":"190010774007","projectId":"jianshencosvisual-328dc","lifecycleState":"ACTIVE","name":"jianshencosvisual","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-03-31T07:59:44.805Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-04-22T20:47:44.883Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:44.883Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:44.883Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/jianshencosvisual-328dc/adminSdkConfig [none]
+[debug] [2026-04-22T20:47:45.368Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/jianshencosvisual-328dc/adminSdkConfig 200
+[debug] [2026-04-22T20:47:45.368Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/jianshencosvisual-328dc/adminSdkConfig {"projectId":"jianshencosvisual-328dc","storageBucket":"jianshencosvisual-328dc.firebasestorage.app"}
+[debug] [2026-04-22T20:47:45.369Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:45.369Z] Checked if tokens are valid: true, expires at: 1776894238994
+[debug] [2026-04-22T20:47:45.369Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/jianshencosvisual-328dc/configs [none]
+[debug] [2026-04-22T20:47:45.705Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/jianshencosvisual-328dc/configs 200
+[debug] [2026-04-22T20:47:45.705Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/jianshencosvisual-328dc/configs {}
+[debug] [2026-04-22T20:47:45.706Z] Validating nodejs source
+[warn] ⚠  functions: Runtime Node.js 20 will be deprecated on 2026-04-30 and will be decommissioned on 2026-10-30, after which you will not be able to deploy without upgrading. Consider upgrading now to avoid disruption. See https://cloud.google.com/functions/docs/runtime-support for full details on the lifecycle policy 
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-04-22T20:47:46.060Z] > [functions] package.json contents: {
+  "name": "cosplay-portfolio-functions",
+  "version": "1.0.0",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^6.0.0",
+    "express": "^4.18.0"
+  }
+}
+[debug] [2026-04-22T20:47:46.060Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-04-22T20:47:46.061Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-04-22T20:47:46.065Z] Found firebase-functions binary at '/Users/jianshen/cosplay-portfolio/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8003
+
+[error]  ⨯ Failed to start server
+
+[error] Error: listen EADDRINUSE: address already in use 0.0.0.0:8003
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:8003) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 8003
+}
+
