@@ -56,6 +56,31 @@ function normalizePhoto(raw: any, index: number): Photo {
   };
 }
 
+// Return empty string for broken/stale cover image URLs
+function sanitizeCoverUrl(url: string | undefined): string {
+  if (!url) return '';
+  // Old static paths and placeholder services are broken
+  if (url.startsWith('/og/')) return '';
+  if (url.includes('placeholder.com')) return '';
+  if (url.includes('via.placeholder')) return '';
+  return url;
+}
+
+// Get first usable photo URL from album data for use as cover
+function firstPhotoFromData(data: any): string {
+  const photos = data.photos || [];
+  if (photos.length > 0) {
+    return photos[0].src || photos[0].url || '';
+  }
+  const cosplayers = data.cosplayers || [];
+  if (cosplayers.length > 0) {
+    const cp = cosplayers[0];
+    const cpPhotos = cp.photos || [];
+    if (cpPhotos.length > 0) return cpPhotos[0].src || cpPhotos[0].url || '';
+  }
+  return '';
+}
+
 export async function getAlbumsByType(type: 'events' | 'studio' | 'outdoor' | 'collabs'): Promise<Album[]> {
   try {
     const col = realCollection(type);
@@ -71,11 +96,12 @@ export async function getAlbumsByType(type: 'events' | 'studio' | 'outdoor' | 'c
 
     return snapshot.docs.map((d) => {
       const data = d.data();
+      const rawCover = sanitizeCoverUrl(data.coverImage || data.coverImageUrl);
       return {
         id: d.id,
         type,
         name: data.name || 'Untitled',
-        coverImage: data.coverImage || data.coverImageUrl || '',
+        coverImage: rawCover || firstPhotoFromData(data),
         displayOrder: data.displayOrder,
         description: data.description,
         eventDate: data.eventDate || data.date,
@@ -96,11 +122,12 @@ export async function getAlbum(type: string, id: string): Promise<Album | null> 
     const snapshot = await getDoc(docRef);
     if (!snapshot.exists()) return null;
     const data = snapshot.data();
+    const rawCover = sanitizeCoverUrl(data.coverImage || data.coverImageUrl);
     return {
       id: snapshot.id,
       type: type as any,
       name: data.name || 'Untitled',
-      coverImage: data.coverImage || data.coverImageUrl || '',
+      coverImage: rawCover || firstPhotoFromData(data),
       displayOrder: data.displayOrder,
       description: data.description,
       eventDate: data.eventDate || data.date,
