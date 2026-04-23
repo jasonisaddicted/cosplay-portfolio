@@ -5,7 +5,7 @@ import app from '@/lib/firebase/config';
 
 const auth = getAuth(app);
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
