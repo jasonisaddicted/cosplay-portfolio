@@ -59,10 +59,13 @@ function normalizePhoto(raw: any, index: number): Photo {
 // Return empty string for broken/stale cover image URLs
 function sanitizeCoverUrl(url: string | undefined): string {
   if (!url) return '';
-  // Old static paths and placeholder services are broken
+  // Old cover images were stored as full URLs pointing to static files:
+  // https://cosplay-portfolio.vercel.app/og/events-*.jpg — these no longer exist
+  if (url.includes('/og/events-') || url.includes('/og/studio-') ||
+      url.includes('/og/outdoor-') || url.includes('/og/collab')) return '';
+  // Also strip paths and placeholder services
   if (url.startsWith('/og/')) return '';
-  if (url.includes('placeholder.com')) return '';
-  if (url.includes('via.placeholder')) return '';
+  if (url.includes('placeholder.com') || url.includes('via.placeholder')) return '';
   return url;
 }
 
@@ -159,7 +162,19 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     const docRef = doc(db, 'site', 'config');
     const snapshot = await getDoc(docRef);
     if (!snapshot.exists()) return {};
-    return snapshot.data() as SiteConfig;
+    const data = snapshot.data() as SiteConfig;
+    // Sanitize ogImages — they may point to old /og/ static files
+    if (data.ogImages) {
+      const og = data.ogImages;
+      data.ogImages = {
+        events:  sanitizeCoverUrl(og.events)  || undefined,
+        studio:  sanitizeCoverUrl(og.studio)  || undefined,
+        outdoor: sanitizeCoverUrl(og.outdoor) || undefined,
+        collabs: sanitizeCoverUrl(og.collabs) || undefined,
+        home:    sanitizeCoverUrl(og.home)    || undefined,
+      };
+    }
+    return data;
   } catch (error) {
     console.error('Error fetching site config:', error);
     return {};
