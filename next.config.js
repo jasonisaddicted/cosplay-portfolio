@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Output standalone for Firebase deployment
-  output: 'standalone',
-
   // Image optimization for SEO
   images: {
     remotePatterns: [
