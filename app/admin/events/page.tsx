@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { getAlbumsByType } from '@/lib/firebase/firestore';
 import type { Album } from '@/lib/firebase/firestore';
 
@@ -88,8 +89,10 @@ export default function AdminEventsPage() {
                 <p style={{ margin: '0', fontSize: '0.85rem', color: 'var(--text-light)' }}>
                   Order: {album.displayOrder ?? 'N/A'}
                 </p>
-                <button
+                <Link
+                  href={`/admin/album/events/${album.id}`}
                   style={{
+                    display: 'block',
                     marginTop: '12px',
                     padding: '8px 12px',
                     background: 'var(--accent)',
@@ -100,11 +103,13 @@ export default function AdminEventsPage() {
                     width: '100%',
                     fontWeight: 600,
                     fontSize: '0.9rem',
+                    textAlign: 'center',
+                    textDecoration: 'none',
+                    boxSizing: 'border-box',
                   }}
-                  onClick={() => alert(`Edit album: ${album.id}\n\nFull CRUD interface coming soon!`)}
                 >
                   Edit
-                </button>
+                </Link>
               </div>
             </div>
           ))}
