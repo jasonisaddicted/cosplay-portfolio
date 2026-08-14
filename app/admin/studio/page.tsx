@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { getAlbumsByType } from '@/lib/firebase/firestore';
 import type { Album } from '@/lib/firebase/firestore';
 
@@ -45,9 +44,9 @@ export default function AdminStudioPage() {
               <div style={{ padding: '16px' }}>
                 <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem' }}>{album.name}</h3>
                 <p style={{ margin: '0', fontSize: '0.85rem', color: 'var(--text-light)' }}>Order: {album.displayOrder ?? 'N/A'}</p>
-                <Link href={`/admin/album/studio/${album.id}`} style={{ display: 'block', boxSizing: 'border-box', marginTop: '12px', padding: '8px 12px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', width: '100%', fontWeight: 600, fontSize: '0.9rem', textAlign: 'center', textDecoration: 'none' }}>
+                <button style={{ marginTop: '12px', padding: '8px 12px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', width: '100%', fontWeight: 600, fontSize: '0.9rem' }}>
                   Edit
-                </Link>
+                </button>
               </div>
             </div>
           ))}
